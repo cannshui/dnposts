@@ -291,18 +291,24 @@ img {
 </style>
 </head>
 <body>
-<h2><center>Git FAQ.</center></h2>
+<h2><center>My Git FAQ.</center></h2>
 <h5>推送本地分支到库（push local branch to remote repo）</h5>
-<p>通用方式：</p>
-<pre><code>git checkout -b target_branch
-git push origin target_branch:target_branch
+<p>通用方式，将本地分支推送至某远端分支：</p>
+<pre><code>git checkout -b &lt;target-branch&gt;
+git push &lt;remote-repo&gt; &lt;local-target-branch&gt;:&lt;remote-target-branch&gt;
 </code></pre>
 
-<h3>检出远程分支（checkout a remote branch）</h3>
-<h4>检出远程分支（checkout a remote branch）</h4>
+<p>如果 <code>&lt;remote-repo&gt;</code> 后只声明了一个 <code>&lt;target-branch&gt;</code>，那么这表示 <code>&lt;local-target-branch&gt;</code> 和 <code>&lt;remote-target-branch&gt;</code> 是一样的，同为 <code>&lt;target-branch&gt;</code>。</p>
+<p><strong>注意</strong>：如果省略掉 <code>&lt;local-target-branch&gt;</code> 而直接是 <code>git push &lt;remote-repo&gt; :&lt;remote-target-branch&gt;</code>，这将会<strong>删除</strong>远端分支 <code>&lt;remote-target-branch&gt;</code>。</p>
+<h5>检出远程分支（checkout a remote branch）</h5>
 <p>如果 Git version 在 1.6.6 以上。可以按照如下方式操作：</p>
-<pre><code>git fetch
-git checkout target_branch
+<pre><code>git fetch &lt;remote-name&gt;
+git checkout &lt;target-branch&gt;
+</code></pre>
+
+<p>如果省略 <code>&lt;remote-name&gt;</code> 则为 <code>origin</code>，当有多个 <code>remote</code> 的时候最好也声明 <code>&lt;remote-name&gt;</code>，因为你应该检出的是特定的 <code>remote</code> 上的 <code>branch</code>。</p>
+<p>用下面的命令查看，所有本地分支和 <code>remote</code> 分支：</p>
+<pre><code>git branch -v -a
 </code></pre>
 
 

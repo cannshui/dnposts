@@ -54,9 +54,10 @@ Spring 解决了全局和本地事务的缺陷。它使开发人员能够使用 
 		void commit(TransactionStatus status) throws TransactionException;
 
 		void rollback(TransactionStatus status) throws TransactionException;
+
 	}
 
-这主要是一个服务提供接口(SPI)，尽管它可以通过编程方式在你的应用代码中使用。因为 `PlatformTransactionManager` 是一个 *接口* ，所以它可以很容易的被模拟或是存根(译注：WHAT?)需要的话。它没有被绑定到任何诸如 JNDI 的查找策略。`PlatformTransactionManager` 实现被定义成 Spring IoC 容器中的一个普通对象(或组件)。但这个优点就使 Spring 事务是很有价值的抽象即使你使用 JTA (译注：BETTER?)。事务代码将很容易被测试相比于直接使用 JTA。
+`PlatformTransactionManager` 是一个服务提供接口(SPI)，尽管你可以通过[编程方式](#transaction-programmatic-ptm)在应用代码中使用它。因为 `PlatformTransactionManager` 是一个 *接口* ，所以它可以很容易的被模拟或是存根(译注：WHAT?)需要的话。它没有被绑定到任何诸如 JNDI 的查找策略。`PlatformTransactionManager` 实现被定义成 Spring IoC 容器中的一个普通对象(或组件)。但这个优点就使 Spring 事务是很有价值的抽象即使你使用 JTA (译注：BETTER?)。事务代码将很容易被测试相比于直接使用 JTA。
 
 按照 Spring 的哲学，被 `PlatformTransactionManager` 接口的任何方法抛出的`TransactionException` 可以是 *未检的* (即，继承自 `java.lang.RuntimeException` 类)。底层的事务失败几乎是致命的。非常少的场景下应用代码才能从一次事务失败中真正恢复，此时开发人员仍能选择捕获并处理 `TransactionException` 。关键是开发人员并不会 *强制* 你这么做。
 
@@ -103,6 +104,10 @@ Spring 解决了全局和本地事务的缺陷。它使开发人员能够使用 
 	</bean>
 
 相关联的 `PlatformTransactionManager` bean 需要一个对 `DataSource` 的引用。如下所示：
+
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
 
 如果你使用 Java EE 容器的 JTA 那么你需要一个取自 JNDI 的容器 `DataSource` ，配合 Spring 的 `JtaTransactionManager` 。如下所示是 JTA 和 JNDI 查找配置：
 
@@ -185,27 +190,98 @@ Spring 解决了全局和本地事务的缺陷。它使开发人员能够使用 
 
 如果一个现有的事务已经有一个连接对象同步(关联)到它，那个连接对象将被返回(译注：BETTER?)。否则这个方法调用触发器创建一个新的连接对象，然后同步到(可选地)任何现有事务，并在同一事务中可后续再利用。如前所述，任何 `SQLException` 都被包装成 Spring 的 `CannotGetJdbcConnectionException` ，它是 Spring 不受检异常(unchecked DataAccessExceptions)中的一个。这种方式会提供更多的信息相比于从 `SQLException` 中所得到的，并且保证了跨数据库甚至是夸不同持久技术的可移植性。
 
-这种方式同样有效当你不使用 Spring 的事务管理(事务同步时可选的)，所以你可以使用它无论你是否使用 Spring 事务管理机制。
+当你不使用 Spring 的事务管理(事务同步是可选的)时，这种方式同样有效。所以无论你是否使用 Spring 事务管理机制，你都可以使用它。
 
-当然，一旦你使用了 Spring 的 JDBC 支持，JPA 支持或是 Hibernate 支持，你一般也倾向于不使用 `DataSourceUtils` 或是其他的辅助类，因为你更愿意使用 Spring 的抽象而直接的 API。比如，如果你使用 Spring `JdbcTemplate` 或是 `jdbc.object` 包来简化 JDBC 应用，正确的连接获取发生在幕后，而你不需要编写任何特殊的代码。
+当然，一旦你使用了 Spring 的 JDBC 支持，JPA 支持或是 Hibernate 支持，你一般也倾向于不使用 `DataSourceUtils` 或是其他的辅助类，因为你更愿意使用 Spring 的直接、抽象 API。比如，如果你使用 Spring `JdbcTemplate` 或是 `jdbc.object` 包来简化 JDBC 应用，正确获取连接的行为发生在幕后，你不需要编写任何特殊、额外的代码。
 
 #### 10.4.3 TransactionAwareDataSourceProxy
 
-最低级的层次有一个 `TransactionAwareDataSourceProxy` 类。它是一个对目标 `DataSource` 对象的代理，包装了 `DataSource` 对象，并添加 Spring 事务管理。从这个方面讲，它十分类似于 JavaEE 容器提供的事务性 JDNI `DataSource` 。
+最基础层次有一个 `TransactionAwareDataSourceProxy` 类。它是一个对特定 `DataSource` 对象的代理类，包装 `DataSource` 对象，为其添加 Spring 事务管理。从这个方面讲，它十分类似于 JavaEE 容器提供的事务性 JDNI `DataSource` 。
 
-几乎没必要来描述对这个类的使用，除非代码必须通过传递一个标准 JDBC `DataSource` 接口的实现才能调用。这种场景下，这段代码是可用的，但是耦合了 Spring 的事务管理。因而，最好是使用更高层次的抽象来编写代码。
+几乎没必要来描述对这个类的使用，除非代码的调用必须通过传递一个标准 JDBC `DataSource` 接口的实现。这种场景下，`TransactionAwareDataSourceProxy` 类才能用，但是耦合了 Spring 的事务管理。因而，建议你最好是使用更高层次的抽象来编写代码。
 
 ### 10.5 声明式事务编程
 
-> > **Note**
-> > 大部门 Spring 用户选择声明式事务管理。因为，这种方式跟应用代码耦合很小，并跟轻量级容器的 *非侵入性* 目标一致。
+ > > **Note**
+ > >
+ > > 大部分 Spring 用户选择使用声明式事务管理。因为，这种方式跟应用代码耦合很小，并跟轻量级容器的 *非侵入性* 目标一致。
 
 Spring 的声明式事务管理基于 Spring 面向切面编程(AOP)，尽管，Spring 自带事务代码会以样板化的方式使用，但并不需要理解 AOP 概念就可以有效使用这些代码(译注：WHAT?)。
 
 Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方法级别定义事务行为(或不定义)。如果需要，可以使 `setRollbackOnly()` 调用在一个事务上下文中完成(译注：WAHT?)。两中事务管理的区别是：
 
-- 与 EJB CMT 绑定到 JTA 不同，Spring 声明式事务管理可以在任何环境中使用。只需要通过调整配置文件，它就可以利用 JTA 事务或是本地 JDBC 事务，JPA，Hibernate，JDO。
-- 你可以将 Spring 声明式事务管理应用到任何类，而非仅仅特殊的类，如 EJB 那样。
-- Spring 提供了声明式的 *回滚规则* ，而 EJB 则没有这种特性。Spring 同时提供了编程式和声明式回滚规则。
-- Spring 允许你通过使用 AOP 定制事务行为。比如，你可以在事务回滚后执行定制的行为。你也可以随意添加 advice，跟事务 advice 一样。
+ - 与 EJB CMT 绑定到 JTA 不同，Spring 声明式事务管理可以在任何环境中使用。只需要通过调整配置文件，它就可以利用 JTA 事务或是本地 JDBC，JPA，Hibernate，JDO。
+ - 你可以将 Spring 声明式事务管理应用到任何类，而非仅仅特殊的类，如 EJB 那样。
+ - Spring 提供了声明式的[*回滚规则*](#transaction-declarative-rolling-back) ，而 EJB 则没有这种特性。Spring 同时提供了编程式和声明式回滚规则。
+ - Spring 允许你通过使用 AOP 定制事务行为。比如，你可以在事务回滚后执行定制的行为。你也可以随意添加 advice，跟事务 advice 一样。而使用 EJB CMT，你无法参与容器的事务管理，只能调用 `setRollbackOnly()`。
+ - Spring 不像高端应用服务器那样支持远程调用的事务传播。如果你需要这个特性，那么我们推荐你使用 EJB。但是，请在使用这个特性之前考虑清楚，因为一般，不会想让一个事务传播到（译注：to span, 怎么译呢？）远程调用。
 
+ > **TransactionProxyFactoryBean 在哪？** 
+ >
+ > Spring 2.0 及以上版本声明式事务编程配置与之前版本不同。主要区别是不在需要配置 `TransactionProxyFactoryBean `。
+ > Spring 2.0 之前的配置方式仍 100% 是正确的。以后，考虑使用 `<tx:tags/>` 作为更简洁定义 `TransactionProxyFactoryBean ` 的方式。
+
+回滚的概念很重要：你可以声明哪些可抛异常应该自动触发回滚。你可以在配置文件中进行声明，而非 Java 代码中。所以，尽管你仍可以调用 `TransactionStatus ` 对象的 `setRollbackOnly()` 方法来使当前事务回滚，但大多数情况下你可以声明一个规则，`MyApplicationException` 异常必须触发回滚。这个选项的显著优势是业务逻辑对象不必依赖事务基本架构。比如，业务逻辑对象不必导入 Spring 事务 API 或其他 Spring  API（译注：就可以通过编译，但运行仍需要依赖）。
+
+尽管 EJB 容器在*系统异常（system exception）*（通常是运行时异常（runtime exception））的默认行为是自动回滚，但 EJB CMT 并不自动回滚发生*应用程序异常*（更确切的说，受检异常，除了（译注：原词 other than ）`java.rmi.RemoteException`）的事务。Spring 声明式事务管理的默认行为遵循 EJB 约定（不受检异常才能自动触发回滚），通常这种方式很有用。
+
+#### 12.5.1 理解 Spring 声明式事务管理的实现
+
+简单告诉你用 `@Transactional` 注解你的类，添加 `@EnableTransactionManagement` 到配置中，然后就希望你理解它是如何工作的，是毫无意义的。本节从事务相关的问题出发，解释 Spring 声明式事务管理的内部工作机制。
+
+关于 Spring 声明式事务管理最重要的概念是它是通过[AOP 代理](aop.html#aop-understanding-aop-proxies)实现的。事务 advice 是由 *metadata*（当前 XML 或 注解进行声明）驱动。AOP 和事务元数据的组合产生 AOP 代理，协作使用 `TransactionInterceptor `  与恰当的 `latformTransactionManager` 实现，驱动*方法调用前后*的事务行为。
+
+ > > Spring AOP 在[第 9 章](aop.html)涉及。
+
+概念上，调用一个事务代理的方法，如下：
+
+**图 12.1**
+
+![tx](tx.png)
+
+#### 12.5.2 声明式事务编程实现示例
+
+考虑下面的接口和它的实现。这个例子使用 `Foo` 和 `Bar` 类，这样你可以将重点关注在事务的使用上而非特殊的域模型（domain model）。为了达到这个例子的目的，`DefaultFooService` 类在每个实现方法中都抛出 `UnsupportedOperationException` 异常是很必要的。你可以看到由于 `UnsupportedOperationException` 实例的创建，事务会进行创建和回滚。
+
+	// the service interface that we want to make transactional
+	// 希望进行事务管理的服务接口
+	
+	package x.y.service;
+	
+	public interface FooService {
+	
+		Foo getFoo(String fooName);
+	
+		Foo getFoo(String fooName, String barName);
+	
+		void insertFoo(Foo foo);
+	
+		void updateFoo(Foo foo);
+	
+	}
+
+上述接口的一个实现：
+
+	//an implementation of the above interface
+	
+	package x.y.service;
+	
+	public class DefaultFooService implements FooService {
+	
+		public Foo getFoo(String fooName) {
+			throw new UnsupportedOperationException();
+		}
+	
+		public Foo getFoo(String fooName, String barName) {
+			throw new UnsupportedOperationException();
+		}
+	
+		public void insertFoo(Foo foo) {
+			throw new UnsupportedOperationException();
+		}
+	
+		public void updateFoo(Foo foo) {
+			throw new UnsupportedOperationException();
+		}
+	
+	}

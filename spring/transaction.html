@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>transaction</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style type="text/css">
+/* GitHub stylesheet for MarkdownPad (http://markdownpad.com) */
+/* Author: Nicolas Hery - http://nicolashery.com */
+/* Version: b13fe65ca28d2e568c6ed5d7f06581183df8f2ff */
+/* Source: https://github.com/nicolahery/markdownpad-github */
+
+/* RESET
+=============================================================================*/
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* BODY
+=============================================================================*/
+
+body {
+  font-family: Helvetica, arial, freesans, clean, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+  background-color: #fff;
+  padding: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+body>*:first-child {
+  margin-top: 0 !important;
+}
+
+body>*:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* BLOCKS
+=============================================================================*/
+
+p, blockquote, ul, ol, dl, table, pre {
+  margin: 15px 0;
+}
+
+/* HEADERS
+=============================================================================*/
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 20px 0 10px;
+  padding: 0;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 tt, h1 code, h2 tt, h2 code, h3 tt, h3 code, h4 tt, h4 code, h5 tt, h5 code, h6 tt, h6 code {
+  font-size: inherit;
+}
+
+h1 {
+  font-size: 28px;
+  color: #000;
+}
+
+h2 {
+  font-size: 24px;
+  border-bottom: 1px solid #ccc;
+  color: #000;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+h4 {
+  font-size: 16px;
+}
+
+h5 {
+  font-size: 14px;
+}
+
+h6 {
+  color: #777;
+  font-size: 14px;
+}
+
+body>h2:first-child, body>h1:first-child, body>h1:first-child+h2, body>h3:first-child, body>h4:first-child, body>h5:first-child, body>h6:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+a:first-child h1, a:first-child h2, a:first-child h3, a:first-child h4, a:first-child h5, a:first-child h6 {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+h1+p, h2+p, h3+p, h4+p, h5+p, h6+p {
+  margin-top: 10px;
+}
+
+/* LINKS
+=============================================================================*/
+
+a {
+  color: #4183C4;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* LISTS
+=============================================================================*/
+
+ul, ol {
+  padding-left: 30px;
+}
+
+ul li > :first-child, 
+ol li > :first-child, 
+ul li ul:first-of-type, 
+ol li ol:first-of-type, 
+ul li ol:first-of-type, 
+ol li ul:first-of-type {
+  margin-top: 0px;
+}
+
+ul ul, ul ol, ol ol, ol ul {
+  margin-bottom: 0;
+}
+
+dl {
+  padding: 0;
+}
+
+dl dt {
+  font-size: 14px;
+  font-weight: bold;
+  font-style: italic;
+  padding: 0;
+  margin: 15px 0 5px;
+}
+
+dl dt:first-child {
+  padding: 0;
+}
+
+dl dt>:first-child {
+  margin-top: 0px;
+}
+
+dl dt>:last-child {
+  margin-bottom: 0px;
+}
+
+dl dd {
+  margin: 0 0 15px;
+  padding: 0 15px;
+}
+
+dl dd>:first-child {
+  margin-top: 0px;
+}
+
+dl dd>:last-child {
+  margin-bottom: 0px;
+}
+
+/* CODE
+=============================================================================*/
+
+pre, code, tt {
+  font-size: 12px;
+  font-family: Consolas, "Liberation Mono", Courier, monospace;
+}
+
+code, tt {
+  margin: 0 0px;
+  padding: 0px 0px;
+  white-space: nowrap;
+  border: 1px solid #eaeaea;
+  background-color: #f8f8f8;
+  border-radius: 3px;
+}
+
+pre>code {
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  border: none;
+  background: transparent;
+}
+
+pre {
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  line-height: 19px;
+  overflow: auto;
+  padding: 6px 10px;
+  border-radius: 3px;
+}
+
+pre code, pre tt {
+  background-color: transparent;
+  border: none;
+}
+
+kbd {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: #DDDDDD;
+    background-image: linear-gradient(#F1F1F1, #DDDDDD);
+    background-repeat: repeat-x;
+    border-color: #DDDDDD #CCCCCC #CCCCCC #DDDDDD;
+    border-image: none;
+    border-radius: 2px 2px 2px 2px;
+    border-style: solid;
+    border-width: 1px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    line-height: 10px;
+    padding: 1px 4px;
+}
+
+/* QUOTES
+=============================================================================*/
+
+blockquote {
+  border-left: 4px solid #DDD;
+  padding: 0 15px;
+  color: #777;
+}
+
+blockquote>:first-child {
+  margin-top: 0px;
+}
+
+blockquote>:last-child {
+  margin-bottom: 0px;
+}
+
+/* HORIZONTAL RULES
+=============================================================================*/
+
+hr {
+  clear: both;
+  margin: 15px 0;
+  height: 0px;
+  overflow: hidden;
+  border: none;
+  background: transparent;
+  border-bottom: 4px solid #ddd;
+  padding: 0;
+}
+
+/* TABLES
+=============================================================================*/
+
+table th {
+  font-weight: bold;
+}
+
+table th, table td {
+  border: 1px solid #ccc;
+  padding: 6px 13px;
+}
+
+table tr {
+  border-top: 1px solid #ccc;
+  background-color: #fff;
+}
+
+table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+
+/* IMAGES
+=============================================================================*/
+
+img {
+  max-width: 100%
+}
+</style>
+</head>
+<body>
+<h6><center>10. 事务管理</center></h6>
+<h6><center>Part IV. 数据存取</center></h6>
+<hr />
+<h3>10. 事务管理</h3>
+<h3>10.1 Spring 事务管理简介</h3>
+<p>强大、全面的事务支持是使用 Spring 框架的一个很重要因素。Spring 为事务管理提供了一致的抽象，具有以下优势：</p>
+<ul>
+<li>为不同规范的事务 API 比如 Java Tranaction API(JTA), JDBC, Hibernate, Java Persistence API(JPA) 及 Java Data Objects(JDO) 提供一致的编程模型。</li>
+<li>支持声明式事务管理。</li>
+<li>简单 API 支持编程式事务管理相比于复杂的事务 API 比如 JTA。</li>
+<li>与 Spring 数据存取抽象层完美整合。</li>
+</ul>
+<p>以下小节讲述了 Spring 框架的事务使用和技术（译者： ERROR?）。（本章同样包括最佳编程实践、与应用服务器整合、常见问题解决方案方面的讨论。）</p>
+<ul>
+<li>Spring 事务支持模型的优势：描述了，<em>为什么</em> 你应该使用 Spring 事务抽象而非 EJB 容器-管理级事务(EJB Container-Managed Transactions,CMT) 或是通过其他所有者的事务 API 驱动本地事务比如 Hibernate 的事务 API。</li>
+<li>理解 Spring 事务抽象：概述核心类及描述如何从不同数据源配置和获取<code>DataSource</code>实例。</li>
+<li>利用事务同步资源：描述应用代码如何正确的保证资源的创建、重用及清理。</li>
+<li>声明式事务管理：描述对声明式事务管理的支持。</li>
+<li>编程式事务管理：覆盖了对编程式（即，显示代码）事务支持。</li>
+</ul>
+<h3>10.2 Spring 事务支持模型的优势</h3>
+<p>传统而言，Java EE 开发人员有两种方式进行事务管理：<em>全局(global)</em> 或 <em>本地(local)</em> 事务，这两种都有很大的限制（译者：体现在那？）。全局和本地的事务管理将在以下两小节回顾，然后是讨论 Spring 事务管理支持是如何解决全局和本地事务模型的限制。</p>
+<h4>10.2.1 全局事务</h4>
+<p>全局事务使你能跟多种事务源打交道，典型如关系型数据库和消息队列。应用服务器通过 JTA 管理全局事务，而 JTA 是相当笨重的 API(部分原因是它的异常(exception)模型)。而且，一个 JTA <code>UserTransaction</code> 通常需要从 JNDI 获取，这意味着你 <em>必须同时使用</em> JNDI。显然，全局事务的使用将会限制任何潜在的代码重用，因为 JTA 通常只在应用服务器中能得到。（译者：WHAT?）</p>
+<p>早先，使用全局事务的首先方式是通过 EJB <em>CMT(Container Managed Transaction)</em> ：CMT 是一种 <strong>声明式事务管理</strong> (区分自 <strong>编程式事务管理</strong> )。EJB CMT 移除了与事务相关联的 JNDI 查找，尽管它本身仍需要从 JNDI 中查找。它移除了大部分但并非全部通过编写 Java 代码控制事务的必要性。CMT 的显著缺点是它绑定到 JTA 及应用服务器环境。而且，只有当实现 EJB 形式的业务逻辑时 CMT 才可用，至少也得是 EJB 事务的门面（译者：Better?）。EJB 的负面效果太严重了，因为它不是一个很有吸引力的方案，特别是在面对引人注目的声明式事务管理时。</p>
+<h4>10.2.2 本地事务</h4>
+<p>本地事务是跟资源相关的，比如与 JDBC 连接相关联的事务。本地事务可能使用很简便，但也有显著的缺陷：它们无法跨多种事务资源。比如，通过 JDBC 连接管理事务的代码无法再一个全局 JTA 事务中运行。因为事务管理中没有涉及到应用服务器，因而它无法帮你保证正确的跨多种资源。(这没有任何价值，因为大部分的应用程序只使用单一的事务源。)另外一个不利面是本地事务是侵入到编程模型中的。</p>
+<h4>10.2.3 Spring 一致性编程模型</h4>
+<p>Spring 解决了全局和本地事务的缺陷。它使开发人员能够使用 <em>一致的</em> 编程模型 <em>在任何环境下</em> (译注：环境代指 Global, Local, JTA, CMT)。你一次编写你的代码，就能够利用不同环境事务管理策略的优势。Spring 提供了声明式和编程式事务管理。大多数用户选择声明式事务管理，它也是大部分场景较为推荐的方式。</p>
+<p>通过编程式事务管理，开发人员直接利用运行在底层事务之上的 Spring 事务抽象。通过首选的声明式模型，开发人员只需编写很少或是不需要编写代码即可关联到事务管理，因此不依赖于 Spring 事务 API 或任何其他事务 API。</p>
+<blockquote>
+<blockquote>
+<h6>你需要应用服务器支持事务管理吗？</h6>
+<p>Have not translated.</p>
+</blockquote>
+</blockquote>
+<h3>10.3 理解 Spring 事务抽象</h3>
+<p>理解 Spring 事务抽象的关键是事务 <em>策略概念</em> 。事务策略定义在 <code>org.springframework.transaction.PlatformTransactionManager</code> 接口：</p>
+<pre><code>public interface PlatformTransactionManager {
+
+    TransactionStatus getTransaction(TransactionDefinition definition) throws ransactionException;
+
+    void commit(TransactionStatus status) throws TransactionException;
+
+    void rollback(TransactionStatus status) throws TransactionException;
+
+}
+</code></pre>
+
+<p><code>PlatformTransactionManager</code> 是一个服务提供接口(SPI)，尽管你可以通过<a href="#transaction-programmatic-ptm">编程方式</a>在应用代码中使用它。因为 <code>PlatformTransactionManager</code> 是一个 <em>接口</em> ，所以它可以很容易的被模拟或是存根(译注：WHAT?)需要的话。它没有被绑定到任何诸如 JNDI 的查找策略。<code>PlatformTransactionManager</code> 实现被定义成 Spring IoC 容器中的一个普通对象(或组件)。但这个优点就使 Spring 事务是很有价值的抽象即使你使用 JTA (译注：BETTER?)。事务代码将很容易被测试相比于直接使用 JTA。</p>
+<p>按照 Spring 的哲学，被 <code>PlatformTransactionManager</code> 接口的任何方法抛出的<code>TransactionException</code> 可以是 <em>未检的</em> (即，继承自 <code>java.lang.RuntimeException</code> 类)。底层的事务失败几乎是致命的。非常少的场景下应用代码才能从一次事务失败中真正恢复，此时开发人员仍能选择捕获并处理 <code>TransactionException</code> 。关键是开发人员并不会 <em>强制</em> 你这么做。</p>
+<p><code>getTransaction(..)</code> 方法返回一个 <code>TransactionStatus</code> 对象，依赖于一个 <code>TransactionDefinition</code> 参数。返回值 <code>Transaction</code> 可以表示一个全新事务，也可以表示一个已存在于当前调用栈中匹配的事务。后一种场景的含义是，JavaEE 中事务上下文是关联到一个 <strong>线程</strong> 执行环境中的。</p>
+<p><code>TransactionDefinition</code> 接口定义了：</p>
+<ul>
+<li><strong>Isolaion:</strong> 隔离性定义当前事务同其他事务的隔离级别。如，本事务可以看到其他事务还未提交的更改吗？</li>
+<li><strong>Propagation:</strong> 一般，一个事务域中的代码只会在事务中执行。但是，你可以选择一个事务方法在一个已存在事务上下文中执行。如，代码可以继续在一个已存在事务中执行(常见情形)；或者挂起已存在事务后创建一个新的。<em>Spring 提供了类似于 EJB CMT 的所有的事务传播选项。</em> 参阅 10.5.7, “事务传播”，查看 Spring 事务传播的语义。</li>
+<li><strong>Timeout:</strong> 超时之前事务执行的时间，超时之后将会由事务底层实现自动回滚。</li>
+<li><strong>Read-only status:</strong> 只读事务中代码只进行数据读取而无修改。只读事务会是一些场景中非常有用的一种优化，比如当你在使用 Hibernate.</li>
+</ul>
+<p>这些选项设置都映射到标准概念。如果需要的话，参阅(refer to)其他详细描述事务隔离界别等其他核心事物概念的文档。理解这些概念是使用 Spring 及任何其他事务管理方案不可或缺的。</p>
+<p><code>TransactionStatus</code> 接口提供了事务代码控制事务执行和查询事务状态的简便方法。这些概念应该很熟悉了，因为它们都是通用、标准的事务 API:</p>
+<pre><code>public interface TransactionStatus extends SavepointManager {
+
+    boolean isNewTransaction();
+
+    boolean hasSavepoint();
+
+    void setRollbackOnly();
+
+    boolean isRollbackOnly();
+
+    void flush();
+
+    boolean isCompleted();
+
+}
+</code></pre>
+
+<p>无论你使用 Spring 声明式还是编程式事务管理，都必须正确定义 <code>PlatformTransactionManager</code>。一般你通过依赖注入来定义这个实现。</p>
+<p><code>PlatformTransactionManager</code> 的不同实现一般都需要知道它们所执行的环境：JDNC、JTA、Hibernate 等等。下面的例子展示了你应该如何定义一个本地 <code>PlatformTransactionManager</code> 实现。(这个例子基于纯 JDBC。)</p>
+<p>定义一个 JDBC <code>DataSource</code></p>
+<pre><code>&lt;bean id=&quot;dataSource&quot; class=&quot;org.apache.commons.dbcp.BasicDataSource&quot; destroy-method=&quot;close&quot;&gt;
+    &lt;property name=&quot;driverClassName&quot; value=&quot;${jdbc.driverClassName}&quot; /&gt;
+    &lt;property name=&quot;url&quot; value=&quot;${jdbc.url}&quot; /&gt;
+    &lt;property name=&quot;username&quot; value=&quot;${jdbc.username}&quot; /&gt;
+    &lt;property name=&quot;password&quot; value=&quot;${jdbc.password}&quot; /&gt;
+&lt;/bean&gt;
+</code></pre>
+
+<p>相关联的 <code>PlatformTransactionManager</code> bean 需要一个对 <code>DataSource</code> 的引用。如下所示：</p>
+<pre><code>&lt;bean id=&quot;txManager&quot; class=&quot;org.springframework.jdbc.datasource.DataSourceTransactionManager&quot;&gt;
+    &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
+&lt;/bean&gt;
+</code></pre>
+
+<p>如果你使用 Java EE 容器的 JTA 那么你需要一个取自 JNDI 的容器 <code>DataSource</code> ，配合 Spring 的 <code>JtaTransactionManager</code> 。如下所示是 JTA 和 JNDI 查找配置：</p>
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+    xmlns:jee=&quot;http://www.springframework.org/schema/jee&quot;
+    xsi:schemaLocation=&quot;
+    http://www.springframework.org/schema/beans 
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/jee 
+    http://www.springframework.org/schema/jee/spring-jee-3.0.xsd&quot;&gt;
+
+    &lt;jee:jndi-lookup id=&quot;dataSource&quot; jndi-name=&quot;jdbc/jpetstore&quot;/&gt; 
+
+    &lt;bean id=&quot;txManager&quot; class=&quot;org.springframework.transaction.jta.JtaTransactionManager&quot; /&gt;
+
+    &lt;!-- other &lt;bean/&gt; definitions here --&gt;
+
+&lt;/beans&gt;
+</code></pre>
+
+<p><code>JtaTransactionManager</code> 并不需要知道 <code>DataSource</code> 或是任何其他特定的数据源，因为它使用容器底层的全局事务管理(译注：BETTER?)。</p>
+<blockquote>
+<blockquote>
+<p><strong>Note</strong>
+上面 <code>DataSource</code> 的定义使用 <code>jee</code> 命名空间的 <code>&lt;jndi-lookup/&gt;</code> 标记。更多信息参看基于 schema 的配置(schema-based configuration)。更多 <code>&lt;jee/&gt;</code> 标记信息参看 C.2.3 &quot;The jee schma&quot; 小节。</p>
+</blockquote>
+</blockquote>
+<p>你同样可以方便的使用 Hibernate 的本地事务，如下例所示。你需要定义一个 Hibernate <code>LocalSessionFactoryBean</code> ，这样你的应用代码就可以从中取到 Hibernate <code>Session</code> 实例。</p>
+<p><code>DataSource</code> 组件的定义与之前的 JDBC 例子中相似。下面例子中没有列出 <code>DataSource</code> 组件的定义。</p>
+<blockquote>
+<blockquote>
+<p><strong>Note</strong>
+如果 <code>DataSouce</code> 被非 JTA 事务管理使用，并且它是从 JNDI 中查找到及被 JavaEE 容器管理。那么，它是非事务的因为 Spring 而非 JavaEE 容器将会去进行事务管理(译注：ERROR?)。</p>
+</blockquote>
+</blockquote>
+<p>此时 <code>txManager</code> 组件是 <code>HibernateTransactionManager</code> 类型。同样跟 <code>DataSourceTransactionManager</code> 一样它需要 <code>DataSource</code> 的引用，<code>HibernateTransactionManager</code> 同时还需要 <code>SessionFactory</code> 引用。</p>
+<pre><code>&lt;bean id=&quot;sessionFactory&quot;
+    class=&quot;org.springframework.orm.hibernate3.LocalSessionFactoryBean&quot;&gt;
+    &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot; /&gt;
+    &lt;property name=&quot;mappingResources&quot;&gt;
+        &lt;list&gt;
+            &lt;value&gt;org/springframework/samples/petclinic/hibernate/petclinic.hbm.xml&lt;/value&gt;
+        &lt;/list&gt;
+    &lt;/property&gt;
+    &lt;property name=&quot;hibernateProperties&quot;&gt;
+        &lt;value&gt;
+            hibernate.dialect=${hibernate.dialect}
+        &lt;/value&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;bean id=&quot;txManager&quot;
+    class=&quot;org.springframework.orm.hibernate3.HibernateTransactionManager&quot;&gt;
+    &lt;property name=&quot;sessionFactory&quot; ref=&quot;sessionFactory&quot; /&gt;
+&lt;/bean&gt;
+</code></pre>
+
+<p>如果你打算使用 Hibernate 或是 Java EE 容器管理的 JTA 事务，那么你可以同样简单应用 <code>JtaTransactionManager</code>，像之前为 JDBC 应用 JTA 一样。</p>
+<pre><code>&lt;bean id=&quot;txManager&quot; class=&quot;org.springframework.transaction.jta.JtaTransactionManager&quot;/&gt;
+</code></pre>
+
+<blockquote>
+<blockquote>
+<p><strong>Note</strong>
+如果你使用 JTA，那么你的事务管理定义看起来是一样的，不管你使用各种数据存取技术，比如 JDBC，Hibernate JPA 或是任何其他的支持技术。这是因为 JTA 是全局事务，它能够支持任何事务源。</p>
+</blockquote>
+</blockquote>
+<p>所有这些场景，应用代码都无需改变。你只需要通过更改配置就能改变事务管理方式，哪怕是改变本地事务到全局事务，或相反。</p>
+<h3>10.4 通过事务同步资源</h3>
+<p>现在你应该清楚如何创建不同的事务管理器了，以及它们是如何绑定到需要被事务同步保护的资源(比如，<code>DataSourceTransactionManager</code> 绑定 JDBC <code>DataSource</code>，<code>HibernateTransactionManager</code> 绑定 Hibernate <code>SessionFactory</code> 等等)。本节描述应用代码如何直接或间接使用持久化 API 比如 JDBC，Hibernate 或是 JDO，确保这些资源的正确创建、重用及清理。本节同样讨论了事务同步是如何被相关的 <code>PlatformTransactionManager</code> 触发的(可选)(译注：BETTER?)。</p>
+<h4>10.4.1 高层次的同步方式</h4>
+<p>首选方式就是使用 Spring 基于持久化 API 的高层次模板或是使用本地 ORM 框架的事务工厂对象 API 或是管理本地资源的代理工厂。这些事务感知方案在内部处理资源的创建、重用、清理，资源的事务同步及异常处理。从而用户数据存取代码并不再需要处理这些工作，就可以将工作重点聚焦在样板化的持久逻辑之外。一般情况下，你使用本地 ORM API 或是通过使用 <code>JdbcTemplate</code> 以 <em>模板</em> 方式访问 JDBC。这些解决方案在本参考文档的随后章节讲述。</p>
+<h4>10.4.2 低层次的同步方式</h4>
+<p>许多类如 <code>DataSourceUtils</code> (方便 JDBC 使用)，<code>EntityManagerFactoryUtils</code> (方便 JPA 使用)，<code>SessionFactoryUtils</code> (方便 Hibernate 使用)，<code>PersistenceManagerFactoryUtils</code> (方便 JDO 使用)，等都存在于很低的层次。当你想让应用代码直接使用本地持久 API 进行处理时，通过使用这些类可以保证你正确得到合适的 Spring 框架所管理的实例。事务是(可选)同步的，处理过程中发生的异常将被映射到一致的 API 上。</p>
+<p>比如，使用 JDBC 的场景，与传统使用 JDBC 的方式调用 <code>DataSource</code> 的 <code>getConnection()</code> 方法不同，你应该使用 Spring 的 <code>org.springframework.jdbc.datasource.DataSourceUtils</code> ，如下所示：</p>
+<pre><code>Connection conn = DataSourceUtils.getConnection(dataSource);
+</code></pre>
+
+<p>如果一个现有的事务已经有一个连接对象同步(关联)到它，那个连接对象将被返回(译注：BETTER?)。否则这个方法调用触发器创建一个新的连接对象，然后同步到(可选地)任何现有事务，并在同一事务中可后续再利用。如前所述，任何 <code>SQLException</code> 都被包装成 Spring 的 <code>CannotGetJdbcConnectionException</code> ，它是 Spring 不受检异常(unchecked DataAccessExceptions)中的一个。这种方式会提供更多的信息相比于从 <code>SQLException</code> 中所得到的，并且保证了跨数据库甚至是夸不同持久技术的可移植性。</p>
+<p>当你不使用 Spring 的事务管理(事务同步是可选的)时，这种方式同样有效。所以无论你是否使用 Spring 事务管理机制，你都可以使用它。</p>
+<p>当然，一旦你使用了 Spring 的 JDBC 支持，JPA 支持或是 Hibernate 支持，你一般也倾向于不使用 <code>DataSourceUtils</code> 或是其他的辅助类，因为你更愿意使用 Spring 的直接、抽象 API。比如，如果你使用 Spring <code>JdbcTemplate</code> 或是 <code>jdbc.object</code> 包来简化 JDBC 应用，正确获取连接的行为发生在幕后，你不需要编写任何特殊、额外的代码。</p>
+<h4>10.4.3 TransactionAwareDataSourceProxy</h4>
+<p>最基础层次有一个 <code>TransactionAwareDataSourceProxy</code> 类。它是一个对特定 <code>DataSource</code> 对象的代理类，包装 <code>DataSource</code> 对象，为其添加 Spring 事务管理。从这个方面讲，它十分类似于 JavaEE 容器提供的事务性 JDNI <code>DataSource</code> 。</p>
+<p>几乎没必要来描述对这个类的使用，除非代码的调用必须通过传递一个标准 JDBC <code>DataSource</code> 接口的实现。这种场景下，<code>TransactionAwareDataSourceProxy</code> 类才能用，但是耦合了 Spring 的事务管理。因而，建议你最好是使用更高层次的抽象来编写代码。</p>
+<h3>10.5 声明式事务编程</h3>
+<blockquote>
+<blockquote>
+<p><strong>Note</strong></p>
+<p>大部分 Spring 用户选择使用声明式事务管理。因为，这种方式跟应用代码耦合很小，并跟轻量级容器的 <em>非侵入性</em> 目标一致。</p>
+</blockquote>
+</blockquote>
+<p>Spring 的声明式事务管理基于 Spring 面向切面编程(AOP)，尽管，Spring 自带事务代码会以样板化的方式使用，但并不需要理解 AOP 概念就可以有效使用这些代码(译注：WHAT?)。</p>
+<p>Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方法级别定义事务行为(或不定义)。如果需要，可以使 <code>setRollbackOnly()</code> 调用在一个事务上下文中完成(译注：WAHT?)。两中事务管理的区别是：</p>
+<ul>
+<li>与 EJB CMT 绑定到 JTA 不同，Spring 声明式事务管理可以在任何环境中使用。只需要通过调整配置文件，它就可以利用 JTA 事务或是本地 JDBC，JPA，Hibernate，JDO。</li>
+<li>你可以将 Spring 声明式事务管理应用到任何类，而非仅仅特殊的类，如 EJB 那样。</li>
+<li>Spring 提供了声明式的<a href="#transaction-declarative-rolling-back"><em>回滚规则</em></a> ，而 EJB 则没有这种特性。Spring 同时提供了编程式和声明式回滚规则。</li>
+<li>Spring 允许你通过使用 AOP 定制事务行为。比如，你可以在事务回滚后执行定制的行为。你也可以随意添加 advice，跟事务 advice 一样。而使用 EJB CMT，你无法参与容器的事务管理，只能调用 <code>setRollbackOnly()</code>。</li>
+<li>Spring 不像高端应用服务器那样支持远程调用的事务传播。如果你需要这个特性，那么我们推荐你使用 EJB。但是，请在使用这个特性之前考虑清楚，因为一般，不会想让一个事务传播到（译注：to span, 怎么译呢？）远程调用。</li>
+</ul>
+<blockquote>
+<p><strong>TransactionProxyFactoryBean 在哪？</strong> </p>
+<p>Spring 2.0 及以上版本声明式事务编程配置与之前版本不同。主要区别是不在需要配置 <code>TransactionProxyFactoryBean</code>。
+Spring 2.0 之前的配置方式仍 100% 是正确的。以后，考虑使用 <code>&lt;tx:tags/&gt;</code> 作为更简洁定义 <code>TransactionProxyFactoryBean</code> 的方式。</p>
+</blockquote>
+<p>回滚的概念很重要：你可以声明哪些可抛异常应该自动触发回滚。你可以在配置文件中进行声明，而非 Java 代码中。所以，尽管你仍可以调用 <code>TransactionStatus</code> 对象的 <code>setRollbackOnly()</code> 方法来使当前事务回滚，但大多数情况下你可以声明一个规则，<code>MyApplicationException</code> 异常必须触发回滚。这个选项的显著优势是业务逻辑对象不必依赖事务基本架构。比如，业务逻辑对象不必导入 Spring 事务 API 或其他 Spring  API（译注：就可以通过编译，但运行仍需要依赖）。</p>
+<p>尽管 EJB 容器在<em>系统异常（system exception）</em>（通常是运行时异常（runtime exception））的默认行为是自动回滚，但 EJB CMT 并不自动回滚发生<em>应用程序异常</em>（更确切的说，受检异常，除了（译注：原词 other than ）<code>java.rmi.RemoteException</code>）的事务。Spring 声明式事务管理的默认行为遵循 EJB 约定（不受检异常才能自动触发回滚），通常这种方式很有用。</p>
+<h4>12.5.1 理解 Spring 声明式事务管理的实现</h4>
+<p>简单告诉你用 <code>@Transactional</code> 注解你的类，添加 <code>@EnableTransactionManagement</code> 到配置中，然后就希望你理解它是如何工作的，是毫无意义的。本节从事务相关的问题出发，解释 Spring 声明式事务管理的内部工作机制。</p>
+<p>关于 Spring 声明式事务管理最重要的概念是它是通过<a href="aop.html#aop-understanding-aop-proxies">AOP 代理</a>实现的。事务 advice 是由 <em>metadata</em>（当前 XML 或 注解进行声明）驱动。AOP 和事务元数据的组合产生 AOP 代理，协作使用 <code>TransactionInterceptor</code>  与恰当的 <code>latformTransactionManager</code> 实现，驱动<em>方法调用前后</em>的事务行为。</p>
+<blockquote>
+<blockquote>
+<p>Spring AOP 在<a href="aop.html">第 9 章</a>涉及。</p>
+</blockquote>
+</blockquote>
+<p>概念上，调用一个事务代理的方法，如下：</p>
+<p><strong>图 12.1</strong></p>
+<p><img src="tx.png" alt="tx" /></p>
+
+</body>
+</html>
+<!-- This document was created with MarkdownPad, the Markdown editor for Windows (http://markdownpad.com) -->
