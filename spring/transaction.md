@@ -285,3 +285,166 @@ Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方�
 		}
 	
 	}
+
+注意 `FooService` 接口的头两个方法， `getFoo(String)` 和 `getFoo(String, String)`，必须在只读语义的事务中执行，另外的两个方法 `insertFoo(Foo)` 和 `updateFoo(Foo)` 必须在读写事务中执行。下面的配置会在接下来段落中进行解释。
+
+	<!-- from the file 'context.xml' -->
+	<?xml version="1.0" encoding="UTF-8"?>
+	<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+		xmlns:tx="http://www.springframework.org/schema/tx"
+		xsi:schemaLocation="
+	        http://www.springframework.org/schema/beans
+	        http://www.springframework.org/schema/beans/spring-beans.xsd
+	        http://www.springframework.org/schema/tx
+	        http://www.springframework.org/schema/tx/spring-tx.xsd
+	        http://www.springframework.org/schema/aop
+	        http://www.springframework.org/schema/aop/spring-aop.xsd">
+	
+		<!-- this is the service object that we want to make transactional -->
+		<bean id="fooService" class="x.y.service.DefaultFooService" />
+	
+		<!-- the transactional advice (what 'happens'; see the <aop:advisor/> bean below) -->
+		<tx:advice id="txAdvice" transaction-manager="txManager">
+			<!-- the transactional semantics... -->
+			<tx:attributes>
+				<!-- all methods starting with 'get' are read-only -->
+				<tx:method name="get*" read-only="true" />
+				<!-- other methods use the default transaction settings (see below) -->
+				<tx:method name="*" />
+			</tx:attributes>
+		</tx:advice>
+	
+		<!-- ensure that the above transactional advice runs for any execution of 
+			an operation defined by the FooService interface -->
+		<aop:config>
+			<aop:pointcut id="fooServiceOperation"
+				expression="execution(* x.y.service.FooService.*(..))" />
+			<aop:advisor advice-ref="txAdvice" pointcut-ref="fooServiceOperation" />
+		</aop:config>
+	
+		<!-- don't forget the DataSource -->
+		<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+			destroy-method="close">
+			<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+			<property name="url" value="jdbc:oracle:thin:@rj-t42:1521:elvis" />
+			<property name="username" value="scott" />
+			<property name="password" value="tiger" />
+		</bean>
+	
+		<!-- similarly, don't forget the PlatformTransactionManager -->
+		<bean id="txManager"
+			class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+			<property name="dataSource" ref="dataSource" />
+		</bean>
+	
+		<!-- other <bean/> definitions here -->
+	
+	</beans>
+
+查看上面的配置，你想要为一个 service 对象实例 `fooService` 添加事务支持。事务语义的添加通过定义 `<tx:advice/>` 来封装。上面配置中 `<tx:advice/>` 的定义表示 “*所有以 `get` 作为前缀的方法将在只读事务中执行，其他所有方法将在默认的事务语义中执行*”。`<tx:advice/>` 的 `transaction-manager` 属性设置为一个 `PlatformTransactionManager` 组件的引用（id 或 name），这里是 `txManager` 组件，用以*驱动*事务。
+
+ > > > **注意**：如果你想注入的 `PlatformTransactionManager` 组件的引用名为 `transactionManager`，那么可以省略事务 advice（`<tx:advice/>`） 的 `transaction-manager` 属性。而如果是  `transactionManager` 以外的其他引用名（译注：比如这里是 `txManager`），你都必须要显示声明 `transaction-manager` 属性，像前面例子中所做的那样。
+ 
+定义 `<aop:config/>` 使 `<tx:advice/>` 定义的事务 advice 在程序里正确的切点（points）执行。首先你定义匹配 `FooService` 接口中方法执行的切点（pointcut）（`fooServiceOperation`），然后通过 advisor 关联切点和 `<tx:advice/>`。这意味着，`fooServiceOperation` 执行时，由 `<tx:advice/>` 定义的 advice 也将会执行。
+
+`<aop:pointcut/>` 元素定义的表达式为 AspectJ 切点表达式；参见[第 9 章 Spring 面向切面编程](aop.html)，查看更多 Spring 切点表达式的细节。
+
+一项常规需求是，是将事务支持加入整个 service 层。最好、最简单的方式是改写切点表达式来匹配所有 service 层的操作。比如：
+
+	<aop:config>
+		<aop:pointcut id="fooServiceMethods" expression="execution(* x.y.service.*.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="fooServiceMethods" />
+	</aop:config>
+
+ > > > 这个例子中，假设你所有的 service 接口都定义在 `x.y.service` 包下，参见[第 9 章 Spring 面向切面编程](aop.html)，查看更多 Spring 细节。
+
+现在，我们已经分析过了上面的配置，但你可能会问你自己，“额，写好了，但是这些配置到底干了什么啊？”。
+
+上面的配置用于从 `fooService` 组件创建的对象前后创建事务代理。事务代理由事务 advice 配置，当调用代理对象的方法时，就将会开始、挂起，标记为只读事务等等，这些行为取决于关联到方法上的事务配置。下面的程序利用上面的配置运行：
+
+	public final class Boot {
+	
+		public static void main(final String[] args) throws Exception {
+			ApplicationContext ctx = new ClassPathXmlApplicationContext("context.xml", Boot.class);
+			FooService fooService = (FooService) ctx.getBean("fooService");
+			fooService.insertFoo(new Foo());
+		}
+	}
+
+运行上面的程序将会产生类似于下面的输出。（为了清晰，截取部分 Log4J 输出及 DefaultFooService 的 insertFoo(..) 方法抛出的 UnsupportedOperationException 异常堆栈）
+
+	<!-- the Spring container is starting up... -->
+	[AspectJInvocationContextExposingAdvisorAutoProxyCreator] - Creating implicit proxy for bean fooService with 0 common interceptors and 1 specific interceptors
+	
+	<!-- the DefaultFooService is actually proxied -->
+	[JdkDynamicAopProxy] - Creating JDK dynamic proxy for [x.y.service.DefaultFooService]
+	
+	<!-- ... the insertFoo(..) method is now being invoked on the proxy -->
+	[TransactionInterceptor] - Getting transaction for x.y.service.FooService.insertFoo
+	
+	<!-- the transactional advice kicks in here... -->
+	[DataSourceTransactionManager] - Creating new transaction with name [x.y.service.FooService.insertFoo]
+	[DataSourceTransactionManager] - Acquired Connection [org.apache.commons.dbcp.PoolableConnection@a53de4] for JDBC transaction
+	
+	<!-- the insertFoo(..) method from DefaultFooService throws an exception... -->
+	[RuleBasedTransactionAttribute] - Applying rules to determine whether transaction should rollback on java.lang.UnsupportedOperationException
+	[TransactionInterceptor] - Invoking rollback for transaction on x.y.service.FooService.insertFoo due to throwable [java.lang.UnsupportedOperationException]
+	
+	<!-- and the transaction is rolled back (by default, RuntimeException instances cause rollback) -->
+	[DataSourceTransactionManager] - Rolling back JDBC transaction on Connection [org.apache.commons.dbcp.PoolableConnection@a53de4]
+	[DataSourceTransactionManager] - Releasing JDBC Connection after transaction
+	[DataSourceUtils] - Returning JDBC Connection to DataSource
+	
+	Exception in thread "main" java.lang.UnsupportedOperationException at x.y.service.DefaultFooService.insertFoo(DefaultFooService.java:14)
+	<!-- AOP infrastructure stack trace elements removed for clarity -->
+	at $Proxy0.insertFoo(Unknown Source)
+	at Boot.main(Boot.java:11)
+
+#### 12.5.3 回滚声明式事务
+
+上一小节介绍了如何在你的应用程序，以声明式的形式为类声明事务配置，特别是 service 层的类。这一小节描述你如何以声明式的形式控制事务回滚。
+
+指示 Spring 事务框架工作的推荐方式是通过在当前事务上下文中正在执行的代码中抛出异常（`Exception`） 来回滚事务。由于异常会在调用栈中向上冒泡，Spring 事务框架将会捕获任何未处理（译注：unhandled，没有经过 try {...} catch(...) {...}）的异常（`Exception`），然后决定是否标记事务进行回滚。
+
+默认配置下，Spring 事务框架代码*仅仅*在运行时（runtime）抛出不受检异常时，也就是说，抛出的异常是 `RuntimeException` 的子类实例时，才标记事务回滚。（`Error`s，默认，同样会导致回滚）。而受检异常则默认*不会*导致回滚。
+
+你可以配置指定类型的异常（`Exception`）才会导致回滚，包括受检异常。下面的 XML 片段演示如何为受检的，特定应用的异常（`Exception`）配置回滚。
+
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="get*" read-only="true" rollback-for="NoProductInStockException" />
+			<tx:method name="*" />
+		</tx:attributes>
+	</tx:advice>
+
+如果你*不想*事务在异常抛出的时候回滚，可以声明*不会触发回滚的规则*。下面的例子告诉 Spring 事务框架提交相关的事务即使发生了未处理异常 `InstrumentNotFoundException`。
+
+	<tx:advice id="txAdvice">
+		<tx:attributes>
+			<tx:method name="updateStock" no-rollback-for="InstrumentNotFoundException" />
+			<tx:method name="*" />
+		</tx:attributes>
+	</tx:advice>
+
+当 Spring 事务框架捕获到异常后，查询配置的回滚规则以决定是否触发回滚，*权重最高（strongest）*匹配规则将会获胜（译注：决定是否回滚）。所以在下面的配置示例中，除了 `InstrumentNotFoundException` 之外的所有异常将会回滚方法相关的事务。
+
+	<tx:advice id="txAdvice">
+		<tx:attributes>
+			<tx:method name="*" rollback-for="Throwable" no-rollback-for="InstrumentNotFoundException" />
+		</tx:attributes>
+	</tx:advice>
+
+你也可以通过*编程方式*实现一个必要的回滚。尽管很简单，但这种处理是侵入性的，并使你的代码跟 Spring 事务框架紧密耦合：
+
+	public void resolvePosition() {
+		try {
+			// some business logic...
+		} catch (NoProductInStockException ex) {
+			// trigger rollback programmatically
+			TransactionAspectSupport.currentTransactionStatus()
+					.setRollbackOnly();
+		}
+	}
+
+在所有可能的情况下，强烈建议你使用声明式的编程方式。编程式的回滚只用在你必须使用的时候，但它的使用将破坏程序基于简洁 POJO-架构的实现。
