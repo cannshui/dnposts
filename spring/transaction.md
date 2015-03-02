@@ -454,3 +454,114 @@ Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方�
 考虑一个场景，你有一组 service 层对象，你想为它们应用完全不同的事务规则。你可以通过定义有不同 `pointcut` 和 `advice-ref` 属性的一系列`<aop:advisor/>` 元素来实现。
 
 为了便于比较，首先假设你的所有 server 层对象都在 `x.y.service` 包下。为了使所有 `x.y.service` 包（或子包）下类名以 `Service` 结尾的类实例组件都有默认的事务配置，你需要这么写： 
+
+	<?xml version="1.0" encoding="UTF-8"?>
+	<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:aop="http://www.springframework.org/schema/aop"
+		xmlns:tx="http://www.springframework.org/schema/tx"
+		xsi:schemaLocation="
+	        http://www.springframework.org/schema/beans
+	        http://www.springframework.org/schema/beans/spring-beans.xsd
+	        http://www.springframework.org/schema/tx
+	        http://www.springframework.org/schema/tx/spring-tx.xsd
+	        http://www.springframework.org/schema/aop
+	        http://www.springframework.org/schema/aop/spring-aop.xsd">
+	
+		<aop:config>
+	
+			<aop:pointcut id="defaultServiceOperation" expression="execution(* x.y.service.*Service.*(..))" />
+	
+			<aop:pointcut id="noTxServiceOperation" expression="execution(* x.y.service.ddl.DefaultDdlManager.*(..))" />
+	
+			<aop:advisor pointcut-ref="defaultServiceOperation" advice-ref="defaultTxAdvice" />
+	
+			<aop:advisor pointcut-ref="noTxServiceOperation" advice-ref="noTxAdvice" />
+	
+		</aop:config>
+	
+		<!-- this bean will be transactional (see the 'defaultServiceOperation' pointcut) -->
+		<bean id="fooService" class="x.y.service.DefaultFooService" />
+	
+		<!-- this bean will also be transactional, but with totally different transactional settings -->
+		<bean id="anotherFooService" class="x.y.service.ddl.DefaultDdlManager" />
+	
+		<tx:advice id="defaultTxAdvice">
+			<tx:attributes>
+				<tx:method name="get*" read-only="true" />
+				<tx:method name="*" />
+			</tx:attributes>
+		</tx:advice>
+	
+		<tx:advice id="noTxAdvice">
+			<tx:attributes>
+				<tx:method name="*" propagation="NEVER" />
+			</tx:attributes>
+		</tx:advice>
+	
+		<!-- other transaction infrastructure beans such as a PlatformTransactionManager omitted... -->
+	
+	</beans>
+
+#### 12.5.5 <tx:advice/> 设置项
+
+本小节，概述 `<tx:advice/>` 可以设置的不同事务类型。默认 `<tx:advice/>` 设置项为：
+
+ - [传播设置](#tx-propagation) 为 `REQUIRED`。
+ - 隔离等级为 `DEFAULT`。
+ - 读/写事务。
+ - 事务超时时间默认为相关联的事务系统的默认超时时间；或永不超时，如果不支持超时设置。
+ - 所有的 `RuntimeException` 都将触发回滚，所有受检异常则不会。
+
+你可以修改这些默认设置，`<tx:advice/>` 元素下 `<tx:attributes>` 元素的 `<tx:method/>` 子标签的默认属性总结如下：
+
+**表 12.1，<tx:method/> 选项设置**
+
+<table>
+  <tr><th>属性</th><th>必须？</th><th>默认</th><th>描述</th></tr>
+  <tr><td><code>name</code></td><td>Yes</td><td></td><td>事务属性关联到得方法名称。通配符（*）用于关联同样的属性设置到一组方法上；如，<code>get*</code>，<code>handle*</code>，<code>on*Event</code>，等等。</td></tr>
+  <tr><td><code>propagation</code></td><td>No</td><td>REQUIRED</td><td>事务传播行为。</td></tr>
+  <tr><td><code>isolation</code></td><td>No</td><td>DEFAULT</td><td>事务隔离级别。</td></tr>
+  <tr><td><code>timeout</code></td><td>No</td><td>-1</td><td>事务超时时间设置（秒为单位）。</td></tr>
+  <tr><td><code>read-only</code></td><td>No</td><td>false</td><td>是否设置为只读事务？</td></tr>
+  <tr><td><code>rollback-for</code></td><td>No</td><td></td><td>触发回滚的<code>Exception(s)</code>；以逗号隔开。如，<code>com.foo.MyBusinessException,ServletException</code>。</td></tr>
+  <tr><td><code>no-rollback-for</code></td><td>No</td><td></td><td><em>不会</em>触发回滚的<code>Exception(s)</code>；以逗号隔开。如，<code>com.foo.MyBusinessException,ServletException</code>。</td></tr>
+</table>
+
+#### 12.5.6 使用 @Transactional
+
+**<p class="dn-not-trans">暂未翻译</p>**
+
+#### 12.5.7 事务传播
+
+本小节，描述 Spring 事务传播的语义。但请注意，本节并不是事务传播的合适教程，而只介绍 Spring 中事务传播语义的细节。
+
+基于 Spring 管理的事务支持，请注意物理事务和逻辑事务的不同，及传播设置如何应用到这种不同上。
+
+###### Required
+
+**图 12.2**
+
+![tx_prop_required](tx_prop_required.png)
+
+PROPAGATION\_REQUIRED
+
+如果传播设置为 `PROPAGATION_REQUIRED`。每一个应用了这个设置的方法调用时，都将创建一个*逻辑*事务执行范围。每一个这样的逻辑事务都可以决定自己的 rollback-only 状态，一个外部事务逻辑上跟内部事务是独立的。当然，作为 `PROPAGATION_REQUIRED` 的标准行为，所有这些范围将会映射到同一个物理事务上。所以一个内部事务的 rollback-only 标记将会影响外部事务的实际提交（这也正是你期望的）。
+
+然而，这种情况下，内部事务设置成 rollback-only，外部事务还未决定自己的回滚状态，那么回滚（默默被内部事务触发）将是不可预料的。此时，一个关联的 `UnexpectedRollbackException` 异常将会被抛出。这正是所*期望*的行为，事务调用者将不会被误导为已经完成提交，当确实没有提交时。所以，如果内部事务（外部调用者未知）默默的标记一个事务为 rollback-only，外部调用者仍可以调用提交行为。调用后，外部调用者将收到 `UnexpectedRollbackException`，表示应该进行回滚而非提交。
+
+###### RequiresNew
+
+**图 12.3**
+
+![tx_prop_requires_new](tx_prop_requires_new.png)
+
+PROPAGATION\_REQUIRES\_NEW
+
+`PROPAGATION_REQUIRES_NEW` 跟 `PROPAGATION_REQUIRED` 相比，为每一个关联到的事务范围使用一个*完全*独立的事务。这种情况下，底层的物理事务是不同的，因为可以独立提交或回滚。此时外部事务将不会被内部事务的回滚状态所影响。
+
+###### Nested
+
+`PROPAGATION_NESTED` 使用拥有多个可以回滚到的保存点（savepoint）的*单一*物理事务。这种部分回滚允许内部事务在*自己的范围内*触发回滚，外部的事务仍能继续物理事务，而不管已经回滚过的操作。这个设置经典用法是映射到 JDBC 保存点，所以仅仅作用于 JDBC 支持的事务。参见 Spring `DataSourceTransactionManager`。
+
+#### 12.5.8 事务操作 advise
