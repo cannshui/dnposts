@@ -210,20 +210,20 @@ Spring 解决了全局和本地事务的缺陷。它使开发人员*在任何环
 
 Spring 的声明式事务管理基于 Spring 面向切面编程(AOP)，尽管，Spring 自带的事务切面代码会以样板化的方式使用，但并不需要理解 AOP 的概念就可以有效使用这些代码。
 
-Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方法级别定义事务行为(或不定义)。如果需要，可以使 `setRollbackOnly()` 调用在一个事务上下文中完成(译注：WAHT?)。两中事务管理的区别是：
+Spring 的声明式事务管理类似于 EJB CMT，你可以在方法级别上单独定义事务行为(或不定义)。如果需要，可以在一个事务上下文中调用 `setRollbackOnly()`。两中事务管理的区别是：
 
  - 与 EJB CMT 绑定到 JTA 不同，Spring 声明式事务管理可以在任何环境中使用。只需要通过调整配置文件，它就可以利用 JTA 事务或是本地 JDBC，JPA，Hibernate，JDO。
  - 你可以将 Spring 声明式事务管理应用到任何类，而非仅仅特殊的类，如 EJB 那样。
  - Spring 提供了声明式的[*回滚规则*](#transaction-declarative-rolling-back) ，而 EJB 则没有这种特性。Spring 同时提供了编程式和声明式回滚规则。
- - Spring 允许你通过使用 AOP 定制事务行为。比如，你可以在事务回滚后执行定制的行为。你也可以随意添加 advice，跟事务 advice 一样。而使用 EJB CMT，你无法参与容器的事务管理，只能调用 `setRollbackOnly()`。
- - Spring 不像高端应用服务器那样支持远程调用的事务传播。如果你需要这个特性，那么我们推荐你使用 EJB。但是，请在使用这个特性之前考虑清楚，因为一般，不会想让一个事务传播到（译注：to span, 怎么译呢？）远程调用。
+ - Spring 允许你通过使用 AOP 定制事务行为。比如，你可以在事务回滚后插入定制的逻辑代码。你也可以随意添加 advice，就跟事务 advice 一样。而使用 EJB CMT，你无法参与容器的事务管理，只能调用 `setRollbackOnly()`。
+ - Spring 不像高端应用服务器那样支持远程调用的事务传播。如果你需要这个特性，那么我们推荐你使用 EJB。但是，请在使用这个特性之前考虑清楚，因为一般不会想让一个事务传播跨越远程调用。
 
  > **TransactionProxyFactoryBean 在哪？** 
  >
- > Spring 2.0 及以上版本声明式事务管理配置与之前版本不同。主要区别是不在需要配置 `TransactionProxyFactoryBean `。
- > Spring 2.0 之前的配置方式仍 100% 是正确的。以后，考虑使用 `<tx:tags/>` 作为更简洁定义 `TransactionProxyFactoryBean ` 的方式。
+ > Spring 2.0 及以上版本声明式事务管理配置与之前版本不同。主要区别是不在需要配置 `TransactionProxyFactoryBean`。
+ > Spring 2.0 之前的配置方式仍是 100% 正确的。以后，考虑使用 `<tx:tags/>` 作为更简洁定义 `TransactionProxyFactoryBean` 的方式。
 
-回滚的概念很重要：你可以声明哪些可抛异常应该自动触发回滚。你可以在配置文件中进行声明，而非 Java 代码中。所以，尽管你仍可以调用 `TransactionStatus ` 对象的 `setRollbackOnly()` 方法来使当前事务回滚，但大多数情况下你可以声明一个规则，`MyApplicationException` 异常必须触发回滚。这个选项的显著优势是业务逻辑对象不必依赖事务基本架构。比如，业务逻辑对象不必导入 Spring 事务 API 或其他 Spring  API（译注：就可以通过编译，但运行仍需要依赖）。
+回滚的概念很重要：你可以声明哪些异常应该自动触发回滚。你可以在配置文件中译声明方式指定，而非 Java 代码中。所以，尽管你仍可以调用 `TransactionStatus` 对象的 `setRollbackOnly()` 方法来使当前事务回滚，但大多数情况下你可以声明一个规则，`MyApplicationException` 异常必须触发回滚。这个选项的显著优势是业务逻辑对象不必依赖事务基本架构。比如，业务逻辑对象不必导入 Spring 事务 API 或其他 Spring  API（译注：就可以通过编译，但运行仍需要依赖）。
 
 尽管 EJB 容器在*系统异常（system exception）*（通常是运行时异常（runtime exception））的默认行为是自动回滚，但 EJB CMT 并不自动回滚发生*应用程序异常*（更确切的说，受检异常，除了（译注：原词 other than ）`java.rmi.RemoteException`）的事务。Spring 声明式事务管理的默认行为遵循 EJB 约定（不受检异常才能自动触发回滚），通常这种方式很有用。
 
@@ -231,9 +231,9 @@ Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方�
 
 简单告诉你用 `@Transactional` 注解你的类，添加 `@EnableTransactionManagement` 到配置中，然后就希望你理解它是如何工作的，是毫无意义的。本节从事务相关的问题出发，解释 Spring 声明式事务管理的内部工作机制。
 
-关于 Spring 声明式事务管理最重要的概念是它是通过[AOP 代理](aop.html#aop-understanding-aop-proxies)实现的。事务 advice 是由 *metadata*（当前 XML 或 注解进行声明）驱动。AOP 和事务元数据的组合产生 AOP 代理，协作使用 `TransactionInterceptor `  与恰当的 `latformTransactionManager` 实现，驱动*方法调用前后*的事务行为。
+关于 Spring 声明式事务管理最重要的概念是它是通过[AOP 代理](aop.html#aop-understanding-aop-proxies)实现的。事务 advice 是由 *metadata*（当前有 XML 或 注解两种方式进行声明）驱动。AOP 和事务元数据的组合产生 AOP 代理，搭配使用 `TransactionInterceptor` 与恰当的 `PlatformTransactionManager` 实现，驱动*方法调用前后*的事务行为。
 
- > > Spring AOP 在[第 9 章](aop.html)涉及。
+ > Spring AOP 在[第 9 章](aop.html)涉及。
 
 概念上，调用一个事务代理的方法，如下：
 
@@ -241,9 +241,9 @@ Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方�
 
 ![tx](tx.png)
 
-#### 12.5.2 声明式事务管理实现示例
+#### 12.5.2 声明式事务管理示例
 
-考虑下面的接口和它的实现。这个例子使用 `Foo` 和 `Bar` 类，这样你可以将重点关注在事务的使用上而非特殊的域模型（domain model）。为了达到这个例子的目的，`DefaultFooService` 类在每个实现方法中都抛出 `UnsupportedOperationException` 异常是很必要的。你可以看到由于 `UnsupportedOperationException` 实例的创建，事务会进行创建和回滚。
+考虑下面的接口和它的实现。这个例子使用 `Foo` 和 `Bar` 类，这样你可以将重点关注在事务的使用而非特殊的域模型（domain model）。为了达到这个例子的目的，`DefaultFooService` 类的每个实现方法中都抛出 `UnsupportedOperationException` 异常是很必要的。你可以看到由于 `UnsupportedOperationException` 实例的创建，事务会进行创建和回滚。
 
 	// the service interface that we want to make transactional
 	// 希望进行事务管理的服务接口
@@ -288,7 +288,7 @@ Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方�
 	
 	}
 
-注意 `FooService` 接口的头两个方法， `getFoo(String)` 和 `getFoo(String, String)`，必须在只读语义的事务中执行，另外的两个方法 `insertFoo(Foo)` 和 `updateFoo(Foo)` 必须在读写事务中执行。下面的配置会在接下来段落中进行解释。
+假定 `FooService` 接口的前两个方法，`getFoo(String)` 和 `getFoo(String, String)`，必须在只读语义的事务中执行，另外的两个方法 `insertFoo(Foo)` 和 `updateFoo(Foo)` 必须在读写事务中执行。下面的配置会在接下来段落中进行解释。
 
 	<!-- from the file 'context.xml' -->
 	<?xml version="1.0" encoding="UTF-8"?>
@@ -346,24 +346,26 @@ Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方�
 
 查看上面的配置，你想要为一个 service 对象实例 `fooService` 添加事务支持。事务语义的添加通过定义 `<tx:advice/>` 来封装。上面配置中 `<tx:advice/>` 的定义表示 “*所有以 `get` 作为前缀的方法将在只读事务中执行，其他所有方法将在默认的事务语义中执行*”。`<tx:advice/>` 的 `transaction-manager` 属性设置为一个 `PlatformTransactionManager` 组件的引用（id 或 name），这里是 `txManager` 组件，用以*驱动*事务。
 
- > > > **注意**：如果你想注入的 `PlatformTransactionManager` 组件的引用名为 `transactionManager`，那么可以省略事务 advice（`<tx:advice/>`） 的 `transaction-manager` 属性。而如果是  `transactionManager` 以外的其他引用名（译注：比如这里是 `txManager`），你都必须要显示声明 `transaction-manager` 属性，像前面例子中所做的那样。
+ > **注意**
+ > 
+ > 如果你想注入的 `PlatformTransactionManager` 组件的引用名为 `transactionManager`，那么可以省略事务 advice（`<tx:advice/>`） 的 `transaction-manager` 属性。而如果是  `transactionManager` 以外的其他引用名（译注：比如这里是 `txManager`），你都必须要显式设置 `transaction-manager` 属性，像前面例子中所做的那样。
  
-定义 `<aop:config/>` 使 `<tx:advice/>` 定义的事务 advice 在程序里正确的切点（points）执行。首先你定义匹配 `FooService` 接口中方法执行的切点（pointcut）（`fooServiceOperation`），然后通过 advisor 关联切点和 `<tx:advice/>`。这意味着，`fooServiceOperation` 执行时，由 `<tx:advice/>` 定义的 advice 也将会执行。
+定义 `<aop:config/>` 使 `<tx:advice/>` 定义的事务 advice 在程序正确的切点（points）上执行。首先你定义匹配 `FooService` 接口中方法执行的切面（pointcut）（`fooServiceOperation`），然后通过 advisor 关联切面和 `<tx:advice/>`。这意味着，`fooServiceOperation` 的方法执行时，由 `<tx:advice/>` 定义的 advice 也将会执行。
 
-`<aop:pointcut/>` 元素定义的表达式为 AspectJ 切点表达式；参见[第 9 章 Spring 面向切面编程](aop.html)，查看更多 Spring 切点表达式的细节。
+`<aop:pointcut/>` 元素定义的表达式为 AspectJ 切点表达式；参见[第 9 章 Spring 面向切面编程](aop.html)，查看更多 Spring 切面表达式的细节。
 
-一项常规需求是，是将事务支持加入整个 service 层。最好、最简单的方式是改写切点表达式来匹配所有 service 层的操作。比如：
+一项常规需求是，是将事务支持加入整个 service 层。最好、最简单的方式是改写切面表达式来匹配所有 service 层的操作。比如：
 
 	<aop:config>
 		<aop:pointcut id="fooServiceMethods" expression="execution(* x.y.service.*.*(..))" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="fooServiceMethods" />
 	</aop:config>
 
- > > > 这个例子中，假设你所有的 service 接口都定义在 `x.y.service` 包下，参见[第 9 章 Spring 面向切面编程](aop.html)，查看更多 Spring 细节。
+ > 这个例子中，假设你所有的 service 接口都定义在 `x.y.service` 包下，参见[第 9 章 Spring 面向切面编程](aop.html)，查看更多 Spring 细节。
 
-现在，我们已经分析过了上面的配置，但你可能会问你自己，“额，写好了，但是这些配置到底干了什么啊？”。
+现在，我们已经分析过了上面的配置，但你可能会问自己，“额，写是写好了，但是这些配置到底干了什么啊？”。
 
-上面的配置用于从 `fooService` 组件创建的对象前后创建事务代理。事务代理由事务 advice 配置，当调用代理对象的方法时，就将会开始、挂起，标记为只读事务等等，这些行为取决于关联到方法上的事务配置。下面的程序利用上面的配置运行：
+上面的配置用于在 `fooService` 组件前后创建事务代理。事务代理按照事务 advice 中设置配置，当调用代理对象的方法时，就将会进行开始、挂起，标记为只读事务等行为，这些行为取决于关联到方法上的事务配置。下面的程序利用上面的配置运行：
 
 	public final class Boot {
 	
@@ -374,7 +376,7 @@ Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方�
 		}
 	}
 
-运行上面的程序将会产生类似于下面的输出。（为了清晰，截取部分 Log4J 输出及 DefaultFooService 的 insertFoo(..) 方法抛出的 UnsupportedOperationException 异常堆栈）
+运行上面的程序将会产生类似于下面的输出。（为了清晰，只截取了部分 Log4J 输出及 DefaultFooService 的 insertFoo(..) 方法抛出的 UnsupportedOperationException 异常堆栈）
 
 	<!-- the Spring container is starting up... -->
 	[AspectJInvocationContextExposingAdvisorAutoProxyCreator] - Creating implicit proxy for bean fooService with 0 common interceptors and 1 specific interceptors
@@ -405,11 +407,11 @@ Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方�
 
 #### 12.5.3 回滚声明式事务
 
-上一小节介绍了如何在你的应用程序，以声明式的形式为类声明事务配置，特别是 service 层的类。这一小节描述你如何以声明式的形式控制事务回滚。
+上一小节介绍了如何在你的应用程序中，以声明的形式为类指定事务配置，特别是 service 层的类。这一小节描述你如何以声明的形式控制事务回滚。
 
-指示 Spring 事务框架工作的推荐方式是通过在当前事务上下文中正在执行的代码中抛出异常（`Exception`） 来回滚事务。由于异常会在调用栈中向上冒泡，Spring 事务框架将会捕获任何未处理（译注：unhandled，没有经过 try {...} catch(...) {...}）的异常（`Exception`），然后决定是否标记事务进行回滚。
+指示 Spring 事务框架工作的推荐方式是通过在当前事务上下文正在执行的代码中抛出异常（`Exception`）来回滚事务。由于异常会在调用栈中向上冒泡，Spring 事务框架将会捕获任何未处理（译注：unhandled，没有经过 try {...} catch(...) {...}）的异常（`Exception`），然后决定是否标记事务进行回滚。
 
-默认配置下，Spring 事务框架代码*仅仅*在运行时（runtime）抛出不受检异常时，也就是说，抛出的异常是 `RuntimeException` 的子类实例时，才标记事务回滚。（`Error`s，默认，同样会导致回滚）。而受检异常则默认*不会*导致回滚。
+默认配置下，Spring 事务框架*仅仅*在代码运行时（runtime）抛出了不受检异常，也就是说，抛出的异常是 `RuntimeException` 的子类实例时，才标记事务回滚。（`Error`s，默认，同样会导致回滚）。而受检异常则默认*不会*导致回滚。
 
 你可以配置指定类型的异常（`Exception`）才会导致回滚，包括受检异常。下面的 XML 片段演示如何为受检的，特定应用的异常（`Exception`）配置回滚。
 
@@ -420,7 +422,7 @@ Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方�
 		</tx:attributes>
 	</tx:advice>
 
-如果你*不想*事务在异常抛出的时候回滚，可以声明*不会触发回滚的规则*。下面的例子告诉 Spring 事务框架提交相关的事务即使发生了未处理异常 `InstrumentNotFoundException`。
+如果你*不想*事务在异常抛出的时候回滚，可以声明*不触发回滚的规则*。下面的例子告诉 Spring 事务框架提交相关的事务即使发生了未处理异常 `InstrumentNotFoundException`。
 
 	<tx:advice id="txAdvice">
 		<tx:attributes>
@@ -437,25 +439,66 @@ Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方�
 		</tx:attributes>
 	</tx:advice>
 
-你也可以通过*编程方式*实现一个必要的回滚。尽管很简单，但这种处理是侵入性的，并使你的代码跟 Spring 事务框架紧密耦合：
+你也可以通过*编程方式*实现一个必要的回滚。尽管很简单，但这种处理方式是侵入性的，并使你的代码跟 Spring 事务框架紧密耦合：
 
 	public void resolvePosition() {
 		try {
 			// some business logic...
 		} catch (NoProductInStockException ex) {
 			// trigger rollback programmatically
-			TransactionAspectSupport.currentTransactionStatus()
-					.setRollbackOnly();
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 		}
 	}
 
-在所有可能的情况下，强烈建议你使用声明式的编程方式。编程式的回滚只用在你必须使用的时候，但它的使用将破坏程序基于简洁 POJO-架构的实现。
+在所有可能的情况下，强烈建议你使用声明式的事务管理方式。编程式的回滚只用在你必须使用的时候，但它的使用将破坏程序基于简洁 POJO 架构的实现。
 
 #### 12.5.4 为不同组件配置不同的事务语义
 
 考虑一个场景，你有一组 service 层对象，你想为它们应用完全不同的事务规则。你可以通过定义有不同 `pointcut` 和 `advice-ref` 属性的一系列`<aop:advisor/>` 元素来实现。
 
 为了便于比较，首先假设你的所有 server 层对象都在 `x.y.service` 包下。为了使所有 `x.y.service` 包（或子包）下类名以 `Service` 结尾的类实例组件都有默认的事务配置，你需要这么写： 
+
+	<?xml version="1.0" encoding="UTF-8"?>
+	<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:aop="http://www.springframework.org/schema/aop"
+		xmlns:tx="http://www.springframework.org/schema/tx"
+		xsi:schemaLocation="
+	        http://www.springframework.org/schema/beans
+	        http://www.springframework.org/schema/beans/spring-beans.xsd
+	        http://www.springframework.org/schema/tx
+	        http://www.springframework.org/schema/tx/spring-tx.xsd
+	        http://www.springframework.org/schema/aop
+	        http://www.springframework.org/schema/aop/spring-aop.xsd">
+	
+		<aop:config>
+	
+			<aop:pointcut id="serviceOperation" expression="execution(* x.y.service..*Service.*(..))" />
+	
+			<aop:advisor pointcut-ref="serviceOperation" advice-ref="txAdvice" />
+	
+		</aop:config>
+	
+		<!-- these two beans will be transactional... -->
+		<bean id="fooService" class="x.y.service.DefaultFooService" />
+		<bean id="barService" class="x.y.service.extras.SimpleBarService" />
+	
+		<!-- ... and these two beans won't -->
+		<bean id="anotherService" class="org.xyz.SomeService" /> <!-- (not in the right package) -->
+		<bean id="barManager" class="x.y.service.SimpleBarManager" /> <!-- (doesn't end in 'Service') -->
+	
+		<tx:advice id="txAdvice">
+			<tx:attributes>
+				<tx:method name="get*" read-only="true" />
+				<tx:method name="*" />
+			</tx:attributes>
+		</tx:advice>
+	
+		<!-- other transaction infrastructure beans such as a PlatformTransactionManager omitted... -->
+	
+	</beans>
+
+下面这个例子展示了如何为两个不同的组件配置截然不同的事务规则。
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<beans xmlns="http://www.springframework.org/schema/beans"
@@ -505,9 +548,9 @@ Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方�
 	
 	</beans>
 
-#### 12.5.5 <tx:advice/> 设置项
+#### <a name="transaction-declarative-txadvice-settings"></a>12.5.5 <tx:advice/> 设置项
 
-本小节，概述 `<tx:advice/>` 可以设置的不同事务类型。默认 `<tx:advice/>` 设置项为：
+本小节，总结通过 `<tx:advice/>` 可以设置的不同事务类型。默认 `<tx:advice/>` 设置项为：
 
  - [传播设置](#tx-propagation) 为 `REQUIRED`。
  - 隔离等级为 `DEFAULT`。
@@ -515,13 +558,13 @@ Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方�
  - 事务超时时间默认为相关联的事务系统的默认超时时间；或永不超时，如果不支持超时设置。
  - 所有的 `RuntimeException` 都将触发回滚，所有受检异常则不会。
 
-你可以修改这些默认设置，`<tx:advice/>` 元素下 `<tx:attributes>` 元素的 `<tx:method/>` 子标签的默认属性总结如下：
+你可以修改这些默认设置，`<tx:advice/>` 标签下 `<tx:attributes>` 标签的 `<tx:method/>` 子标签的默认属性总结如下：
 
 **表 12.1，<tx:method/> 选项设置**
 
 <table>
   <tr><th>属性</th><th>必须？</th><th>默认</th><th>描述</th></tr>
-  <tr><td><code>name</code></td><td>Yes</td><td></td><td>事务属性关联到得方法名称。通配符（*）用于关联同样的属性设置到一组方法上；如，<code>get*</code>，<code>handle*</code>，<code>on*Event</code>，等等。</td></tr>
+  <tr><td><code>name</code></td><td>Yes</td><td></td><td>事务属性关联到的方法名称。通配符（*）用于关联同样的事务属性设置到一组方法上；如，<code>get*</code>，<code>handle*</code>，<code>on*Event</code>，等等。</td></tr>
   <tr><td><code>propagation</code></td><td>No</td><td>REQUIRED</td><td>事务传播行为。</td></tr>
   <tr><td><code>isolation</code></td><td>No</td><td>DEFAULT</td><td>事务隔离级别。</td></tr>
   <tr><td><code>timeout</code></td><td>No</td><td>-1</td><td>事务超时时间设置（秒为单位）。</td></tr>
@@ -538,7 +581,7 @@ Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方�
 
 本小节，描述 Spring 事务传播的语义。但请注意，本节并不是事务传播的合适教程，而只介绍 Spring 中事务传播语义的细节。
 
-基于 Spring 管理的事务支持，请注意物理事务和逻辑事务的不同，及传播设置如何应用到这种不同上。
+基于 Spring 管理的事务支持，请注意物理事务和逻辑事务的不同，及传播设置如何应用产生这种不同。
 
 ###### Required
 
@@ -548,9 +591,9 @@ Spring 的声明式事务管理类似于 EJB CMT，其中可以在单独的方�
 
 PROPAGATION\_REQUIRED
 
-如果传播设置为 `PROPAGATION_REQUIRED`。每一个应用了这个设置的方法调用时，都将创建一个*逻辑*事务执行范围。每一个这样的逻辑事务都可以决定自己的 rollback-only 状态，一个外部事务逻辑上跟内部事务是独立的。当然，作为 `PROPAGATION_REQUIRED` 的标准行为，所有这些范围将会映射到同一个物理事务上。所以一个内部事务的 rollback-only 标记将会影响外部事务的实际提交（这也正是你期望的）。
+如果传播属性设置为 `PROPAGATION_REQUIRED`。每一个应用了这个设置的方法调用时，都将创建一个*逻辑*事务执行范围。每一个这样的逻辑事务都可以决定自己的 rollback-only 状态，一个外部事务逻辑上跟内部事务是独立的。当然，作为 `PROPAGATION_REQUIRED` 的标准行为，所有这些事务范围都将会映射到同一个物理事务上。所以一个内部事务的 rollback-only 标记将会影响外部事务的实际提交（这也正是你期望的）。
 
-然而，这种情况下，内部事务设置成 rollback-only，外部事务还未决定自己的回滚状态，那么回滚（默默被内部事务触发）将是不可预料的。此时，一个关联的 `UnexpectedRollbackException` 异常将会被抛出。这正是所*期望*的行为，事务调用者将不会被误导为已经完成提交，当确实没有提交时。所以，如果内部事务（外部调用者未知）默默的标记一个事务为 rollback-only，外部调用者仍可以调用提交行为。调用后，外部调用者将收到 `UnexpectedRollbackException`，表示应该进行回滚而非提交。
+然而，有一种情况下，内部事务设置成 rollback-only，外部事务还未决定自己的回滚状态，那么回滚（隐藏被内部事务触发）将是不可预料的。此时，一个关联的 `UnexpectedRollbackException` 异常将会被抛出。这正是所*期望*的行为，当确实没有提交时，事务调用者将不会被误导为已经完成提交。所以，如果内部事务（外部调用者未知）隐藏标记了一个事务为 rollback-only，外部调用者仍可以调用提交行为。调用后，外部调用者将收到 `UnexpectedRollbackException`，表示应该进行回滚而非提交。
 
 ###### RequiresNew
 
@@ -560,27 +603,27 @@ PROPAGATION\_REQUIRED
 
 PROPAGATION\_REQUIRES\_NEW
 
-`PROPAGATION_REQUIRES_NEW` 跟 `PROPAGATION_REQUIRED` 相比，为每一个关联到的事务范围使用一个*完全*独立的事务。这种情况下，底层的物理事务是不同的，因为可以独立提交或回滚。此时外部事务将不会被内部事务的回滚状态所影响。
+`PROPAGATION_REQUIRES_NEW` 跟 `PROPAGATION_REQUIRED` 相比，为每一个关联到的事务执行使用一个*完全*独立的事务。这种情况下，底层的物理事务是不同的，因为可以独立提交或回滚。此时外部事务将不会被内部事务的回滚状态所影响。
 
 ###### Nested
 
-`PROPAGATION_NESTED` 使用拥有多个可以回滚到的保存点（savepoint）的*单一*物理事务。这种部分回滚允许内部事务在*自己的范围内*触发回滚，外部的事务仍能继续物理事务，而不管已经回滚过的操作。这个设置经典用法是映射到 JDBC 保存点，所以仅仅作用于 JDBC 支持的事务。参见 Spring `DataSourceTransactionManager`。
+`PROPAGATION_NESTED` 使用拥有多个可以回滚到的保存点（savepoint）的*单一*物理事务。这种部分回滚允许内部事务在*自己的范围内*触发回滚，外部的事务仍能继续物理事务，而不管已经回滚过的操作。这个设置的经典用法是映射到 JDBC 保存点，所以仅仅在 JDBC 支持的事务中能用。参见 Spring `DataSourceTransactionManager`。
 
-#### 12.5.8 事务操作 advise （译注：没有成功实现此处例子效果）
+#### 12.5.8 事务操作 advise （译注：没有成功演示此处例子）
 
-假设你想要*同时*执行事务*和*一些基本 advice。如何在 `<tx:annotation-driven/>` 中做到呢？
+假设你想要*同时*执行事务*和*一些基本 advice 逻辑。如何在 `<tx:annotation-driven/>` 中达到这个目的呢？
 
 当你调用 `updateFoo(Foo)` 的时候，你希望看到下面的行为：
 
- - 已配置的切面启动执行。
+ - 已配置的分析切面（Profiling aspect）启动执行。
  - 事务 advice 执行。
  - 被代理对象的的方法（method）执行。
  - 事务提交。
- - 切面报告事务方法调用的确切时间。
+ - 分析切面报告事务方法执行的确切持续时间。
 
- > > 本小节不会讲述的 AOP 的具体细节（除非是跟事务相关）。参见[第 9 章，Spring 面向切面编程](aop.html)，查看更加全面的 AOP 配置。
+ > 本小节不会讲述的 AOP 的具体细节（除非是跟事务相关）。参见[第 9 章，Spring 面向切面编程](aop.html)，查看更加全面的 AOP 配置。
 
-下面的代码演示了上面讨论的切面。advice 的顺序由 `Ordered` 接口控制。更多关于 advice 顺序的细节，参见 [“Advice 顺序”小节](#aop-ataspectj-advice-ordering)。
+下面的代码演示了上面讨论的分析切面。advice 的顺序由 `Ordered` 接口控制。更多关于 advice 顺序的细节，参见 [“Advice 顺序”小节](#aop-ataspectj-advice-ordering)。
 
 	package x.y;
 	
@@ -662,9 +705,9 @@ PROPAGATION\_REQUIRES\_NEW
 	
 	</beans>
 
-上面配置的结果是 `fooService` 将同时有普通切面和事务切面应用到它，按照*配置的顺序*。你按照这种方式可以配置任意数量的其他切面。
+上面配置的结果是，按照切面*配置的顺序*，`fooService` 将同时有普通切面和事务切面关联到它。按照这种方式，你可以配置任意数量的其他切面。
 
-下面的例子演示的效果跟上述（使用 @Transactional 配置）一致，但是使用纯 XML 方式声明。
+下面例子演示的效果跟上述（使用 @Transactional 配置）一致，但是使用纯 XML 方式声明。
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<beans xmlns="http://www.springframework.org/schema/beans"
@@ -712,7 +755,7 @@ PROPAGATION\_REQUIRES\_NEW
 	
 	</beans>
 
-上面配置的结果是 `fooService` 将同时有普通切面和事务切面应用到它，按照*配置的顺序*。如果你想要切面在事务 advice *开始之后*，在事务 advice *离开之前*执行，那么你只需要替换普通切面 bean 的 `order` 属性，让它高于事务 advice 的顺序值。
+上面配置的结果是，按照切面*配置的顺序*，`fooService` 将同时有普通切面和事务切面关联到它。如果你想要切面在事务 advice *开始之后*，在事务 advice *离开之前*执行，那么你只需要替换普通切面 bean 的 `order` 属性，让它高于事务 advice 的顺序值。
 
 #### 12.5.9 搭配 AspectJ 使用 @Transactional
 
@@ -729,11 +772,11 @@ Spring 开发组一般推荐使用 `TransactionTemplate` 进行编程式事务�
 
 #### 12.6.1 使用 TransactionTemplate
 
-使用 `TransactionTemplate` 类似于使用其他的 Spring *模板（template）* 如 `JdbcTemplate`。它采用回调方式，避免应用程序代码所必须的样板操作，释放事务资源，这样可以只按照业务需要驱动编写代码，所编写的代码仅仅是开发人员想要实现的（业务逻辑）。
+使用 `TransactionTemplate` 类似于使用其他的 Spring *模板（template）* 如 `JdbcTemplate`。它采用回调方式，避免应用程序代码所必须的样板化的创建和释放事务资源的代码，这样可以只按业务需要编写代码，所编写的代码也仅仅是开发人员想要实现的（业务逻辑）。
 
- > > 正如下面你将看到的，使用 `TransactionTemplate` 将会使你的代码耦合到 Spring 事务架构 和 API。编程式事务管理是否合适你的开发工作，是你必须衡量的事情。
+ > 正如下面你将看到的，使用 `TransactionTemplate` 将会使你的代码耦合到 Spring 事务架构 和 API。编程式事务管理是否合适你的开发工作，是你必须衡量的事情。
 
-应用程序代码需要在事务上下文中执行，这将会显示使用 `TransactionTemplate`，参见下面。你作为开发人员，编写 `TransactionCallback` 实现（通常实现为内部类），包含你必需在事务上下文中执行的代码。然后，你需要传递实例到你定制的 `TransactionCallback` 的 `execute(..)` 方法，由 `TransactionTemplate` 所暴露。
+应用程序代码需要在事务上下文中执行，这将会显式使用 `TransactionTemplate`，参见下面。你作为开发人员，编写 `TransactionCallback` 实现（通常实现为内部类），包含你必需在事务上下文中执行的代码。然后，你需要传递你定制的 `TransactionCallback` 实例到 `TransactionTemplate` 所暴露 `execute(..)` 方法。
 
 	public class SimpleService implements Service {
 	
@@ -763,7 +806,7 @@ Spring 开发组一般推荐使用 `TransactionTemplate` 进行编程式事务�
 	transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 		protected void doInTransactionWithoutResult(TransactionStatus status) {
 			updateOperation1();
-		updateOperation2();
+			updateOperation2();
 		}
 	});
 
@@ -782,20 +825,18 @@ Spring 开发组一般推荐使用 `TransactionTemplate` 进行编程式事务�
 
 ##### 声明事务设置
 
-你可以以编程方式或配置文件方式为 `TransactionTemplate` 声明事务设置选项如传播方式，隔离级别，超时时间，等其他的选项。`TransactionTemplate` 实例默认拥有[默认事务设置](#transaction-declarative-txadvice-settings)。下面的代码展示了以编程方式为一个 `TransactionTemplate` 定制事务设置选项：
+你可以以编程方式或配置文件方式为 `TransactionTemplate` 指定事务设置选项如传播方式，隔离级别，超时时间，等其他的选项。`TransactionTemplate` 实例默认拥有[默认事务设置](#transaction-declarative-txadvice-settings)。下面的代码展示了以编程方式为一个 `TransactionTemplate` 定制事务设置选项：
 
 	public class SimpleService implements Service {
 	
 		private final TransactionTemplate transactionTemplate;
 	
 		public SimpleService(PlatformTransactionManager transactionManager) {
-			Assert.notNull(transactionManager,
-					"The 'transactionManager' argument must not be null.");
+			Assert.notNull(transactionManager, "The 'transactionManager' argument must not be null.");
 			this.transactionTemplate = new TransactionTemplate(transactionManager);
 	
 			// the transaction settings can be set here explicitly if so desired
-			this.transactionTemplate
-					.setIsolationLevel(TransactionDefinition.ISOLATION_READ_UNCOMMITTED);
+			this.transactionTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_READ_UNCOMMITTED);
 			this.transactionTemplate.setTimeout(30); // 30 seconds
 			// and so forth...
 		}
@@ -809,7 +850,7 @@ Spring 开发组一般推荐使用 `TransactionTemplate` 进行编程式事务�
 		<property name="timeout" value="30" />
 	</bean>
 
-最后，`TransactionTemplate` 类的实例是线程安全的，它不会保存任何会话状态。然而，`TransactionTemplate` 实例*会*保存配置状态，所以当一组类共用一个 `TransactionTemplate` 实例时，如果一个类需要一个不同设置的 `TransactionTemplate`（如，一个不同的隔离等级），那么创建两个独立的 `TransactionTemplate` 实例。
+最后，`TransactionTemplate` 类的实例是线程安全的，它不会保存任何会话状态。但是，`TransactionTemplate` 实例*会*保存配置状态，所以当一组类共用一个 `TransactionTemplate` 实例时，如果一个类需要一个不同设置的 `TransactionTemplate`（如，一个不同的隔离等级），那么需要创建两个独立的 `TransactionTemplate` 实例。
 
 #### <a name="transaction-programmatic-ptm"></a>12.6.2 使用 PlatformTransactionManager
 
@@ -832,17 +873,17 @@ Spring 开发组一般推荐使用 `TransactionTemplate` 进行编程式事务�
 
 ### 12.7 在编程式和声明式事务管理之间进行选择
 
-编程式事务管理通常是不错的选择，当你只需要的很少的事务操作时。如，如果你有一个 web 应用只在特定更新操作时需要事务保证，你可能就不需要利用 Spring 或其他技术设置事务代理。这种场景下，使用 `TransactionTemplate` *可能*会是不错的方式。显式设置事务名称也是只有编程式事务管理才能支持的操作。
+当你只需要的很少的事务操作时，编程式事务管理通常是不错的选择。比如，如果你有一个 web 应用只在特定更新操作时才需要事务保证，你可能就不需要利用 Spring 或其他技术设置事务代理。这种场景下，使用 `TransactionTemplate` *可能*会是不错的方式。显式设置事务名称也是只在编程式事务管理中才能支持的操作。
 
-另一方面，如果你的应用有多个事务操作，声明式事务管理通常更有价值。它使事务管理独立出业务逻辑之外，而且并不难配置。当使用 Spring 框架时，相比于 EJB CMT，声明式事务管理的配置大大地减少了。
+另一方面，如果你的应用有多个事务操作，声明式事务管理通常更有价值。它使事务管理独立出业务逻辑之外，而且并不难配置。当使用 Spring 框架时，相比于 EJB CMT，声明式事务管理的配置大大减少了。
 
-### 12.8 应用与特定服务器（server-specific）合 （译注：好难译。）
+### <a name="transaction-application-server-integration"></a>12.8 应用与特定服务器（server-specific）合
 
-Spring 的事务抽象一般是服务器无关的。另外，Spring 的 `JtaTransactionManager` 类，有一个可选行是为 JTA `UserTransaction` 和 `TransactionManager` 对象查找 JNDI 资源，为后者（`TransactionManager`）自动检测位置，这种行为可能随服务器不同而有差异。准入 JTA `JtaTransactionManager` 可以增强事务语义，特别是事务挂起的支持。参见 `JtaTransactionManager` 查看更多细节。
+Spring 的事务抽象一般是服务器无关的。此外，Spring 的 `JtaTransactionManager` 类，有一个可选行是为 JTA `UserTransaction` 和 `TransactionManager` 对象通过 JNDI 查找资源，为后者（`TransactionManager`）自动检测位置，这种行为可能随服务器不同而有差异。准入 JTA `JtaTransactionManager` 可以增强事务语义，特别是对事务挂起的支持。参见 `JtaTransactionManager` 查看更多细节。
 
-Spring 的 `JtaTransactionManager` 是运行 Java EE 应用服务器的标准选择，并已知支持所有主流服务器。高级功能如事务挂起在很多服务器上可以使用—包括 GlassFish，JBoss，和 Geronimo—且完全不需要额外的特殊配置。然而，全功能的事务挂起支持和更强的功能整合，Spring 为 WebLogic Server 和 WebSphere 提供了特定的适配借口。这些适配借口将在下面小节中讨论。
+Spring 的 `JtaTransactionManager` 是运行 Java EE 应用服务器的标准选择，并已知支持所有主流服务器。高级功能如事务挂起在很多服务器上可以使用—包括 GlassFish，JBoss，和 Geronimo—且完全不需要额外的特殊配置。至于，全功能的事务挂起支持和更强的功能整合，Spring 为 WebLogic Server 和 WebSphere 提供了特定的适配接口。这些适配接口将在下面小节中讨论。
 
-*标准情况下，包括 WebLogic Server 和 WebSphere 在内，考虑使用便利的 `<tx:jta-transaction-manager/>` 配置元素。*配置之后，，这个元素自动检测关联的服务器类型然后选择适合于这个平台的最佳的事务管理器。这意味着你不需要显式配置服务器特定的适配器类（如下所讨论的那些），而将由 Spring 自动选择，并将标准 `JtaTransactionManager` 作为为回调。
+*标准情况下，包括 WebLogic Server 和 WebSphere 在内，考虑使用便利的 `<tx:jta-transaction-manager/>` 配置元素。*配置之后，这个元素自动检测关联的服务器类型然后选择适合于这个平台的最佳的事务管理器。这意味着你不需要显式配置特定于服务器的适配器类（如下所讨论的那些），而将由 Spring 自动选择，并将标准 `JtaTransactionManager` 作为回调。
 
 #### 12.8.1 IBM WebSphere
 
@@ -850,7 +891,7 @@ WebSphere 6.1.0.9 及以上版本，推荐的 Spring JTA 事务管理器是 `Web
 
 #### 12.8.2 Oracle WebLogic Server
 
-WebLogic Server 9.0 及以上版本，你可以使用 `WebLogicJtaTransactionManager` 替代 Spring 提供的 `JtaTransactionManager` 类。这个特殊的 WebLogic 特定的 `JtaTransactionManager` 子类全功能支持 Spring 事务定义，在 WebLogic 管理的事务环境中，超越标准 JTA 语义：特性包括设置事务名，每个事务特定隔离级别，所有情况下都能正确回复事务执行。
+WebLogic Server 9.0 及以上版本，你可以使用 `WebLogicJtaTransactionManager` 替代 Spring 提供的 `JtaTransactionManager` 类。这个特殊的 WebLogic 特定的 `JtaTransactionManager` 子类全功能支持 Spring 事务定义，在 WebLogic 管理的事务环境中，更超越了标准 JTA 语义：特性包括设置事务名，每个事务特定隔离级别，所有情况下都能正确恢复事务执行。
 
 ### 12.9 常见问题的解决方案
 
