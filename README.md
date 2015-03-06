@@ -3,18 +3,22 @@ Nen Den's articles.
 
 ### Include:
 
- 1. Translations.
- 2. Myself ones.
+ - Translations.
+ - Myself ones.
 
+---------------------------------------------------------
 
-### Translations.
+### Translations:
 
- - spring/transaction.md
+ - css/Hover.css-Tutorial-and-Introduction.md **undone**
+ - - log4j/Log4jXmlFormat.md
  - nginx/beginners_guide.md
- - log4j/Log4jXmlFormat.md
+ - spring/transaction.md **undone**
  - svn/eclipse-subversive-installation.md
 
-### MySelf Ones.
+---------------------------------------------------------
 
- - git/git-FAQ.md
+### Myself ones:
+
+ - git/git-FAQ.md **undone**
  - javascript/encode-string.md
