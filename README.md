@@ -1,14 +1,20 @@
 Nen Den's articles.
 ==================
 
-### include.
+### Include:
 
  1. Translations.
  2. Myself ones.
 
 
-## Translations.
+### Translations.
 
- - spring/10.事务管理.md
+ - spring/transaction.md
  - nginx/beginners_guide.md
  - log4j/Log4jXmlFormat.md
+ - svn/eclipse-subversive-installation.md
+
+### MySelf Ones.
+
+ - git/git-FAQ.md
+ - javascript/encode-string.md
