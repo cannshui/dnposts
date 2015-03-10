@@ -24,3 +24,39 @@
 ##### JNDI
 
 `org.springframework.mock.jndi` 包含 JNDI SPI 的 Mock 实现，可以用于设置一个简单的 JNDI 环境用于测试或独立应用。如果，比如说在某种 Java EE 容器中测试代码有 JDBC `DataSource`s 绑定到同样的 JNDI 名称，你可以在测试场景重用应用代码和配置而不用做任何修改。
+
+##### Servlet API
+
+`org.springframework.mock.web` 包下包含一组全面的 Servlet API Mock 对象，目标在于易于测试应用了 Spring Web MVC 框架的 web 配置上下文和控制器。这些 Mock 对象一般更加方便使用相比于动态 Mock 对象如 [EasyMock](http://www.easymock.org) 或已存在的 Servlet API Mock 对象如 [MockObjects](http://www.mockobjects.com)。
+
+##### Portlet API
+
+`org.springframework.mock.web.portlet` 包下包含一组 Portlet API Mokc 对象，目标在于易于测试应用了 Spring Portlet MVC 框架的 web 应用。
+
+#### 11.2.2 单元测试支持类
+
+##### 常用工具
+
+`org.springframework.test.util` 包下包含 `ReflectionTestUtils` 类，这个类包含了基于反射的工具方法。开发人员可以在单元和集成测试场景中使用这些方法，在这些场景中，当测试应用代码执行的时候，开发人员需要设置一个非公共可见（non-`public`）字段或调用一个非公共可见（non-`public`）方法，比如：
+
+ - ORM 框架如 JPA 和 Hibernate 允许 private 或 protected 字段存取跟域实体只能通过 `public` setter 方法设置属性相反。
+ - Spring 对注解的支持如 `@Autowired`，`@Inject`，`@Resource`，可以为 `private` 或 `protected` 字段，setter 方法和配置方法提供依赖注入。
+
+##### Spring MVC
+
+`org.springframework.test.web` 包下包含 `ModelAndViewAssert` 类，这个类可以结合使用 JUnit 或 TestNG 或任何其他的测试框架来测试 Spring MVC `ModelAndView` 对象。
+
+ > **Tip**
+ >
+ > 测试你的 Spring MVC `Controller`s，可以使用 `ModelAndViewAssert` 搭配组合 `MockHttpServletRequest`，`MockHttpSession` 等等 `org.springframework.mock.web` 包下的对象。
+ >
+ > Note：Spring 4.0 后，`org.springframework.mock.web` 包下的 Mock 对象基于 Servlet 3.0 API。
+
+
+
+
+
+
+
+
+
