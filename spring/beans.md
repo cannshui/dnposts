@@ -17,4 +17,8 @@ Spring 中，由 Spring IoC *容器* 管理你应用中的骨架对象，这些�
 
 ### 5.2 容器概述
 
-`org.springframework.context.ApplicationContext` 接口就代表 Spring IoC 容器，并负责实例化，配置和装配前面提到的 beans。容器通过读取配置信息，决定实例化，配置，和装配何种对象。配置元数据有 XML 格式，Java 注解格式，或直接 Java 代码。它允许你表述对象构成你的应用及这些对象间复杂的依赖关系。
+`org.springframework.context.ApplicationContext` 接口就代表 Spring IoC 容器，并负责实例化，配置和装配前面提到的 beans。容器通过读取配置信息，决定实例化，配置，和装配何种对象。配置元数据有 XML 格式，Java 注解格式，或直接 Java 代码。它允许你组合对象构成你的应用，及组织这些对象间复杂的依赖关系。
+
+`ApplicationContext` 接口的一些实现由 Spring 提供，开箱即用（out-of-the-box）。在独立应用中，通常创建 [`ClassPathXmlApplicationContext`]() 或 [`FileSystemXmlApplicationContext`]() 实例。虽然 XML 是定义配置元数据的传统格式，现在你也可以让配置使容器基于声明式的 Java 注解或代码配置的元数据格式，从而可以减少 XML 配置量。
+
+大多数应用程序场景中，并不需要显式的用户代码去实例化 Spring IoC 容器的一或多个实例。比如，一个 web 应用场景，`web.xml` 文件中 8 行（左右）简单 的 web 模板描述符基本就够了（参见 [5.15.4 小节，“web 应用 ApplicationContext 实例化配置”]()）。如果你正使用 [Spring Tool Suite]() Eclipse 开发环境，这个模板配置可以非常简单的被创建，只需要点击几下鼠标或快捷键。
