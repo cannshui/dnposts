@@ -52,6 +52,157 @@ Spring configuration consists of at least one and typically more than one bean d
 
 下面的例子展示了基于 XML 配置方式的基本结构：
 
+	<?xml version="1.0" encoding="UTF-8"?>
+	<beans xmlns="http://www.springframework.org/schema/beans"
+	    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	    xsi:schemaLocation="http://www.springframework.org/schema/beans
+	        http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	    <bean id="..." class="...">
+	        <!-- collaborators and configuration for this bean go here -->
+	    </bean>
+	
+	    <bean id="..." class="...">
+	        <!-- collaborators and configuration for this bean go here -->
+	    </bean>
+	
+	    <!-- more bean definitions go here -->
+	
+	</beans>
 
+`id` 属性是用于唯一标识 bean 定义的一个字符串。`class` 属性定义 bean 的类型，需要使用全类名。通过 id 值可以引用其他的协作对象。XML 中配置引用协作对象的方式没有在这个例子中展示；参见[依赖]()查看更多信息。
 
+#### 5.2.2 实例化一个容器
+
+实例化一个 Spring IoC 容器很方便。通过将配置资源的路径（可以同时有多个）提供给 `ApplicationContext` 构造器，容器即可装载配置数据，配置资源的路径有多种选择，如本地文件系统，Java `CLASSPATH`，等等。
+
+	ApplicationContext context =
+   		new ClassPathXmlApplicationContext(new String[] {"services.xml", "daos.xml"});
+
+ > **Note**
+ >
+ > 在你了解 Spring 的 IoC 容器后，你可能想知道更多关于 Spring `Resource` 抽象的信息，参见[第 6 章，资源]()，`Resource` 提供了一种方便的机制来从不同 URI 语法表示的位置读入InputStream。特别地，`Resource` 路径被用于构造应用上下文，参见[6.7 小节，“应用上下文和资源路径”]。
+
+下面的例子展示了 service 层对象`（services.xml）`配置文件：
+
+	<?xml version="1.0" encoding="UTF-8"?>
+	<beans xmlns="http://www.springframework.org/schema/beans"
+	    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	    xsi:schemaLocation="http://www.springframework.org/schema/beans
+	        http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	    <!-- services -->
+	
+	    <bean id="petStore" class="org.springframework.samples.jpetstore.services.PetStoreServiceImpl">
+	        <property name="accountDao" ref="accountDao"/>
+	        <property name="itemDao" ref="itemDao"/>
+	        <!-- additional collaborators and configuration for this bean go here -->
+	    </bean>
+	
+	    <!-- more bean definitions for services go here -->
+	
+	</beans>
+
+下面的例子展示了数据存取对象 `daos.xml` 文件：
+
+	<?xml version="1.0" encoding="UTF-8"?>
+	<beans xmlns="http://www.springframework.org/schema/beans"
+	    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	    xsi:schemaLocation="http://www.springframework.org/schema/beans
+	        http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	    <bean id="accountDao"
+	        class="org.springframework.samples.jpetstore.dao.jpa.JpaAccountDao">
+	        <!-- additional collaborators and configuration for this bean go here -->
+	    </bean>
+	
+	    <bean id="itemDao" class="org.springframework.samples.jpetstore.dao.jpa.JpaItemDao">
+	        <!-- additional collaborators and configuration for this bean go here -->
+	    </bean>
+	
+	    <!-- more bean definitions for data access objects go here -->
+	
+	</beans>
+
+上面的例子中，service 层由 `PetStoreServiceImpl` 对象，及两个 DAO 对象 `JpaAccountDao` 和 JpaItemDao`（基于 JPA 对象/关系映射标准）构成。`property name` 元素指向 JavaBean 的某个属性名，`ref` 元素引用另外一个 bean 的定义。`id` 和 `ref` 元素的关联描述了协作对象间的依赖关系。更多关于配置对象间依赖关系的细节，参见[依赖]()。
+
+##### Composing 组合基于 XML 的配置数据
+
+将 bean 的定义分散到多个 XML 文件中是相当有用的。一般，每个独立的 XML 配置文件代表你应用架构中的一个逻辑层次。
+
+你可以使用应用上下文构造器（application context）从配置文件 XML 片段中装载 bean 定义。这个构造器可以有多个 `Resource` 位置，像前面小节中显示的那样。可选地，通过使用一或多个 `<import/>` 元素从其他单个或多个文件装载 bean 定义。比如：
+
+	<beans>
+		<import resource="services.xml"/>
+		<import resource="resources/messageSource.xml"/>
+		<import resource="/resources/themeSource.xml"/>
+
+		<bean id="bean1" class="..."/>
+		<bean id="bean2" class="..."/>
+	</beans>
+
+上面的例子中，外部的 bean 定义从 3 个文件中装载：`services.xml`，`messageSource.xml` 和 `themeSource.xml`。所有的被导入文件路径是相对于这个导入文件的，所以，`services.xml` 必须和导入文件在同一个目录中或是 classpath 中，`messageSource.xml` 和 `themeSource.xml` 必须在 `resources` 目录下。如你所见，前置“/”是会被忽略的，但是考虑到所给路径都是作为相对路径处理的，所以最好不去使用“/”。被导入的文件，包括顶级的 `<beans/>` 元素，必须是经过 Spring Schema 验证的 XML bean 定义。
+
+ > **Note**
+ >
+ > 虽然可以，但是不推荐通过相对路径 “../” 引用父级目录中的文件。这样做的话，将会依赖于当前应用之外的配置文件。（译注：ERROR?）特别地，这种引用也不推荐在“classpath:”路径中使用（如，“classpath:../services.xml”），因为，运行时查找配置文件的方式是先在选择“最近的” classpath 下查找，然后才去它的父级目录中查找。classpath 改变的话可能导致选择了不同的，错误的目录。
+ >
+ > 你可以总是使用完整的资源路径替代相对路径：比如，“file:C:/config/services.xml”或“classpath:/config/services.xml”。然而，注意，此时你会将你的应用配置耦合到特定的绝对路径。通常，推荐为绝对路径维护一个非直接（indirection）字面值，如，通过设置“${...}”占位符，让 JVM 在运行时解析系统属性。
+
+#### 5.2.3 使用容器
+
+`ApplicationContext` 是增强的工厂接口，用于管理不同 bean 和它们的依赖的注册行为。通过方法 `T getBean(String name, Class<T> requiredType)`，你可以取到你的 bean 实例。
+
+`ApplicationContext` 可以使你读入 bean 定义及取到它们，如：
+
+	// create and configure beans
+	// 创建和配置所有 bean
+	ApplicationContext context =
+		new ClassPathXmlApplicationContext(new String[] {"services.xml", "daos.xml"});
+
+	// retrieve configured instance
+	// 取到已配置的实例
+	PetStoreService service = context.getBean("petStore", PetStoreService.class);
+
+	// use configured instance
+	// 使用实例
+	List<String> userList = service.getUsernameList();
+
+你使用 `getBean()` 来取到你 bean 的实例。`ApplicationContext` 还有一些其他方法用于获取 bean，但理想情况下，你的应用程序代码应该从不使用它们。事实上，你的应用程序代码应该不去调用 `getBean()` 方法，甚至不应该依赖于任何 Spring API。 比如，Spring 跟 web 框架的整合为多种 web 框架类提供了依赖注入，像控制器层和 JSF 管理的 bean。
+
+### 5.3 bean 概述
+
+一个 Spring IoC 容器管理着一个或多个 *beans*。这些 bean 通过提供给容器的配置数据创建，比如，以 XML `<bean/>` 形式定义。
+
+在容器内部，这些 bean 定义被表示成 `BeanDefinition` 对象，它包括（除了其他信息之外）如下元数据：
+
+ - *包含全包名的类名：*一般是定义的 bean 的真正实现类。
+ - bean 表现配置元素，描述 bean 在容器内是如何表现的（领域（scope），lifecycle callback（生命周期内回调），等等）。
+ - 引用的其他 bean，需要被引用的 bean 用于执行自己的工作；这些引用也被叫做*协作对象*或*依赖对象*。
+ - 其他配置选项用于创建对象时使用，比如，管理一个连接池的连接数量，或池的大小限制。
+
+这些元数据转换成一组属性设置，用于组成每个 bean 定义。
+
+**表 5.1. bean 定义**
+
+<table>
+  <tr><th>属性</th><th>解释参见</th></tr>
+  <tr><th>类</th><th>5.3.2，“实例化 bean”</th></tr>
+  <tr><th>名称</th><th>5.3.1，“命名 bean”</th></tr>
+  <tr><th>作用域</th><th>5.5，“bean 作用域”</th></tr>
+  <tr><th>构造器参数</th><th>5.4.1，“依赖注入”</th></tr>
+  <tr><th>属性</th><th>5.4.1，“依赖注入”</th></tr>
+  <tr><th>注入模式</th><th>5.4.5，“注入协作对象”</th></tr>
+  <tr><th>延迟-实例化模式</th><th>5.4.4，“延迟-实例化组件”</th></tr>
+  <tr><th>初始化方法</th><th>“初始化操作回调方法”</th></tr>
+  <tr><th>销毁方法</th><th>“销毁操作回调方法”</th></tr>
+</table>
+
+除了通过 bean 定义包含如何创建一个特定 bean 之外，`ApplicationContext` 实现也允许注册容器外用户自己创建的对象。这是通过 ApplicationContext 的 BeanFactory `getBeanFactory()` 方法实现的，`getBeanFactory()` 方法将会返回 BeanFactory 实现 `DefaultListableBeanFactory`。`DefaultListableBeanFactory` 通过 `registerSingleton(..)` 和 `registerBeanDefinition(..)` 方法支持这种注册行为。然而，典型的 application 工作模式是仅使用 bean 元数据定义。
+
+#### 5.3.1 命名 bean
+
+每个 bean 有一或多个定义。这些定义必须是唯一的，用于容器持有这些 bean。一个 bean 通常只有一个定义，但如果它需要一个以上，那么额外的定义可以考虑通过别名实现。
+
+基于 XML 的配置元数据，你可以使用 `id` 及（或）`name` 属性指定 bean 定义。`id` 属性允许你指定一个唯一存在的 bean id。一般，这些名称是字母或数字（*myBean*，*fooService*，等。），但也可以包含特殊字符。如果你想为这个 bean 引入其他别名，那么你也可以通过 `name` 属性指定它们（译注：一组别名），由逗号（`,`），分号（`;`），或空白符间隔。作为一个历史注意点，Spring 3.1 以前的版本，`id` 属性被定义成 `xsd:ID` 类型，约束了所允许的字符。3.1 后，它定义成了 `xsd:string` 类型。注意，bean `id` 的唯一性仍由容器强制约束，不再由 XML 解析器约束。
 
