@@ -206,3 +206,6 @@ Spring configuration consists of at least one and typically more than one bean d
 
 基于 XML 的配置元数据，你可以使用 `id` 及（或）`name` 属性指定 bean 定义。`id` 属性允许你指定一个唯一存在的 bean id。一般，这些名称是字母或数字（*myBean*，*fooService*，等。），但也可以包含特殊字符。如果你想为这个 bean 引入其他别名，那么你也可以通过 `name` 属性指定它们（译注：一组别名），由逗号（`,`），分号（`;`），或空白符间隔。作为一个历史注意点，Spring 3.1 以前的版本，`id` 属性被定义成 `xsd:ID` 类型，约束了所允许的字符。3.1 后，它定义成了 `xsd:string` 类型。注意，bean `id` 的唯一性仍由容器强制约束，不再由 XML 解析器约束。
 
+你并不必须为 bean 提供一个 name 或 id。如果没有显式提供 name 或 id，容器将为 bean 生成一个唯一 name。然而，如果你想通过 name 引用其他 bean，比如 `ref` 元素或 [Service Locator]() 样式的查找，你就必须提供一个 name。如果不想提供 name，参见[内部 bean]()和[自动注入协作对象]()。
+
+
