@@ -239,4 +239,138 @@ Spring configuration consists of at least one and typically more than one bean d
 
 一个 bean 定义是创建一个或多个对象的菜谱。当有请求时，容器从菜谱中查找到指定名称的 bean，并通过 bean 定义封装的配置数据创建（或获取）一个实际的对象。
 
+如果你使用基于 XML 的配置数据，你需要在 `<bean/>` 的 `class` 属性中声明要被实例化的对象类型（或类）。`class` 属性，对应的是 `BeanDefinition` 实例的 `Class` 属性，通常是强制必设的。（对于异常，参见[“通过实例工厂方法实例化”小节]()及[5.7 小节，“Bean 定义继承”]()。）你通过两种方式中的一种使用 `Class` 属性：
+
+ - 典型的，指明要被构造的 bean 类型，容器直接直接通过反射调用类构造器来创建 bean，某种程度上等同于 Java 代码中的 `new` 操作符。
+ - 指明某个类的 `static` 工厂方法被调用创建对象，容器调用一个类的静态工厂方法来创建对象，一般不是常见的情况。调用 `static` 工厂方法的返回对象类型可能是同一种类型或完全不同的类型。
+
+ >**内部类名称。**如果你想为一个内部 `static` 类配置 bean 定义，你必须使用内部类的*二进制*名称。
+ >
+ >比如，你有一个类 `Foo` 在 `com.example` 包下，`Foo` 类有一个 `static` 内部类叫做 `Bar`，那么一个 bean 定义的 `class` 属性设置是：
+ >
+ >`com.example.Foo$Bar`
+ >
+ >注意使用字符 `$` 分开内部类名和外部类名。
+
+##### 通过构造器实例化
+
+当你通过构造器形式创建 bean 的时候，所有的普通类都是 Spring 可用和兼容的。即，开发的类不需要实现特定接口或按照指定形式编码。简单声明 bean 的类型就足够了。然而，依赖于特定管理 bean 的 IoC 容器类型，你可能需要提供一个默认（空）构造器。
+
+Spring IoC 容器可以管理你想被管理的实际上的*任何类*；并不限制到只管理实际的 JavaBean。大多数 Spring 用户倾向选择实际的 JavaBean，提供一个默认（无参数）的构造器和适当的属性 setter 和 getter 方法。你的容器中也可以有一些奇特的非传统 bean 规范的类。如果，比如，你需要使用传统的链接池，它肯定不遵循 JavaBean 规范，Spring 同样可以管理它。
+
+基于 XML 的配置方式，你可以这样声明你的 bean 类型，如下：
+
+	<bean id="exampleBean" class="examples.ExampleBean"/>
+
+	<bean name="anotherExample" class="examples.ExampleBeanTwo"/>
+
+关于提供参数给构造器（如果需要）和对象构造之后设置对象实例属性，参见[注入依赖]()。
+
+##### 通过静态工厂方法实例化
+
+当定义一个从静态工厂方法创建的 bean 时，你使用 `class` 属性声明包含 `static` 工厂方法的类，`factory-method` 属性声明工厂方法的名称。你应该可以调用这个方法（可选参数后续描述）并返回一个实际对象，这个对象就像是从构造器创建一样。这样的 bean 定义的一个用途就是实现传统代码调用 `static` 工厂方法。
+
+下面的 bean 定义声明这个 bean 将会通过调用工厂方法（factory-method）创建。定义没有声明返回对象的类型（类），只有包含工厂方法的类。这个例子中，`createInstane()` 方法必须是*静态*方法。
+
+	<bean id="clientService"
+		class="examples.ClientService"
+		factory-method="createInstance"/>
+
+	public class ClientService {
+		private static ClientService clientService = new ClientService();
+	
+		private ClientService() {
+		}
+	
+		public static ClientService createInstance() {
+			return clientService;
+		}
+	}
+
+关于提供（可选）参数给工厂方法和为返回对象设置对象实例属性，参见[依赖和配置细节]()。
+
+##### 通过实例工厂方法实例化
+
+跟通过[静态工厂方法]()实例化类型，实例工厂方法实例化是调用容器中一个已存在 bean 的非静态方法创建对象。使用这种机制，`class` 属性设置为空，`factory-bean` 属性声明当前（或父/祖先）容器内 bean 的名称，这个 bean 即包含创建对象的实例方法。仍在 `factory-method` 中设置工厂方法的名称。
+
+	<!-- the factory bean, which contains a method called createInstance() -->
+	<bean id="serviceLocator" class="examples.DefaultServiceLocator">
+		<!-- inject any dependencies required by this locator bean -->
+	</bean>
+
+	<!-- the bean to be created via the factory bean -->
+	<bean id="clientService" factory-bean="serviceLocator"
+		factory-method="createClientServiceInstance" />
+
+DefaultServiceLocator 类（译注：译者添加。）：
+
+	public class DefaultServiceLocator {
+	
+		private static ClientService clientService = new ClientServiceImpl();
+	
+		private DefaultServiceLocator() {
+		}
+	
+		public ClientService createClientServiceInstance() {
+			return clientService;
+		}
+	}
+
+一个工厂类可以包含不止一个工厂方法，如下所示：
+
+	<bean id="serviceLocator" class="examples.DefaultServiceLocator">
+		<!-- inject any dependencies required by this locator bean -->
+	</bean>
+
+	<bean id="clientService"
+		factory-bean="serviceLocator"
+		factory-method="createClientServiceInstance" />
+
+	<bean id="accountService"
+		factory-bean="serviceLocator"
+		factory-method="createAccountServiceInstance" />
+
+新 DefaultServiceLocator 类（译注：译者添加。）：
+
+	public class DefaultServiceLocator {
+	
+		private static ClientService clientService = new ClientServiceImpl();
+		private static AccountService accountService = new AccountServiceImpl();
+	
+		private DefaultServiceLocator() {
+		}
+	
+		public ClientService createClientServiceInstance() {
+			return clientService;
+		}
+	
+		public AccountService createAccountServiceInstance() {
+			return accountService;
+		}
+	
+	}
+
+上面的形式显示了工厂 bean 本身可以通过依赖注入（DI）管理和配置。参见[依赖和配置细节]()。
+
+ > **Note**
+ >
+ > Spring 文档中，工厂 bean 指这样的 bean，Spring 容器中配置 创建对象 通过一个[实例]()或[静态]()工厂方法。相反，`FactoryBean`（注意大写）指 Spring 特定的 `FactoryBean`。
+
+### 5.4 依赖
+
+一个典型的企业级应用不会只包含一个简单对象（或 bean，按照 Spirng 的说法）。即使是最简单的应用也有一组相互协作的对象，最终用户看到的是一个连贯的应用。这一节解释了如何定义一组 bean，这组 bean 实现一个全功能的应用程序，应用程序中对象协作在一起达成一个目标。
+
+#### 5.4.1 依赖注入
+
+*依赖注入*（DI）是定义对象间依赖关系的一个过程，即，对象需要协同其他对象（被注入）完成逻辑处理，对象的注入，只通过构造器参数，工厂方法参数，或调用实例（构造方法构造或工厂方法返回）的 set 方法设置属性。然而，容器会在创建 bean 的时候*注入*依赖关系。这就是反转的基本原理，也就是*控制反转（IoC）*，通过直接使用依赖类的构造器或其他某种机制如 *Service Locator* 模式，由 bean 自己控制它的依赖类的实例化和位置。
+
+基于 DI 原则的代码很干净，而且当通过依赖提供对象时更利于解耦。对象并不查找它自己的依赖，也不知道依赖的位置或类型。这样，你的类将会更易于测试，特别是当你依赖的是借口或抽象基类时，因为这将允许在单元测试中使用模拟实现。
+
+DI 存在两个主要变种，[基于构造器的依赖注入]() 和 [基于 setter 方法的依赖注入]()。
+
+##### 基于构造器的依赖注入
+
+
+
+
 
