@@ -208,4 +208,35 @@ Spring configuration consists of at least one and typically more than one bean d
 
 你并不必须为 bean 提供一个 name 或 id。如果没有显式提供 name 或 id，容器将为 bean 生成一个唯一 name。然而，如果你想通过 name 引用其他 bean，比如 `ref` 元素或 [Service Locator]() 样式的查找，你就必须提供一个 name。如果不想提供 name，参见[内部 bean]()和[自动注入协作对象]()。
 
+ > **bean 名称约定**
+ >
+ > 当命名 bean 的时候，约定使用标准的 Java 实例字段名称约定。即，bean 名称以小写字母开始，然后是驼峰表示法。这种名称的示例比如（不包含引号）`accountManager`，`accountService`，`userDao`，`loginController`，等等。
+ >
+ > 一致的 bean 名称约定可以使你的配置更易阅读和理解，而且，如果你使用 Spring AOP 的话，将会很方便的应用 advice 到一组由名称相关联的 bean 上。
+
+##### 在 bean 定义之外为其设置别名
+
+在 bean 定义本身内，你就可以为其提供不止一个名称，通过使用唯一的 name（由 `id` 属性），及任何 `name` 属性中的 name 值。这些 name 等同于别名对应同一个 bean，而且某些场景下很有用，比如，允许应用中的每个组件通过自己的名称指向一个通用依赖。（译注：ERROR!）
+
+然而，只在一处声明所有的别名并不是总是适当的。有时，为 bean 在某处引入一个别名还是很需要的。这通常是这样的场景，一个大系统，配置被分散到子系统中，每个子系统又有自己的对象定义。基于 XML 的配置方式中，你可以使用 `<alias/>` 元素设置别名。
+
+	<alias name="fromName" alias="toName"/>
+
+这个例子中，容器中的一个名称为 `fromName` 的 bean，通过这样设置别名之后，可以通过 `toName` 指向它。
+
+比如，子系统 A 的配置数据可能通过 `subsystemA-dataSource` 指向一个 DataSource。子系统 B 可能通过 `systemB-dataSource` 指向一个 DataSource`。当组装成同时使用这些子系统的主应用的时候，通过 `myApp-dataSource` 指向 DataSource。为了使这 3 个名称指向同一个对象，添加如下别名定义到 MyApp 配置数据：
+
+	<alias name="subsystemA-dataSource" alias="subsystemB-dataSource"/>
+	<alias name="subsystemA-dataSource" alias="myApp-dataSource" />
+
+现在每个组件和主应用都可以通过名称指向 dataSource，name 必须是唯一的，并保证不与其他 bean 定义冲突（比较有效地方式是创建一个命名空间），它们（译注：bean 所有的名称和别名）现在指向同一个 bean。
+
+ >**Java 配置方式**
+ >
+ > 如果你正使用基于 Java 代码的配置，`@Bean` 注解可以用于提供别名（可多个），细节参见 5.12.3 小节，“使用 @Bean 注解”。
+
+#### 5.3.2 实例化 bean
+
+一个 bean 定义是创建一个或多个对象的菜谱。当有请求时，容器从菜谱中查找到指定名称的 bean，并通过 bean 定义封装的配置数据创建（或获取）一个实际的对象。
+
 
