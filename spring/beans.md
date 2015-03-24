@@ -370,7 +370,137 @@ DI 存在两个主要变种，[基于构造器的依赖注入]() 和 [基于 set
 
 ##### 基于构造器的依赖注入
 
+*基于构造器的*的 DI 实现是通过容器调用构造器，并传入一组参数，每个参数表示一个依赖。调用一个 `static` 工厂方法，并传入指定的参数来构建 bean 基本上是类似的，这里的讨论对待构造器的参数和 `static` 工厂方法的参数也是类似的。下面的例子展示了一个只能通过构造器注入实现依赖注入的类。注意，这个类并没有*特殊*之处，它是一个 POJO，不包含对任何容器特定的接口、基本类或注解的依赖。
 
+	public class SimpleMovieLister {
+
+		// the SimpleMovieLister has a dependency on a MovieFinder
+		// SimpleMovieLister 依赖于一个 MovieFinder
+		private MovieFinder movieFinder;
+
+		// a constructor so that the Spring container can inject a MovieFinder
+		// 一个构造器用于 Spring 容器注入一个 MovieFinder
+		public SimpleMovieLister(MovieFinder movieFinder) {
+			this.movieFinder = movieFinder;
+		}
+
+		// business logic that actually uses the injected MovieFinder is omitted...
+		// 忽略实际使用注入的 MovieFinder 进行逻辑处理
+
+	}
+
+##### 构造器参数匹配
+
+构造器参数匹配基于参数的类型。如果没有潜在的歧义存在于一个 bean 定义的构造器参数，那么在 bean 创建的时候，bean 定义中的构造器参数顺序就是那些参数提供给适当构造器的顺序。考虑下面的类：
+
+	package x.y;
+
+	public class Foo {
+
+		public Foo(Bar bar, Baz baz) {
+			// ...
+		}
+
+	}
+
+上例没有任何的歧义存在，此处假设 `Bar` 和 `Baz` 类没相关的继承关系。因而，下面的配置将会很好的工作，而且你不需要在 `<constructor-arg/>` 元素中显式的声明构造器参数索引顺序及（或）类型。
+
+	<beans>
+		<bean id="foo" class="x.y.Foo">
+			<constructor-arg ref="bar"/>
+			<constructor-arg ref="baz"/>
+		</bean>
+
+		<bean id="bar" class="x.y.Bar"/>
+
+		<bean id="baz" class="x.y.Baz"/>
+	</beans>
+
+当另外的 bean 被引用时，类型是可知的，然后可以进行匹配（就像前面的例子）。当使用了一个简单类型，比如 `<value>true</value>`，Spring 无法推断值的类型，所以无法只通过类型匹配。考虑下面的类：
+
+	package examples;
+
+	public class ExampleBean {
+
+		// Number of years to calculate the Ultimate Answer
+		private int years;
+
+		// The Answer to Life, the Universe, and Everything
+		private String ultimateAnswer;
+
+		public ExampleBean(int years, String ultimateAnswer) {
+			this.years = years;
+			this.ultimateAnswer = ultimateAnswer;
+		}
+
+	}
+
+上面的场景中，容器*可以*使用类型匹配，如果你通过使用 `type` 属性显式地声明了构造器参数的类型。比如：
+
+	<bean id="exampleBean" class="examples.ExampleBean">
+		<constructor-arg type="int" value="7500000"/>
+		<constructor-arg type="java.lang.String" value="42"/>
+	</bean>
+
+使用 `index` 属性显式的声明构造器参数的索引顺序。比如：
+
+	<bean id="exampleBean" class="examples.ExampleBean">
+		<constructor-arg index="0" value="7500000"/>
+		<constructor-arg index="1" value="42"/>
+	</bean>
+
+为了解决多个简单值的歧义，当一个构造器有两个同类型的参数则就需要声明一个索引顺序解决歧义。注意，*索引顺序从 0 计数*。
+
+你也可以使用构造器参数名称为参数值消除歧义：
+
+	<bean id="exampleBean" class="examples.ExampleBean">
+		<constructor-arg name="years" value="7500000"/>
+		<constructor-arg name="ultimateAnswer" value="42"/>
+	</bean>
+
+注意，要使上述 `name` 属性的设置有效，编译时必须带上 debug 标记，这样 Spring 才可以从构造器中查找参数名称。如果，你无法在编译你的代码时带上 debug 标记（或不想），你可以使用 [@ConstructorProperties]() JDK 注解来显式地为构造器参数设置名称。样例类看起来如下：
+
+	package examples;
+
+	public class ExampleBean {
+
+		// Fields omitted
+
+		@ConstructorProperties({"years", "ultimateAnswer"})
+		public ExampleBean(int years, String ultimateAnswer) {
+			this.years = years;
+			this.ultimateAnswer = ultimateAnswer;
+		}
+
+	}
+
+##### 基于 setter 方法的依赖注入
+
+*基于 setter* 的依赖注入由容器调用你的 bean 的 setter 方法完成，这发生在容器调用一个无参数的构造器或无参数的 `static` 工厂方法实例化了你的 bean 之后。
+
+下面的例子展示了一个只能通过 setter 注入实现依赖注入的类。这个类只包含普通 Java 代码（译注：ERROR!）。它是一个 POJO，不依赖于任何的容器特定的接口、基类或注解。
+
+	public class SimpleMovieLister {
+
+		// the SimpleMovieLister has a dependency on the MovieFinder
+		private MovieFinder movieFinder;
+
+		// a setter method so that the Spring container can inject a MovieFinder
+		public void setMovieFinder(MovieFinder movieFinder) {
+			this.movieFinder = movieFinder;
+		}
+
+		// business logic that actually uses the injected MovieFinder is omitted...
+
+	}
+
+`ApplicationContext` 支持基于构造器和基于 setter 方法的依赖注入方式来管理 bean。它也支持在一些依赖已经通过构造器的方式注入之后再基于 setter 方法注入依赖。你通过 `BeanDefinition` 配置依赖关系，搭配使用 `PropertyEditor` 实例，可以将属性从一种格式转换成另一种。然而，大多数 Spring 用户并不直接使用这些类（如，通过编程方式），而是通过 XML `bean` 定义，注解组件（如，注解类 `@Component`，`@Controller`，等），或 `@Configuration` 注解类的 `@Bean` 注解方法。这些源码会在内部被转化成 `BeanDefinition` 实例，并用于装载成一个全功能的 Spring IoC 容器实例。
+
+ > **基于构造器还是 setter 方法的依赖注入？**
+ >
+ > 因为你会弄混基于构造器和基于 setter 方法的依赖注入，这是一条好的规则，为*强制依赖*使用构造器方式，*可选依赖*选用 setter 方法或配置方法。注意可以在 setter 方法上通过使用 `@Required` 注解来使属性成为必须依赖。
+ >
+ >
 
 
 
