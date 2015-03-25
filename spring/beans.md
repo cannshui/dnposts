@@ -500,7 +500,81 @@ DI 存在两个主要变种，[基于构造器的依赖注入]() 和 [基于 set
  >
  > 因为你会弄混基于构造器和基于 setter 方法的依赖注入，这是一条好的规则，为*强制依赖*使用构造器方式，*可选依赖*选用 setter 方法或配置方法。注意可以在 setter 方法上通过使用 `@Required` 注解来使属性成为必须依赖。
  >
+ > Spring 开发组一般推荐构造器注入方式，因为它使你将应用组件实现为*不可变对象*，并保证必须依赖的引用不会为 `null`。而且，构造器注入方式肯定会返回一个完全初始化的对象给客户（调用）代码。作为一个小提醒（As a side note），大量的构造器参数是一种*臭代码（bad code smell）*，意味着这个类可能有太多的责任，应当被重构成一个更好的关注点分离。（译注：WHAT?）
  >
+ > setter 注入应该主要用于可选依赖，这种依赖可以在类中已分配了默认值。此外，任何使用这些依赖的地方都应该现有非空检查。setter 注入的一个优点是 setter 方法可使依赖类的对象在之后重新配置或注入。然而，通过 [JMX MBeans]() 的管理操作强制使用 setter 依赖。
+ >
+ > 使用那种方式的依赖注入有时取决于特定类。有时，当使用没有源码的第三方类时，使用那种方式取决于你。比如，一个第三方类没有暴漏任何的 setter 方法，那么构造器注入可能是唯一的依赖注入方式。
+
+##### 依赖解析过程
+
+容器解析 bean 依赖关系，按照如下规则：
+
+ - `ApplicationContext` 通过描述所有 bean 的配置数据来被创建和初始化。配置数据可以通过 XML，Java 代码或注解声明。
+ - 对每一个 bean，它的依赖表述为一组属性，构造器参数或静态工厂方法的参数（如果你使用静态工厂方法替代一个普通构造器）。这些依赖被提供给这个 bean，*在 bean 被实际实际创建完成的时候*。
+ - 每个属性或构造器参数是一个实际定义的值，或引用容器中的另一个 bean。
+ - 每个属性或构造器参数是一个值，这个值是从它的特定格式转换成实际属性或构造器参数的类型对应的值。 默认，Spring 可以转换提供的字符串值到所有的内置类型，如 `int`，`long`，`String`，`boolean`，等。
+
+Spring 容器在创建时会验证每个 bean 的配置。然而，bean 属性本身不会被设置直到依赖 bean 被*实际创建*。在容器创建的时候，如果 bean 是单例域的并设置成预初始化（默认设置），bean 将会被创建。域的定义在 [5.5 小节，“Bean 域”]()。否则，bean 只在需要时才被创建。bean 的创建会潜在引入 bean 创建图，描述 bean 的依赖和它的依赖的依赖（等等）会被创建和分配。注意，那些依赖中不匹配的解析将会在之后解决，如，相关 bean 首次创建的时候。
+
+ > **循环依赖**
+ > 
+ > 如果你主要使用构造器注入，那就可能创建无法解析的循环依赖场景。
+ >
+ > 比如：A 类需要通过构造器注入 B 类的实例，B 类需要通过构造器注入 A 类的实例。如果，你配置 A 和 B 类相互注入彼此，Spring IoC 容器会在运行时检测循环应用，并抛出 `BeanCurrentlyInCreationException`。
+ >
+ > 一个可选解决方案是编辑某些类代码，通过 setter 方法注入而非构造器。即，避免构造器注入并只使用 setter 注入。换句话说，尽管并不推荐，你可以通过 setter 注入方式配置循环依赖。
+ >
+ > 不像*典型*应用（不存在循环依赖），一个 A bean 和 B bean 之间的循环依赖，会强制其中的一个 bean 先被注入到另一个来实现自己的完全初始化（典型的“先有鸡还是先有蛋”的场景）。
+
+你一般可以相信 Spring 会做正确的事情。它会在容器的装载过程检测配置错误，如引用了不存在的 bean 和循环依赖。Spring 尽可能迟的设置属性和解决依赖，直到 bean 被实际创建了。这意味着，在你实际请求一个对象的时候，如果创建这个对象或它的依赖的过程中出现了错误，已经正确装载的 Spring 容器就可以生成一个异常。比如，bean 抛出一个异常表示缺失属性或属性配置错误。这可能会导致延迟显示一些配置问题，这也是为什么 `ApplicationContext` 实现默认会预先实例化 bean 单例。在实际需要 bean 之前，花费一些前期启动的时间和内存来创建所有 bean，这样你会在 `ApplicationContext` 创建的时候就发现配置问题，而非之后。你仍可以覆盖这种默认行为，这样单例 bean 将会延迟初始化，而非预先实例化。
+
+如果没有循环引用存在，当一或多个协作 bean 被注入到需要依赖的 bean，每个协作 bean 被*完全地*配置到需要依赖的 bean（译注：ERROR!）。这意味着如果 bean A 依赖于 bean B，Spring IoC 容器会先完全地配置 bean B，然后调用 bean A 的 setter 方法设置对 bean B 的依赖。换句话说，bean 被实例化（如果不是预先实例化的单例），它的依赖被设置，相关声明周期方法被调用（如，[配置初始化方法]()或[InitializingBean 回调方法]()）。
+
+##### 依赖注入示例
+
+下面的例子为基于 setter 方法的依赖注入使用基于 XML 的配置数据。Spring XML 配置文件中的一部分 bean 定义：
+
+	<bean id="exampleBean" class="examples.ExampleBean">
+		<!-- setter injection using the nested ref element -->
+		<property name="beanOne">
+			<ref bean="anotherExampleBean"/>
+		</property>
+
+		<!-- setter injection using the neater ref attribute -->
+		<property name="beanTwo" ref="yetAnotherBean"/>
+		<property name="integerProperty" value="1"/>
+	</bean>
+
+	<bean id="anotherExampleBean" class="examples.AnotherBean"/>
+	<bean id="yetAnotherBean" class="examples.YetAnotherBean"/>
+
+ExampleBean 类：（译注：作者添加）
+
+	public class ExampleBean {
+	
+		private AnotherBean beanOne;
+		private YetAnotherBean beanTwo;
+		private int i;
+	
+		public void setBeanOne(AnotherBean beanOne) {
+			this.beanOne = beanOne;
+		}
+	
+		public void setBeanTwo(YetAnotherBean beanTwo) {
+			this.beanTwo = beanTwo;
+		}
+	
+		public void setIntegerProperty(int i) {
+			this.i = i;
+		}
+	
+	}
+
+
+
+
+
 
 
 
