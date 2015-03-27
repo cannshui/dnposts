@@ -571,6 +571,74 @@ ExampleBean 类：（译注：作者添加）
 	
 	}
 
+在前面的例子中，setter 配置成匹配 XML 文件中的属性声明。下面的例子使用构造器注入方式：
+
+	<bean id="exampleBean" class="examples.ExampleBean">
+		<!-- constructor injection using the nested ref element -->
+		<constructor-arg>
+			<ref bean="anotherExampleBean"/>
+		</constructor-arg>
+
+		<!-- constructor injection using the neater ref attribute -->
+		<constructor-arg ref="yetAnotherBean"/>
+
+		<constructor-arg type="int" value="1"/>
+	</bean>
+
+	<bean id="anotherExampleBean" class="examples.AnotherBean"/>
+	<bean id="yetAnotherBean" class="examples.YetAnotherBean"/>
+
+ExampleBean 类：（译注：作者添加）
+
+	public class ExampleBean {
+	
+		private AnotherBean beanOne;
+		private YetAnotherBean beanTwo;
+		private int i;
+	
+		public ExampleBean(
+				AnotherBean anotherBean, YetAnotherBean yetAnotherBean, int i) {
+			this.beanOne = anotherBean;
+			this.beanTwo = yetAnotherBean;
+			this.i = i;
+		}
+	
+	}
+
+bean 定义中的构造器参数，将会用于 `ExampleBean` 的构造器。
+
+现在考虑下这个例子的变种，不使用构造器，而是用一个 Spring 中定义的 `static` 工厂方法来返回对象的实例：
+
+	<bean id="exampleBean" class="examples.ExampleBean" factory-method="createInstance">
+		<constructor-arg ref="anotherExampleBean"/>
+		<constructor-arg ref="yetAnotherBean"/>
+		<constructor-arg value="1"/>
+	</bean>
+
+	<bean id="anotherExampleBean" class="examples.AnotherBean"/>
+	<bean id="yetAnotherBean" class="examples.YetAnotherBean"/>
+
+ExampleBean 类：（译注：作者添加）
+
+	public class ExampleBean {
+	
+	    // a private constructor
+	    private ExampleBean(...) {
+	        ...
+	    }
+	
+	    // a static factory method; the arguments to this method can be
+	    // considered the dependencies of the bean that is returned,
+	    // regardless of how those arguments are actually used.
+	    public static ExampleBean createInstance (
+	        AnotherBean anotherBean, YetAnotherBean yetAnotherBean, int i) {
+	
+	        ExampleBean eb = new ExampleBean (...);
+	        // some other operations...
+	        return eb;
+	    }
+	
+	}
 
 
 
