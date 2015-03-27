@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>java-nio-tutorial</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style type="text/css">
+/* GitHub stylesheet for MarkdownPad (http://markdownpad.com) */
+/* Author: Nicolas Hery - http://nicolashery.com */
+/* Version: b13fe65ca28d2e568c6ed5d7f06581183df8f2ff */
+/* Source: https://github.com/nicolahery/markdownpad-github */
+
+/* RESET
+=============================================================================*/
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* BODY
+=============================================================================*/
+
+body {
+  font-family: Helvetica, arial, freesans, clean, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+  background-color: #fff;
+  padding: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+body>*:first-child {
+  margin-top: 0 !important;
+}
+
+body>*:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* BLOCKS
+=============================================================================*/
+
+p, blockquote, ul, ol, dl, table, pre {
+  margin: 15px 0;
+}
+
+/* HEADERS
+=============================================================================*/
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 20px 0 10px;
+  padding: 0;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 tt, h1 code, h2 tt, h2 code, h3 tt, h3 code, h4 tt, h4 code, h5 tt, h5 code, h6 tt, h6 code {
+  font-size: inherit;
+}
+
+h1 {
+  font-size: 28px;
+  color: #000;
+}
+
+h2 {
+  font-size: 24px;
+  border-bottom: 1px solid #ccc;
+  color: #000;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+h4 {
+  font-size: 16px;
+}
+
+h5 {
+  font-size: 14px;
+}
+
+h6 {
+  color: #777;
+  font-size: 14px;
+}
+
+body>h2:first-child, body>h1:first-child, body>h1:first-child+h2, body>h3:first-child, body>h4:first-child, body>h5:first-child, body>h6:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+a:first-child h1, a:first-child h2, a:first-child h3, a:first-child h4, a:first-child h5, a:first-child h6 {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+h1+p, h2+p, h3+p, h4+p, h5+p, h6+p {
+  margin-top: 10px;
+}
+
+/* LINKS
+=============================================================================*/
+
+a {
+  color: #4183C4;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* LISTS
+=============================================================================*/
+
+ul, ol {
+  padding-left: 30px;
+}
+
+ul li > :first-child, 
+ol li > :first-child, 
+ul li ul:first-of-type, 
+ol li ol:first-of-type, 
+ul li ol:first-of-type, 
+ol li ul:first-of-type {
+  margin-top: 0px;
+}
+
+ul ul, ul ol, ol ol, ol ul {
+  margin-bottom: 0;
+}
+
+dl {
+  padding: 0;
+}
+
+dl dt {
+  font-size: 14px;
+  font-weight: bold;
+  font-style: italic;
+  padding: 0;
+  margin: 15px 0 5px;
+}
+
+dl dt:first-child {
+  padding: 0;
+}
+
+dl dt>:first-child {
+  margin-top: 0px;
+}
+
+dl dt>:last-child {
+  margin-bottom: 0px;
+}
+
+dl dd {
+  margin: 0 0 15px;
+  padding: 0 15px;
+}
+
+dl dd>:first-child {
+  margin-top: 0px;
+}
+
+dl dd>:last-child {
+  margin-bottom: 0px;
+}
+
+/* CODE
+=============================================================================*/
+
+pre, code, tt {
+  font-size: 12px;
+  font-family: Consolas, "Liberation Mono", Courier, monospace;
+}
+
+code, tt {
+  margin: 0 0px;
+  padding: 0px 0px;
+  white-space: nowrap;
+  border: 1px solid #eaeaea;
+  background-color: #f8f8f8;
+  border-radius: 3px;
+}
+
+pre>code {
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  border: none;
+  background: transparent;
+}
+
+pre {
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  line-height: 19px;
+  overflow: auto;
+  padding: 6px 10px;
+  border-radius: 3px;
+}
+
+pre code, pre tt {
+  background-color: transparent;
+  border: none;
+}
+
+kbd {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: #DDDDDD;
+    background-image: linear-gradient(#F1F1F1, #DDDDDD);
+    background-repeat: repeat-x;
+    border-color: #DDDDDD #CCCCCC #CCCCCC #DDDDDD;
+    border-image: none;
+    border-radius: 2px 2px 2px 2px;
+    border-style: solid;
+    border-width: 1px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    line-height: 10px;
+    padding: 1px 4px;
+}
+
+/* QUOTES
+=============================================================================*/
+
+blockquote {
+  border-left: 4px solid #DDD;
+  padding: 0 15px;
+  color: #777;
+}
+
+blockquote>:first-child {
+  margin-top: 0px;
+}
+
+blockquote>:last-child {
+  margin-bottom: 0px;
+}
+
+/* HORIZONTAL RULES
+=============================================================================*/
+
+hr {
+  clear: both;
+  margin: 15px 0;
+  height: 0px;
+  overflow: hidden;
+  border: none;
+  background: transparent;
+  border-bottom: 4px solid #ddd;
+  padding: 0;
+}
+
+/* TABLES
+=============================================================================*/
+
+table th {
+  font-weight: bold;
+}
+
+table th, table td {
+  border: 1px solid #ccc;
+  padding: 6px 13px;
+}
+
+table tr {
+  border-top: 1px solid #ccc;
+  background-color: #fff;
+}
+
+table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+
+/* IMAGES
+=============================================================================*/
+
+img {
+  max-width: 100%
+}
+</style>
+</head>
+<body>
+<h2>Java NIO</h2>
+<ol>
+<li><a href="#Java-NIO-Tutorial">Java NIO 教程</a></li>
+<li>
+<a href="#Java-NIO-Overview">Java NIO 概述</a>
+<ul>
+<li><a href="#channels-and-buffers">Channels 和 Buffers</a></li>
+<li><a href="#selectors">Selectors</a></li>
+</ul>
+</li>
+<li>
+<a href="#Java-NIO-Channel">Java NIO Channel</a>
+<ul>
+<li><a href="#channel-implementations">Channel 实现</a></li>
+<li><a href="#basic-channel-example">基本 Channel 示例</a></li>
+</ul>
+</li>
+<li>
+<a href="#Java-NIO-Buffer">Java NIO Buffer</a>
+<ul>
+<li><a href="#basicusage">基本 Buffer 使用</a></li>
+<li>
+<a href="#capacity-position-limit">Buffer 容量，位置和限制</a>
+<ul>
+<li><a href="#capacity">容量</a></li>
+<li><a href="#position">位置</a></li>
+<li><a href="#limit">限制</a></li>
+</ul>
+</li>
+<li><a href="#buffertypes">Buffer 类型</a></li>
+<li><a href="#allocating">分配 Buffer</a></li>
+<li><a href="#writing">写数据到 Buffer 中</a></li>
+<li><a href="#flip">flip()</a></li>
+<li><a href="#reading">从 Buffer 读数据</a></li>
+<li><a href="#rewind">rewind()</a></li>
+<li><a href="#clear">clear() 和 compact()</a></li>
+<li><a href="#mark">mark() 和 reset()</a></li>
+<li>
+<a href="#equals-and-compareto">equals() 和 compareTo()</a>
+<ul>
+<li><a href="#equals">equals()</a></li>
+<li><a href="#compareTo">compareTo()</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h3><a name="Java-NIO-Tutorial"></a> 1. Java NIO 教程</h3>
+<p>Java NIO（New IO）是 Java IO API 的替代方案（Java 1.4 之后），是指传统 <a href="">Java IO</a> 和 <a href="">Java Networking</a> API 的一种替代。Java NIO 提供了一种使用 IO 的不同方式，相比于传统的 IO API。</p>
+<h4>1.1 Java NIO：Channels 和 Buffers</h4>
+<p>使用传统 IO API，你实际是使用的是字节流和字符流。而 NIO 中，你需要使用 channels 和 buffers。数据总是从一个 channel 读入到一个 buffer，或从一个 buffer 写向一个 channel。</p>
+<h4>1.2 Java NIO：非阻塞（Non-blocking）IO</h4>
+<p>Java NIO 可以使你实现非阻塞的 IO。比如，一个线程可以像一个 channel 请求读入数据到一个 buffer。当 channel 在读数据到 buffer 的时候，那个县城可以执行其他操作。一旦当数据读入到 buffer 中时，线程就可以接着处理它。这同样适用于写数据到 channel 中。</p>
+<h4>1.3 Java NIO：Selectors</h4>
+<p>Java NIO 包含“selector”的概念。一个 selector 是一个对象，它可以为多个 channel 监测特定事件（像：连接开启，数据到达等） 。因而，一个简单线程就可以为数据监测多个 channel。</p>
+<h3><a name="Java-NIO-Overview"></a> 2. Java NIO 概述</h3>
+<p>Java NIO 包含如下核心组件：</p>
+<ul>
+<li>Channels</li>
+<li>Buffers</li>
+<li>Selectors</li>
+</ul>
+<p>Java NIO 当然有很多类和组件，而不止上面的 3 个，但是在我看来， <code>Channel</code>，<code>Buffer</code> 和 <code>Selector</code> 是最核心的 API。剩下的组件，像 <code>Pipe</code> 和 <code>FileLock</code> 仅仅是为了与这 3 个核心组件协作的工具类。因而，本小节，我将会重点关注于这三个组件。其他的组件会在本教程的其他小节解释到。参见本页顶的索引列表。</p>
+<h4><a name="channels-and-buffers"></a> 2.1 Channels 和 Buffers</h4>
+<p>一般，所有 NIO 中的 IO 都由一个 <code>Channel</code> 作为开始。一个 <code>Channel</code> 有点类似于一个流。从 <code>Channel</code> 中数据可以被读入到一个 <code>Buffer</code>。数据也可以从 <code>Buffer</code> 被写入到一个 <code>Channel</code> 中。这里是关于上述的一个图例：</p>
+<p><center><img src="overview-channels-buffers.png" alt="overview-channels-buffers" /></center>
+<center><strong>Java NIO：Channel 读数据到 Buffer，Buffer 写数据到 Channel。</strong></center></p>
+<p>有多种 <code>Channel</code> 和 <code>Buffer</code> 类型。下面是 Java NO 中一组主要的 <code>Channel</code> 实现类：</p>
+<ul>
+<li>FileChannel</li>
+<li>DatagramChannel</li>
+<li>SocketChannel</li>
+<li>ServerSocketChannel</li>
+</ul>
+<p>如你所见，这些 channel 覆盖了 UDP + TCP 网络 IO 和文件 IO。</p>
+<p>有一些有趣的接口跟这些类一起工作，但是为简单起见，我不会在本节中讲述。它们将会本教程其他章节涉及到的地方解释。</p>
+<p>下面是 Java NIO 中一组核心 <code>Buffer</code> 实现类：</p>
+<ul>
+<li>ByteBuffer</li>
+<li>CharBuffer</li>
+<li>DoubleBuffer</li>
+<li>FloatBuffer</li>
+<li>IntBuffer</li>
+<li>LongBuffer</li>
+<li>ShortBuffer</li>
+</ul>
+<p>这些 <code>Buffer</code> 涵盖了你可以通过 IO 发送的基本数据类型：byte，short，int，long，float，double，和 characters。</p>
+<p>Java NIO 同样有一个 <code>MappedByteBuffer</code>，用于跟内存映射文件相协作。我也不会在本章节讨论这个 <code>Buffer</code>。</p>
+<h4><a name="selectors"></a> 2.2 Selectors</h4>
+<p>一个 <code>Selector</code> 允许一个简单线程处理多个 <code>Channel</code>。这将会很方便，如果你的应用有多个连接（Channel）处于打开状态，但每个连接只有较低的流量。</p>
+<p>比如，一个聊天服务器。</p>
+<p>下面是一个线程使用 <code>Selector</code> 处理 3 个 <code>Channel</code> 的示意图：</p>
+<p><center><img src="overview-selectors.png" alt="overview-selectors" /></center>
+<center><strong>一个线程使用一个 Selector 处理 3 个 Channel。</strong></center></p>
+<p>为了使用一个 <code>Selector</code>，你需要注册 <code>Channel</code> 到它。然后你调用它的 <code>select()</code> 方法。这个方法将会一直阻塞直到一个已注册的 channel 的事件到来。一旦这个方法返回，线程就可以处理这些事件了。事件类型比如连接到达，接收到数据等。</p>
+<h3><a name="Java-NIO-Channel"></a> 3 Java NIO Channel</h3>
+<p>Java NIO Channel 跟流很相似，但也有一些不同：</p>
+<ul>
+<li>你可以同时读和写一个 Channel。流一般是单一的（只读或只写）。</li>
+<li>Channel 可以被异步读写。</li>
+<li>Channel 总是从 Buffer 读，写向 Buffer。</li>
+</ul>
+<p>像上面提到的，你可以从 Channel 读数据到 Buffer，及从 Buffer 写数据到 Channel。这里是一个示意图：</p>
+<p><center><img src="overview-channels-buffers.png" alt="overview-channels-buffers" /></center>
+<center><strong>Java NIO：Channel 读数据到 Buffer，Buffer 写数据到 Channel。</strong></center></p>
+<h4><a name="channel-implementations"></a> 3.1 Channel 实现</h4>
+<p>下面是 Java NIO 中一些最重要的 Channel 实现类：</p>
+<ul>
+<li>FileChannel</li>
+<li>DatagramChannel</li>
+<li>SocketChannel</li>
+<li>ServerSocketChannel</li>
+</ul>
+<p><code>FileChannel</code> 从文件读或写数据。</p>
+<p><code>DatagramChannel</code> 可以通过 UDP 协议从网络读和写数据。</p>
+<p><code>SocketChannel</code> 可以通过 TCP 协议从网络读或写数据。</p>
+<p><code>ServerSocketChannel</code> 允许你监听到达的 TCP 连接，像 web 服务器那样。每一个到达的链接，就会创建一个 <code>SocketChannel</code>。</p>
+<h4><a name="basic-channel-example"></a> 3.2 基本 Channel 示例</h4>
+<p>下面是一个基本示例，使用 <code>FileChannel</code> 读取一些数据到 Buffer：</p>
+<pre><code>RandomAccessFile aFile = new RandomAccessFile(&quot;data/nio-data.txt&quot;, &quot;rw&quot;);
+FileChannel inChannel = aFile.getChannel();
+
+ByteBuffer buf = ByteBuffer.allocate(48);
+
+int bytesRead = inChannel.read(buf);
+while (bytesRead != -1) {
+
+    System.out.println(&quot;Read &quot; + bytesRead);
+    buf.flip();
+
+    while (buf.hasRemaining()) {
+        System.out.print((char) buf.get());
+    }
+
+    buf.clear();
+    bytesRead = inChannel.read(buf);
+}
+aFile.close();
+</code></pre>
+
+<p>注意 <code>buf.flip()</code> 调用。首先你读到一个 Buffer 中。然后，你切换读写模式。然后，读出它。我将会在下一小节讲解更多关于 <code>Buffer</code> 的细节。</p>
+<h3><a name="Java-NIO-Buffer"></a> 4 Java NIO Buffer</h3>
+<p>Java NIO Buffer 用于跟 NIO Channel 交互。如你所知，数据从 Channel 读入 Buffer，从 Buffer 写向 Channel。</p>
+<p>一个 Buffer，本质是一块内存区域，你可以写入数据到其中，并之后进行重读。这块内存区域被包装成 NIO Buffer 对象，这些对象提供了一系列方法使的更易于跟内存块一起工作。</p>
+<h4><a name="basicusage"></a> 4.1 基本 Buffer 使用</h4>
+<p>使用一个 Buffer 来读和写数据，一般有 4 步：</p>
+<ol>
+<li>写数据到 Buffer 中</li>
+<li>调用 buffer.flip()</li>
+<li>从 Buffer 读取读数</li>
+<li>调用 buffer.clear() 或 buffer.compact()</li>
+</ol>
+<p>当你写数据到 Buffer 中，这个 Buffer 会记录你已经写了多少数据。一旦，你需要读数据，就需要通过 <code>flip()</code> 来切换 Buffer 从写模式到读模式。读模式下，Buffer 可以使你读到所有已写入 Buffer 的数据。</p>
+<p>一旦你读完了所有数据，你需要清空 Buffer，使它可以做好准备再次写入。你可以通过两种方式实现：调用 <code>clear()</code> 或调用 <code>compant()</code>。<code>clear()</code> 方法清空整个 Buffer。<code>compact()</code> 方法仅仅清空你已经读过的数据。所有未读数据将会被移动到 Buffer 的开始位置，然后数据将会被写入到 Buffer 中未读数据的后面。</p>
+<pre><code>RandomAccessFile aFile = new RandomAccessFile(&quot;data/nio-data.txt&quot;, &quot;rw&quot;);
+FileChannel inChannel = aFile.getChannel();
+
+ByteBuffer buf = ByteBuffer.allocate(48);
+
+int bytesRead = inChannel.read(buf);
+while (bytesRead != -1) {
+
+    System.out.println(&quot;Read &quot; + bytesRead);
+    buf.flip();
+
+    while (buf.hasRemaining()) {
+        System.out.print((char) buf.get());
+    }
+
+    buf.clear();
+    bytesRead = inChannel.read(buf);
+}
+aFile.close();
+</code></pre>
+
+<h4><a name="capacity-position-limit"></a> 4.2 Buffer 容量，位置和限制</h4>
+<p>下面是一个简单实用 <code>Buffer</code> 的示例，包括写，切换，读和清空操作：</p>
+<p>一个 Buffer 本质上是一块内存区域，你可以写入数据到其中，并之后再次阅读。这块内存区域被包装成 NIO Buffer 对象，这些对象提供了一系列方法使的更易于跟内存块一起工作。</p>
+<p>一个 Buffer 有 3 个你需要熟悉的属性，才能理解一个 <code>Buffer</code> 是如何工作的。它们是：</p>
+<ul>
+<li>容量（capacity）</li>
+<li>位置（position）</li>
+<li>限制（limit）</li>
+</ul>
+<p><code>position</code> 和 <code>limit</code> 的实际含义依赖于 <code>Buffer</code> 是处于读还是写模式。容量总是同一个含义，跟 Buffer 模式无关。</p>
+<p>下面是容量、位置和限制在写和读模式下的示意图。示意图的解释在下一小节。</p>
+<p><center><img src="buffers-modes.png" alt="buffers-modes" /></center>
+<center><strong>写和读模式下 Buffer 容量，位置和限制。</strong></center></p>
+<h5><a name="capacity"></a> 4.2.1 容量（capacity）</h5>
+<p>一个内存块，即一个 <code>Buffer</code> 有一个确定的尺寸，也叫做它的“capacity”。你只能写 <code>catacity</code> 长度的 byte，long 和 char 等到 Buffer 中。一旦 Buffer 满了，你需要先清空它（读数据，或清空它），在你可以再次写入更多数据之前。</p>
+<h5><a name="position"></a> 4.2.2 位置（position）</h5>
+<p>当你写入数据到 <code>Buffer</code> 中，你会设置一个指定 position。初始化时 position 是 0。当一个 byte，long 等已经被写入到 <code>Buffer</code> 中，position 就会前进到下一个 Buffer 中的格子来插入下个数据。position 最大可以变成 <code>capacity - 1</code>。</p>
+<p>当你从 <code>Buffer</code> 中读入数据时，你也同样需要根据当前 position 来设置新 position。当你切换一个 <code>Buffer</code> 从写模式到读模式时，position 将被重设成 0。当你从 <code>Buffer</code> 读入数据时，也将会变动 <code>position</code> 值，即前进 <code>position</code> 到下个被读的位置。</p>
+<h5><a name="limit"></a> 4.2.3 限制（limit）</h5>
+<p>写模式下，一个 <code>Buffer</code> 的 limit 是你可以写入多少数据到 Buffer 中。写模式下，limit 是等于 <code>Buffer</code> capacity 的。</p>
+<p>当切换 <code>Buffer</code> 到读模式，limit 表示你可以从 Buffer 中读多少数据（译注：原文是 from the data，应该是错误的，data 应该是 buffer）。因而，当切换一个 <code>Buffer</code> 到读模式，limit 值被设置成写模式下写入数据时的最后 position。换句话说，你写了多少数据就可以读入多少数据（limit 被设置成已写字节（译注：应该是指定类型的数据）的数量，即 position 值）。</p>
+<h4><a name="buffertypes"></a> 4.3 Buffer 类型</h4>
+<p>Java NIO 中有以下 <strong>Buffer</strong> 类型：</p>
+<ul>
+<li>ByteBuffer</li>
+<li>MappedByteBuffer</li>
+<li>CharBuffer</li>
+<li>DoubleBuffer</li>
+<li>FloatBuffer</li>
+<li>IntBuffer</li>
+<li>LongBuffer</li>
+<li>ShortBuffer</li>
+</ul>
+<p>如你所见，这些 <code>Buffer</code> 类型用于表示不同的数据类型。换句话说，它们使你可以对待 Buffer 中的字节成 char，short，int，long，float 或 double 类型。</p>
+<p><code>MappedByteBuffer</code> 有点特殊，将会在自己小节中讲解。</p>
+<h4><a name="allocating"></a> 4.4 分配 Buffer</h4>
+<p>为了获得一个 <code>Buffer</code> 对象，你必须先分配它。每个 <code>Buffer</code> 类都有一个 <code>allocate()</code> 方法，来实现分配操作。下面是一个例子展示了对 <code>ByteBuffer</code> 的分配，容量 48 字节：</p>
+<pre><code>ByteBuffer buf = ByteBuffer.allocate(48);
+</code></pre>
+
+<p>下面的例子分配一个 <code>CharBuffer</code>，容量为 1024 个 char：</p>
+<pre><code>CharBuffer buf = CharBuffer.allocate(1024);
+</code></pre>
+
+<h4><a name="writing"></a> 4.5 写数据到 Buffer 中</h4>
+<p>你可以写数据到 <code>Buffer</code> 中，有两种方式：</p>
+<ol>
+<li>从 <code>Channel</code> 写数据到 <code>Buffer</code> 中。</li>
+<li>直接通过 <code>Buffer</code> 写入数据，通过 Buffer 的 <code>put()</code> 方法。</li>
+</ol>
+<p>下面的例子展示一个 <code>Channel</code> 如何写入数据到 <code>Buffer</code> 中：</p>
+<pre><code>int bytesRead = inChannel.read(buf); //read into buffer.
+</code></pre>
+
+<p>下面的例子是写入数据到 <code>Buffer</code> 中，通过 <code>put()</code> 方法：</p>
+<pre><code>buf.put(127);
+</code></pre>
+
+<p>有很多其他版本的 <code>put()</code> 方法，允许你通过多种方式写数据到 <code>Buffer</code> 中。比如，在特定的位置写入数据，或写一个字节数组到 Buffer 中。具体 Buffer 实现类的细节，参见 JavaDoc。</p>
+<h4><a name="flip"></a> 4.6 flip()</h4>
+<p><code>flip()</code> 方法切换 <code>Buffer</code> 从写模式到读模式。调用 <code>flip()</code> 会设置 <code>position</code> 成 0，并设置 <code>limit</code> 为 position 值。</p>
+<p>换句话说，<code>position</code> 现在标记读的位置，<code>limit</code> 标记多少字节，字符等被入到 Buffer 中，即多少字节，字符等可以被读出。</p>
+<h4><a name="reading"></a> 4.7 从 Buffer 读数据</h4>
+<p>有两种方式，你可以从 <code>Buffer</code> 读入数据。</p>
+<ol>
+<li>从 Buffer 读数据到一个 Channel。</li>
+<li>从 Buffer 本身读取数据，通过 <code>get()</code> 方法。</li>
+</ol>
+<p>下面的例子展示你如何从 Buffer 读数据到一个 Channel 中：</p>
+<pre><code>//read from buffer into channel.
+int bytesWritten = inChannel.write(buf);
+</code></pre>
+
+<p>下面的例子展示了通过 <code>get()</code> 方法从 <code>Buffer</code> 读入数据：</p>
+<pre><code>byte aByte = buf.get();
+</code></pre>
+
+<p>还有很多其他版本的 <code>get()</code> 方法，允许你从 <code>Buffer</code> 以多种方式读数据。比如，读取特定位置的数据，从 Buffer 读取一个字节数组。具体 Buffer 实现类的细节，参见 JavaDoc。</p>
+<h4><a name="rewind"></a> 4.7 rewind()</h4>
+<p><code>Buffer.rewind()</code> 重新设置 <code>position</code> 成 0，这样你可以重新读取 Buffer 中的所有数据。<code>limit</code> 值不会变化，即仍标记可以从 <code>Buffer</code> 读取多少元素（字节，字符等）。</p>
+<h4><a name="clear"></a> 4.8 clear() 和 compact()</h4>
+<p>一旦你完成了从 <code>Buffer</code> 读取数据，你必须使 <code>Buffer</code> 做好准备再次被写入。你可以通过调用 <code>clear()</code> 或 <code>compact()</code> 来做到这个。</p>
+<p>如果你调用 <code>clear()</code> 方法，将会设置 <code>position</code> 成 0，<code>limit</code> 成 <code>capacity</code> 值。换句话说，<code>Buffer</code> 被清空了。<code>Buffer</code> 中的实际数据并没有被清空。这些标记变量仅仅告诉你可以从哪里写入数据到 <code>Buffer</code> 中。</p>
+<p>如果 <code>Buffer</code> 中还有未被读取的数据，当你调用 <code>clear()</code> 的时候，这些数据将会被“遗忘”，即你不再有任何标记变量告诉你什么数据已经读过了，什么数据还没有被读过。</p>
+<p>如果 <code>Buffer</code> 中仍有未被读取的数据，而且你还想在之后读取，但你需要首先做一些写入操作，则需要调用 <code>compact()</code> 方法而非 <code>clear()</code>。</p>
+<p><code>compact()</code> 复制这些未读数据到 <code>Buffer</code> 中起始位置。然后，设置 <code>position</code> 为最右边的未读元素的索引。<code>limit</code> 值设置成 <code>capacity</code> 值，就像 <code>clear()</code> 方法所做的那样。现在，<code>Buffer</code> 已经是可以再次写入的状态了，但你并没有复写未读数据。</p>
+<h4><a name="mark"></a> 4.9 mark() 和 reset()</h4>
+<p>你可以在 <code>Buffer</code> 中标记一个给定的 position，通过调用 <code>Buffer.mark()</code> 方法。然后，你可以重设 position 到这个已标记的 position，通过调用 <code>Buffer.reset()</code> 方法。下面是一个例子：</p>
+<pre><code>buffer.mark();
+//call buffer.get() a couple of times, e.g. during parsing.
+buffer.reset();  //set position back to mark.
+</code></pre>
+
+<h4><a name="equals-and-compareto"></a> 4.10 equals() 和 compareTo()</h4>
+<p>可以比较两个 Buffer， 通过 <code>equals()</code> 和 <code>compareTo()</code>。</p>
+<h5><a name="equals"></a> 4.10.1 equals()</h5>
+<p>两个 Buffer 是相等的，如果（译注：同时满足 3 个条件）：</p>
+<ol>
+<li>它们具有相同的类型（字节，字符，整形等）。</li>
+<li>它们的 Buffer 中有同等数量的未读（译注：此处为 remaining，翻译成“未读”？）字节，字符等。</li>
+<li>所有的字节，字符等是相等的。</li>
+</ol>
+<p>如你所见，equals 方法仅仅比较 <code>Buffer</code> 的一部分，而非其中的每一个元素。其实，它仅比较 <code>Buffer</code> 中的未读元素。</p>
+<h5><a name="compareTo"></a> 4.10.2 compareTo()</h5>
+<p><code>compareTo()</code> 方法比较两个 Buffer 的剩余元素（字节，字符等），比如，排序例程。一个 Buffer “小于”另一个 Buffer 如果：</p>
+<ol>
+<li>Buffer 中第一个元素小于另一个 Buffer 中的相应元素。</li>
+<li>所有的元素是相等的，但是第一个 Buffer 先于第二个 Buffer 读（耗）尽了所有元素（即，第一个 Buffer 有较少的元素）。</li>
+</ol>
+
+</body>
+</html>
+<!-- This document was created with MarkdownPad, the Markdown editor for Windows (http://markdownpad.com) -->
