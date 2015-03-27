@@ -370,6 +370,210 @@ DI 存在两个主要变种，[基于构造器的依赖注入]() 和 [基于 set
 
 ##### 基于构造器的依赖注入
 
+*基于构造器的*的 DI 实现是通过容器调用构造器，并传入一组参数，每个参数表示一个依赖。调用一个 `static` 工厂方法，并传入指定的参数来构建 bean 基本上是类似的，这里的讨论对待构造器的参数和 `static` 工厂方法的参数也是类似的。下面的例子展示了一个只能通过构造器注入实现依赖注入的类。注意，这个类并没有*特殊*之处，它是一个 POJO，不包含对任何容器特定的接口、基本类或注解的依赖。
+
+	public class SimpleMovieLister {
+
+		// the SimpleMovieLister has a dependency on a MovieFinder
+		// SimpleMovieLister 依赖于一个 MovieFinder
+		private MovieFinder movieFinder;
+
+		// a constructor so that the Spring container can inject a MovieFinder
+		// 一个构造器用于 Spring 容器注入一个 MovieFinder
+		public SimpleMovieLister(MovieFinder movieFinder) {
+			this.movieFinder = movieFinder;
+		}
+
+		// business logic that actually uses the injected MovieFinder is omitted...
+		// 忽略实际使用注入的 MovieFinder 进行逻辑处理
+
+	}
+
+##### 构造器参数匹配
+
+构造器参数匹配基于参数的类型。如果没有潜在的歧义存在于一个 bean 定义的构造器参数，那么在 bean 创建的时候，bean 定义中的构造器参数顺序就是那些参数提供给适当构造器的顺序。考虑下面的类：
+
+	package x.y;
+
+	public class Foo {
+
+		public Foo(Bar bar, Baz baz) {
+			// ...
+		}
+
+	}
+
+上例没有任何的歧义存在，此处假设 `Bar` 和 `Baz` 类没相关的继承关系。因而，下面的配置将会很好的工作，而且你不需要在 `<constructor-arg/>` 元素中显式的声明构造器参数索引顺序及（或）类型。
+
+	<beans>
+		<bean id="foo" class="x.y.Foo">
+			<constructor-arg ref="bar"/>
+			<constructor-arg ref="baz"/>
+		</bean>
+
+		<bean id="bar" class="x.y.Bar"/>
+
+		<bean id="baz" class="x.y.Baz"/>
+	</beans>
+
+当另外的 bean 被引用时，类型是可知的，然后可以进行匹配（就像前面的例子）。当使用了一个简单类型，比如 `<value>true</value>`，Spring 无法推断值的类型，所以无法只通过类型匹配。考虑下面的类：
+
+	package examples;
+
+	public class ExampleBean {
+
+		// Number of years to calculate the Ultimate Answer
+		private int years;
+
+		// The Answer to Life, the Universe, and Everything
+		private String ultimateAnswer;
+
+		public ExampleBean(int years, String ultimateAnswer) {
+			this.years = years;
+			this.ultimateAnswer = ultimateAnswer;
+		}
+
+	}
+
+上面的场景中，容器*可以*使用类型匹配，如果你通过使用 `type` 属性显式地声明了构造器参数的类型。比如：
+
+	<bean id="exampleBean" class="examples.ExampleBean">
+		<constructor-arg type="int" value="7500000"/>
+		<constructor-arg type="java.lang.String" value="42"/>
+	</bean>
+
+使用 `index` 属性显式的声明构造器参数的索引顺序。比如：
+
+	<bean id="exampleBean" class="examples.ExampleBean">
+		<constructor-arg index="0" value="7500000"/>
+		<constructor-arg index="1" value="42"/>
+	</bean>
+
+为了解决多个简单值的歧义，当一个构造器有两个同类型的参数则就需要声明一个索引顺序解决歧义。注意，*索引顺序从 0 计数*。
+
+你也可以使用构造器参数名称为参数值消除歧义：
+
+	<bean id="exampleBean" class="examples.ExampleBean">
+		<constructor-arg name="years" value="7500000"/>
+		<constructor-arg name="ultimateAnswer" value="42"/>
+	</bean>
+
+注意，要使上述 `name` 属性的设置有效，编译时必须带上 debug 标记，这样 Spring 才可以从构造器中查找参数名称。如果，你无法在编译你的代码时带上 debug 标记（或不想），你可以使用 [@ConstructorProperties]() JDK 注解来显式地为构造器参数设置名称。样例类看起来如下：
+
+	package examples;
+
+	public class ExampleBean {
+
+		// Fields omitted
+
+		@ConstructorProperties({"years", "ultimateAnswer"})
+		public ExampleBean(int years, String ultimateAnswer) {
+			this.years = years;
+			this.ultimateAnswer = ultimateAnswer;
+		}
+
+	}
+
+##### 基于 setter 方法的依赖注入
+
+*基于 setter* 的依赖注入由容器调用你的 bean 的 setter 方法完成，这发生在容器调用一个无参数的构造器或无参数的 `static` 工厂方法实例化了你的 bean 之后。
+
+下面的例子展示了一个只能通过 setter 注入实现依赖注入的类。这个类只包含普通 Java 代码（译注：ERROR!）。它是一个 POJO，不依赖于任何的容器特定的接口、基类或注解。
+
+	public class SimpleMovieLister {
+
+		// the SimpleMovieLister has a dependency on the MovieFinder
+		private MovieFinder movieFinder;
+
+		// a setter method so that the Spring container can inject a MovieFinder
+		public void setMovieFinder(MovieFinder movieFinder) {
+			this.movieFinder = movieFinder;
+		}
+
+		// business logic that actually uses the injected MovieFinder is omitted...
+
+	}
+
+`ApplicationContext` 支持基于构造器和基于 setter 方法的依赖注入方式来管理 bean。它也支持在一些依赖已经通过构造器的方式注入之后再基于 setter 方法注入依赖。你通过 `BeanDefinition` 配置依赖关系，搭配使用 `PropertyEditor` 实例，可以将属性从一种格式转换成另一种。然而，大多数 Spring 用户并不直接使用这些类（如，通过编程方式），而是通过 XML `bean` 定义，注解组件（如，注解类 `@Component`，`@Controller`，等），或 `@Configuration` 注解类的 `@Bean` 注解方法。这些源码会在内部被转化成 `BeanDefinition` 实例，并用于装载成一个全功能的 Spring IoC 容器实例。
+
+ > **基于构造器还是 setter 方法的依赖注入？**
+ >
+ > 因为你会弄混基于构造器和基于 setter 方法的依赖注入，这是一条好的规则，为*强制依赖*使用构造器方式，*可选依赖*选用 setter 方法或配置方法。注意可以在 setter 方法上通过使用 `@Required` 注解来使属性成为必须依赖。
+ >
+ > Spring 开发组一般推荐构造器注入方式，因为它使你将应用组件实现为*不可变对象*，并保证必须依赖的引用不会为 `null`。而且，构造器注入方式肯定会返回一个完全初始化的对象给客户（调用）代码。作为一个小提醒（As a side note），大量的构造器参数是一种*臭代码（bad code smell）*，意味着这个类可能有太多的责任，应当被重构成一个更好的关注点分离。（译注：WHAT?）
+ >
+ > setter 注入应该主要用于可选依赖，这种依赖可以在类中已分配了默认值。此外，任何使用这些依赖的地方都应该现有非空检查。setter 注入的一个优点是 setter 方法可使依赖类的对象在之后重新配置或注入。然而，通过 [JMX MBeans]() 的管理操作强制使用 setter 依赖。
+ >
+ > 使用那种方式的依赖注入有时取决于特定类。有时，当使用没有源码的第三方类时，使用那种方式取决于你。比如，一个第三方类没有暴漏任何的 setter 方法，那么构造器注入可能是唯一的依赖注入方式。
+
+##### 依赖解析过程
+
+容器解析 bean 依赖关系，按照如下规则：
+
+ - `ApplicationContext` 通过描述所有 bean 的配置数据来被创建和初始化。配置数据可以通过 XML，Java 代码或注解声明。
+ - 对每一个 bean，它的依赖表述为一组属性，构造器参数或静态工厂方法的参数（如果你使用静态工厂方法替代一个普通构造器）。这些依赖被提供给这个 bean，*在 bean 被实际实际创建完成的时候*。
+ - 每个属性或构造器参数是一个实际定义的值，或引用容器中的另一个 bean。
+ - 每个属性或构造器参数是一个值，这个值是从它的特定格式转换成实际属性或构造器参数的类型对应的值。 默认，Spring 可以转换提供的字符串值到所有的内置类型，如 `int`，`long`，`String`，`boolean`，等。
+
+Spring 容器在创建时会验证每个 bean 的配置。然而，bean 属性本身不会被设置直到依赖 bean 被*实际创建*。在容器创建的时候，如果 bean 是单例域的并设置成预初始化（默认设置），bean 将会被创建。域的定义在 [5.5 小节，“Bean 域”]()。否则，bean 只在需要时才被创建。bean 的创建会潜在引入 bean 创建图，描述 bean 的依赖和它的依赖的依赖（等等）会被创建和分配。注意，那些依赖中不匹配的解析将会在之后解决，如，相关 bean 首次创建的时候。
+
+ > **循环依赖**
+ > 
+ > 如果你主要使用构造器注入，那就可能创建无法解析的循环依赖场景。
+ >
+ > 比如：A 类需要通过构造器注入 B 类的实例，B 类需要通过构造器注入 A 类的实例。如果，你配置 A 和 B 类相互注入彼此，Spring IoC 容器会在运行时检测循环应用，并抛出 `BeanCurrentlyInCreationException`。
+ >
+ > 一个可选解决方案是编辑某些类代码，通过 setter 方法注入而非构造器。即，避免构造器注入并只使用 setter 注入。换句话说，尽管并不推荐，你可以通过 setter 注入方式配置循环依赖。
+ >
+ > 不像*典型*应用（不存在循环依赖），一个 A bean 和 B bean 之间的循环依赖，会强制其中的一个 bean 先被注入到另一个来实现自己的完全初始化（典型的“先有鸡还是先有蛋”的场景）。
+
+你一般可以相信 Spring 会做正确的事情。它会在容器的装载过程检测配置错误，如引用了不存在的 bean 和循环依赖。Spring 尽可能迟的设置属性和解决依赖，直到 bean 被实际创建了。这意味着，在你实际请求一个对象的时候，如果创建这个对象或它的依赖的过程中出现了错误，已经正确装载的 Spring 容器就可以生成一个异常。比如，bean 抛出一个异常表示缺失属性或属性配置错误。这可能会导致延迟显示一些配置问题，这也是为什么 `ApplicationContext` 实现默认会预先实例化 bean 单例。在实际需要 bean 之前，花费一些前期启动的时间和内存来创建所有 bean，这样你会在 `ApplicationContext` 创建的时候就发现配置问题，而非之后。你仍可以覆盖这种默认行为，这样单例 bean 将会延迟初始化，而非预先实例化。
+
+如果没有循环引用存在，当一或多个协作 bean 被注入到需要依赖的 bean，每个协作 bean 被*完全地*配置到需要依赖的 bean（译注：ERROR!）。这意味着如果 bean A 依赖于 bean B，Spring IoC 容器会先完全地配置 bean B，然后调用 bean A 的 setter 方法设置对 bean B 的依赖。换句话说，bean 被实例化（如果不是预先实例化的单例），它的依赖被设置，相关声明周期方法被调用（如，[配置初始化方法]()或[InitializingBean 回调方法]()）。
+
+##### 依赖注入示例
+
+下面的例子为基于 setter 方法的依赖注入使用基于 XML 的配置数据。Spring XML 配置文件中的一部分 bean 定义：
+
+	<bean id="exampleBean" class="examples.ExampleBean">
+		<!-- setter injection using the nested ref element -->
+		<property name="beanOne">
+			<ref bean="anotherExampleBean"/>
+		</property>
+
+		<!-- setter injection using the neater ref attribute -->
+		<property name="beanTwo" ref="yetAnotherBean"/>
+		<property name="integerProperty" value="1"/>
+	</bean>
+
+	<bean id="anotherExampleBean" class="examples.AnotherBean"/>
+	<bean id="yetAnotherBean" class="examples.YetAnotherBean"/>
+
+ExampleBean 类：（译注：作者添加）
+
+	public class ExampleBean {
+	
+		private AnotherBean beanOne;
+		private YetAnotherBean beanTwo;
+		private int i;
+	
+		public void setBeanOne(AnotherBean beanOne) {
+			this.beanOne = beanOne;
+		}
+	
+		public void setBeanTwo(YetAnotherBean beanTwo) {
+			this.beanTwo = beanTwo;
+		}
+	
+		public void setIntegerProperty(int i) {
+			this.i = i;
+		}
+	
+	}
+
+
+
+
 
 
 
