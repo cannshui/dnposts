@@ -24,7 +24,12 @@
 	- [equals() 和 compareTo()](#equals-and-compareto)
 		- [equals()](#equals)
 		- [compareTo()](#compareTo)
-
+ 1. [Java NIO Scatter / Gather](#Java-NIO-Scatter-Gather)
+	- [Scattering Reads](#scattering-reads)
+	- [Gathering Writes](#gathering-writes)
+ 1. [Java NIO 通道之间数据传送](#Java-NIO-Channel-to-Channel-Transfers)
+	- [transferFrom()](#transferfrom)
+	- [transferTo()](#transferto)
 ### <a name="Java-NIO-Tutorial"></a> 1. Java NIO 教程
 
 Java NIO（New IO）是 Java IO API 的替代方案（Java 1.4 之后），是指传统 [Java IO]() 和 [Java Networking]() API 的一种替代。Java NIO 提供了一种使用 IO 的不同方式，相比于传统的 IO API。
@@ -96,7 +101,7 @@ Java NIO 同样有一个 `MappedByteBuffer`，用于跟内存映射文件相协�
 
 为了使用一个 `Selector`，你需要注册 `Channel` 到它。然后你调用它的 `select()` 方法。这个方法将会一直阻塞直到一个已注册的 channel 的事件到来。一旦这个方法返回，线程就可以处理这些事件了。事件类型比如连接到达，接收到数据等。
 
-### <a name="Java-NIO-Channel"></a> 3 Java NIO Channel
+### <a name="Java-NIO-Channel"></a> 3. Java NIO Channel
 
 Java NIO Channel 跟流很相似，但也有一些不同：
 
@@ -152,7 +157,7 @@ Java NIO Channel 跟流很相似，但也有一些不同：
 
 注意 `buf.flip()` 调用。首先你读到一个 Buffer 中。然后，你切换读写模式。然后，读出它。我将会在下一小节讲解更多关于 `Buffer` 的细节。
 
-### <a name="Java-NIO-Buffer"></a> 4 Java NIO Buffer
+### <a name="Java-NIO-Buffer"></a> 4. Java NIO Buffer
 
 Java NIO Buffer 用于跟 NIO Channel 交互。如你所知，数据从 Channel 读入 Buffer，从 Buffer 写向 Channel。
 
@@ -338,4 +343,97 @@ Java NIO 中有以下 **Buffer** 类型：
 
  1.  Buffer 中第一个元素小于另一个 Buffer 中的相应元素。
  2. 所有的元素是相等的，但是第一个 Buffer 先于第二个 Buffer 读（耗）尽了所有元素（即，第一个 Buffer 有较少的元素）。
+
+### <a name="Java-NIO-Scatter-Gather"></a> 5. Java NIO 散和收（Sactter/Gather）
+
+Java NIO 有内建的 scatter / gather 支持。scatter / gather 的概念用于读 / 写 channel。
+
+一个 scattering 用于从 channel 执行读操作，读数据到一个或多个 buffer 中。因而，channel 用于从多个通道“分散”数据到多个缓冲区中。
+
+一个 gathering 写向 channel 是一个写操作来写数据到 channel 中，可以从一或多个缓冲区中写数据到一个单一的 channel。
+
+scatter / gather 会是很有用的解决方案，当你需要用分开使用多种类的数据时。比如，如果一个消息由一个头（header）和正文（body）组成，你可能想将头和正文放在分开的缓冲区中。这样做，可以使你更易于以分离的方式使用头和正文。
+
+#### <a name="scattering-reads"></a> 5.1 分散读（Scattering Reads）
+
+一个“散开读”从一个单一通道中读数据到多个缓冲区中。下面是这个原理的实例图：
+
+<center>![scatter](scatter.png)</center>
+<center>**Java NIO：分散读**</center>
+
+这面这个例子展示如何实现一个分散读：
+
+	ByteBuffer header = ByteBuffer.allocate(128);
+	ByteBuffer body   = ByteBuffer.allocate(1024);
+
+	ByteBuffer[] bufferArray = { header, body };
+
+	channel.read(buffers);
+
+注意，实例化后的缓冲区先被插入到数组中的，然后数组作为参数传递到 `channel.read()` 方法。然后，`read()` 方法按照数组中缓冲区的顺序，从通道中写数据到数组中的缓冲区实例。一旦一个缓冲区写满了，通道转向下一个，并填满它。
+
+分散读填满一个缓冲区之后才会转向下一个，这意味着动态大小的消息部分并不适合使用分散读。换句话说，如果你有一个头和正文，而且头有固定尺寸（如，128 字节），那么分散度将会相当有效。
+
+#### <a name="gathering-reads"></a> 5.2 收集写（Gathering Writes）
+
+一个“收集写”从多个缓冲区中写数据到一个单一通道中。下面是这个原理的示意图：
+
+<center>![gather](gather.png)</center>
+<center>**Java NIO：收集写**</center>
+
+下面的代码示例展示如何实现一个收集写：
+
+	ByteBuffer header = ByteBuffer.allocate(128);
+	ByteBuffer body   = ByteBuffer.allocate(1024);
+
+	//write data into buffers
+
+	ByteBuffer[] bufferArray = { header, body };
+
+	channel.write(buffers);
+
+缓冲区数组传递到 `write()` 方法，该方法按照数组中缓冲区的顺序将内容写到通道中。仅仅在 position 和 limit 之间的缓冲区内容才会被写出。因而，如果一个缓冲区的容量为 128 字节，但仅包含 58 字节的实际数据，那么只会有这 58 字节从缓冲区写向通道中。因此，一个收集写在消息大小是动态变化时将会工作的很好，跟分散读相反。
+
+### <a name="Java-NIO-Channel-to-Channel-Transfers"></a> 6. Java NIO 通道之间数据传送
+
+Java NIO 中，你可以直接将数据从一个通道转到另一个通道中，如果通道中的一个是 `FileChannel` 的话。`FileChannel` 类有一个 `transferTo()` 和一个 `transferFrom()` 方法，来完成数据转送操作。
+
+#### <a name="transferfrom"></a> 6.1 transferFrom()
+
+`FileChannel.transferFrom()` 方法从一个源通道转送数据到另一个 `FileChannel`。
+
+
+	RandomAccessFile fromFile = new RandomAccessFile("fromFile.txt", "rw");
+	FileChannel      fromChannel = fromFile.getChannel();
+	
+	RandomAccessFile toFile = new RandomAccessFile("toFile.txt", "rw");
+	FileChannel      toChannel = toFile.getChannel();
+	
+	long position = 0;
+	long count    = fromChannel.size();
+	
+	toChannel.transferFrom(fromChannel, position, count);
+
+position 和 count 参数，告诉目标（被写入）文件从哪里开始写数据（`position`），及应该转送最大多大（`count`）字节的数据。如果源通道数据量少于 `count` 字节，那么将只转送能够转送的数据量。
+
+另外，一些 `SocketChannel` 实现可能也可以转送数据，这些数据只是 `SocketChannel` 中当前已经在内部缓冲区中的了，即使 `SocketChannel` 中可能后续有很多的数据进来。因而，它可能无法从 `SocketChannel` 转送全部的所要求的（`count`）数据到 `FileChannel` 中。
+
+#### <a name="transferfrom"></a> 6.2 transferto()
+
+`transferTo()` 方法用于从 `FileChannel` 转数据到其它通道。下面是一个简单示例：
+
+	RandomAccessFile fromFile = new RandomAccessFile("fromFile.txt", "rw");
+	FileChannel      fromChannel = fromFile.getChannel();
+	
+	RandomAccessFile toFile = new RandomAccessFile("toFile.txt", "rw");
+	FileChannel      toChannel = toFile.getChannel();
+	
+	long position = 0;
+	long count    = fromChannel.size();
+	
+	fromChannel.transferTo(position, count, toChannel);
+
+注意，这个例子跟前例非常相似。唯一真正的不同是，这个方法是在哪个 `FileChannel` 对象调用的。其它都是相同的。
+
+问题是，`SocketChannel` 也提供了一个 `transferTo()` 方法。`SocketChannel` 实现可能只会从 `FileChannel` 中转送字节直到发送缓冲区满了（send buffer），然后停止（译注：挂起？）。
 
