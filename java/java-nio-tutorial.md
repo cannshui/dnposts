@@ -31,19 +31,19 @@
 	- [transferFrom()](#transferfrom)
 	- [transferTo()](#transferto)
  1. [Java NIO Selector](#Java-NIO-Selector)
-	[为什么使用 Selector](#why-use-a-selector)
-	[创建 Selector](#creating-a-selector)
-	[向 Selector 注册 Channel](#registering-channels-with-the-selector)
-	[SelectionKey 的](#selectionkey)
-		[兴趣位（Interest Set）](#selector-interest-sets)
-		[状态位（Ready Set）](#selector-ready-set)
-		[Channel + Selector](#channel-selector)
-		[关联对象](#attaching-objects)
-	[通过 Selector 选择 Channel](#selecting-channels-via-a-selector)
-		[selectedKeys()](#selectedkeys)
-	[wakeUp()](#wakeup)
-	[close()](#close)
-	[完整 Selector 示例](#full-selector-example)
+	- [为什么使用 Selector](#why-use-a-selector)
+	- [创建 Selector](#creating-a-selector)
+	- [向 Selector 注册 Channel](#registering-channels-with-the-selector)
+	- [SelectionKey 的](#selectionkey)
+		- [兴趣位（Interest Set）](#selector-interest-sets)
+		- [状态位（Ready Set）](#selector-ready-set)
+		- [Channel + Selector](#channel-selector)
+		- [关联对象](#attaching-objects)
+	- [通过 Selector 选择 Channel](#selecting-channels-via-a-selector)
+		- [selectedKeys()](#selectedkeys)
+	- [wakeUp()](#wakeup)
+	- [close()](#close)
+	- [完整 Selector 示例](#full-selector-example)
  1. [Java NIO FileChannel](#Java-NIO-FileChannel)
 	- [打开 FileChannel](#opening-a-filechannel)
 	- [从 FileChannel 读数据](#reading-data-from-a-filechannel)
@@ -68,6 +68,24 @@
 	- [关闭 ServerSocketChannel](#closing-a-serversocketchannel)
 	- [监听连入连接](#listening-for-incoming-connections)
 	- [非阻塞模式](#non-blocking-mode)
+ 1. [Java NIO DatagramChannel](#Java-NIO-DatagramChannel)
+	- [打开 DatagramChannel](#opening-a-datagramchannel)
+	- [接收数据](#receiving-data)
+	- [发送数据](#sending-data)
+	- [连接特定地址](#connecting-to-a-specific-address)
+ 1. [Java NIO Pipe](#Java-NIO-Pipe)
+	- [创建管道](#creating-a-pipe)
+	- [写向通道](#writing-to-a-pipe)
+	- [从通道读](#reading-from-a-pipe)
+ 1. [Java NIO 对比 IO](#Java-NIO-vs-IO)
+	- [Java NIO 和 IO 的主要区别](#main-differences-between-java-nio-and-io)
+	- [面向流对比面向 Buffer](#stream-oriented-vs-buffer-oriented)
+	- [阻塞对比非阻塞 IO](#blocking-vs-non-blocking)
+	- [Selector](#selectors)
+	- [NIO 和 IO 如何影响应用设计](#how-nio-and-io-influences-application-design)
+		- [API 调用](#the-api-calls)
+		- [数据处理](#the-processing-of-data)
+	- [总结](#summary)
 
 ### <a name="Java-NIO-Tutorial"></a> 1. Java NIO 教程
 
@@ -478,13 +496,13 @@ position 和 count 参数，告诉目标（被写入）文件从哪里开始写�
 
 ### <a name="Java-NIO-Selector"></a> 7. Java NIO Selector
 
-一个 `Selector` 是 Java NIO 的一个组件，用于检查一或多个 NIO Channel，并决定 Channel 状态，如读或写。这样，一个单线程就可以管理多个通道，及多个网络连接。
+`Selector` 是 Java NIO 的一个组件，用于检查一或多个 NIO Channel，并决定通道所处的状态，如可读或可写。这样，一个单线程就可以管理多个通道，及多个网络连接。
 
 #### <a name="why-use-a-selector"></a> 7.1 为什么使用 Selector
 
-只使用一个线程来处理多个通道的优点是你只需较少的线程来处理通道。其实，你可以只用一个线程来处理你所有的通道。操作系统中，线程间的切换是很重的操作，而且每个线程都需要一些资源（内存）。因而，越少的线程使用，越好。
+只使用一个线程来处理多个通道的优点是你只需较少的线程来处理通道。其实，通过 `Selector`，你可以只用一个线程来处理你所有的通道。操作系统中，线程间的切换是很重的操作，而且每个线程都需要一些资源（内存等）。因而，越少的线程使用，越好。
 
-但是记住，现在操作系统和 CPU 在多任务的处理上变的越来越好，所以多线程的切换代价变的越来越小。其实，如果一个 CPU 由多核，你可能在浪费 CPU 的能力，如果不使用多任务的话。不过，那种设计讨论是另外的主题。这里，只讨论通过单个线程利用 `Selector` 处理多个通道。
+但是记住，现在操作系统和 CPU 在多任务的处理上变的越来越好，所以多线程的切换代价变的越来越小。其实，如果一个 CPU 有多个核，而如果你不使用多任务的话，那你可能在浪费 CPU 的能力。不过，那种设计讨论是另外的主题。这里，只讨论通过单个线程利用 `Selector` 处理多个通道。
 
 下面是一个线程利用 `Selector` 处理 3 个 `Channel` 的例子：
 
@@ -505,16 +523,16 @@ position 和 count 参数，告诉目标（被写入）文件从哪里开始写�
 
 	SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
 
-`Channel` 必须处于非阻塞模式，才能搭配使用 `Selector`。这意味着，你不能为 `FileChannel` 使用 `Selector`，因为 `FileChannel` 无法切换到非阻塞模式。Socket channel 将会工作的很好。
+`Channel` 必须处于非阻塞模式，才能搭配使用 `Selector`。这意味着，你不能为 `FileChannel` 使用 `Selector`，因为 `FileChannel` 无法切换到非阻塞模式。而 Socket 通道将会工作的很好。
 
-注意 `register()` 方法的第二个参数。这是一个“兴趣位（interest set）”，表示你为 `Channel` 设置对哪种事件感兴趣，通过 `Selector`。你可以监听 4 种事件：
+注意 `register()` 方法的第二个参数。这是一个“兴趣位（interest set）”，表示通过 `Selector`，你为 `Channel` 设置对哪种事件感兴趣。你可以监听 4 种不同事件：
 
  1. 连入（Connect）
  2. 允许（Accept）
  3. 读（Read）
  4. 写（Write）
 
-一个 `Channel` “激活一个事件（fire an event）”，也叫做“准备好（ready）”处理这个事件。所以，一个已经成功连接上另一个服务器的通道处于“可接受连接状态（connect ready）”状态。一个 server socket 通道，允许接受连接，处于“允许（accept）”状态。一个通道有数据可以被读取处于“读”状态。一个通道准备好向其写数据处于“写”状态。
+一个 `Channel` “触发一个事件（fire an event）”，也叫做“准备好（ready）”处理这个事件。所以，一个已经成功连接上另一个服务器的通道处于“连接完成状态（connect ready）”状态。一个允许接受连接的 server socket 通道，处于“接受（accept）”状态。一个有数据可以被读取的通道处于“读”状态。一个准备好向其写数据的通道处于“写”状态。
 
 这 4 个状态被定义成 `SelectionKey` 的 4 个常量：
 
@@ -531,12 +549,12 @@ position 和 count 参数，告诉目标（被写入）文件从哪里开始写�
 
 #### <a name="selectionkey"></a> 7.4 SelectionKey 的
 
-如你在前面小节中所见，当你通过 `register()` 方法注册 `Channel` 到 `Selector` 时，返回一个 `SelectionKey` 对象。这个 `SelectionKey` 对象包括一组兴趣属性：
+如你在前面小节中所见，当你通过 `register()` 方法注册 `Channel` 到 `Selector` 时，会返回一个 `SelectionKey` 对象。这个 `SelectionKey` 对象包括一组有意思的属性：
 
  - 兴趣位（interest set）
  - 准备状态位（ready set）
  - 通道
- - Selection
+ - Selector
  - 关联对象（可选）
 
 我将在下面描述这些属性。
@@ -547,20 +565,23 @@ position 和 count 参数，告诉目标（被写入）文件从哪里开始写�
 
 	int interestSet = selectionKey.interestOps();
 
+	// 译注：& 结果类型不应该是 boolean，而应该是 int。
+	// & 结果如果是 0，表示没有注册该事件，1 表示已注册。
+	// 为了保持跟原文统一，我这里没有改动。
 	boolean isInterestedInAccept  = interestSet & SelectionKey.OP_ACCEPT;
 	boolean isInterestedInConnect = interestSet & SelectionKey.OP_CONNECT;
 	boolean isInterestedInRead    = interestSet & SelectionKey.OP_READ;
-	boolean isInterestedInWrite   = interestSet & SelectionKey.OP_WRITE;   
+	boolean isInterestedInWrite   = interestSet & SelectionKey.OP_WRITE;
 
-如你所见，你可以通过“&”操作符连接 `SelectionKey` 常量变量来设置设置兴趣位，以此确定一个事件是否在兴趣位中。
+如你所见，你可以通过“&”操作符运算兴趣位和 `SelectionKey` 常量变量来查看一个确定事件是否包含在兴趣位中。
 
 ##### <a name="selector-ready-set"></a> 7.4.2 状态位（Ready Set）
 
-准备状态位描述一组通道预备好的可以执行的操作。你将在得到 selection 后获取状态位。Selection 在下面小节中解释。你通过如下操作获取状态位：
+状态位标记一组通道预备好可以执行的操作。你将在得到 selection 后获取状态位。Selection 在下面小节中解释。你通过如下操作获取状态位：
 
 	int readySet = selectionKey.readyOps();
 
-你可以按这种方式来获取其他兴趣位，什么事件 / 操作这个通道处于准备完成状态。但是，你也可以使用下面 4 个方法，都是返回 boolean 值：
+你可以像测试兴趣位一样测试状态位（译注：通过“&”操作），来确定这个通道准备好处理什么事件 / 操作。但是，你也可以使用下面 4 个便利方法，它们都将返回 boolean 值：
 
 	selectionKey.isAcceptable();
 	selectionKey.isConnectable();
@@ -569,7 +590,7 @@ position 和 count 参数，告诉目标（被写入）文件从哪里开始写�
 
 ##### <a name="channel-selector"></a> 7.4.3 Channel + Selector
 
-从 `SelectionKey` 获取 channel 和 selector 很简单。按照下面操作：
+从 `SelectionKey` 获取通道和 selector 很简单。按照下面操作：
 
 	Channel  channel  = selectionKey.channel();
 
@@ -577,19 +598,19 @@ position 和 count 参数，告诉目标（被写入）文件从哪里开始写�
 
 ##### <a name="attaching-objects"></a> 7.4.4 关联对象
 
-你可以关联对象到一个 `SelectionKey`，这可以通过手动方式由通道得到关联对象，或关联更多信息到通道。比如，你可以关联你的通道正使用的 `Buffer`，或一个包括聚合数据的对象。下面是如何关联到对象的操作：
+你可以关联对象到一个 `SelectionKey`，这是识别给定通道的一个便利方法，或关联更多信息到通道。比如，你可以关联通道正使用的 `Buffer`，或一个包含更多聚合数据的对象。下面是如何关联对象的操作：
 
 	selectionKey.attach(theObject);
 
 	Object attachedObj = selectionKey.attachment();
 
-你也可以关联对象，在向 `Selector` 注册 `Channel` 的时候，在 `register()` 方法中。下面是示例：
+你也可以在向 `Selector` 注册 `Channel` 的时候就关联对象，在 `register()` 方法中。下面是示例：
 
 	SelectionKey key = channel.register(selector, SelectionKey.OP_READ, theObject);
 
-#### <a name="selecting-channels-via-a-selector"></a> 7.5 通过 Selector 选择 Channel
+#### <a name="selecting-channels-via-a-selector"></a> 7.5 通过 Selector 选择通道
 
-一旦你已经注册一或多个通道到 `Selector`，你可以通过 `select()` 方法选择其中一个。这些方法返回准备好某种状态（你所感兴趣的，connect，accept，read 或 write）的通道。换句话说，如果你对准备好读的通道“感兴趣”，通过 `select()` 方法你将获得这个准备好读的通道。
+一旦你已经注册了一或多个通道到 `Selector`，你可以调用多种 `select()` 方法中的一个。这些方法返回处于你所感兴趣的某种状态（connect，accept，read 或 write）的通道。换句话说，如果你对处于读状态的通道“感兴趣”，那么通过调用 `select()` 方法你就将获得处于读状态的通道。
 
 下面是一些 `select()` 方法：
 
@@ -597,105 +618,105 @@ position 和 count 参数，告诉目标（被写入）文件从哪里开始写�
  - int select(long timeout)
  - int selectNow()
 
-`select()` 方法阻塞，直到至少一个通道准备好了注册的事件。
+`select()` 方法阻塞，直到至少一个通道准备好处理注册的事件（译注：处于注册的状态）。
 
 `select(long timeout)` 跟 `select()` 一样除了它最多阻塞 `timeout` 毫秒（参数）。
 
-`selectNow()` 完全不阻塞。它返回现在处于准备完成状态的任何通道。
+`selectNow()` 完全不阻塞。它返回现在处于准备状态的任何通道。
 
-`select()` 方法的返回值是 `int` 类型，告诉你多少通道处于准备状态。即，多少通道处于准备状态，自从你上次调用过 `select()`。如果你调用 `select()` 并返回 1，因为一个通道处于准备状态，多次调用 `select()`， 并且多个通道处于准备状态，它将会再次返回 1。如果你没有用第一个准备状态的通道，你现在将会有 2 个处于准备状态的通道，但是在每次调用 `select()` 之间，只有 1 个通道已经变成准备状态。
+`select()` 方法的返回值是一个 `int`，告诉你多少通道处于准备状态。即，自从你上次调用过 `select()`后，多少通道处于准备状态，。如果你调用 `select()` 并返回 1，因为一个通道处于准备状态，然后多次调用 `select()`， 并且多个通道又处于准备状态，它将会再次返回 1。如果你没有用第一个准备状态的通道，你现在将会有 2 个处于准备状态的通道，但是在每次调用 `select()` 之间，只有 1 个通道变成准备状态。
 
 ##### <a name="selectedkeys"></a> 7.5.1 selectedKeys()
 
 一旦你调用了某一个 `select()` 方法，它的返回值表示一或多个通道处于准备状态，你可以通过调用 selector 的 `selectedKeys()` 方法来获得所有处于准备状态的通道。
 
-Set<SelectionKey> selectedKeys = selector.selectedKeys();
+	Set<SelectionKey> selectedKeys = selector.selectedKeys();
 
-当你注册一个通道到 `Selector`，`Channel.register()` 方法返回一个 `SelectionKey` 对象。这个 key 表示通道注册到的 selector。你可以通过 `selectedKeySet()` 方法得到这些 key。从 `SelectionKey`。
+当你注册一个通道到 `Selector`，`Channel.register()` 方法返回一个 `SelectionKey` 对象。这个 key 表示注册到 selector 的通道。你可以通过 `selectedKeySet()` 方法得到这些 key。从 `SelectionKey` 中。（译注：**不存在 selectedKeySet()**。）
 
-你可以遍历这些 selected key set 来获得这些处于准备状态的通道。下面是这个的示例：
+你可以遍历这些 selected key 来获得处于准备状态的通道。下面是这个的示例：
 
 	Set<SelectionKey> selectedKeys = selector.selectedKeys();
-	
+
 	Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-	
+
 	while(keyIterator.hasNext()) {
-	    
-	    SelectionKey key = keyIterator.next();
-	
-	    if(key.isAcceptable()) {
-	        // a connection was accepted by a ServerSocketChannel.
-	
-	    } else if (key.isConnectable()) {
-	        // a connection was established with a remote server.
-	
-	    } else if (key.isReadable()) {
-	        // a channel is ready for reading
-	
-	    } else if (key.isWritable()) {
-	        // a channel is ready for writing
-	    }
-	
-	    keyIterator.remove();
+
+		SelectionKey key = keyIterator.next();
+
+		if(key.isAcceptable()) {
+			// a connection was accepted by a ServerSocketChannel.
+
+		} else if (key.isConnectable()) {
+			// a connection was established with a remote server.
+
+		} else if (key.isReadable()) {
+			// a channel is ready for reading
+
+		} else if (key.isWritable()) {
+			// a channel is ready for writing
+		}
+
+		keyIterator.remove();
 	}
 
-这个循环遍历 selected key 集中的 key。对每一个 key，它测试这个 key 来决定这个 key 指向的通道所处的状态。
+这个循环遍历 selected key 集中的 key。对每一个 key，它测试这个 key 来决定 key 指向的通道所处的状态。
 
-注意每次遍历最后的 `keyIterator.remove()` 方法。`Selector` 不会自己从 selected key 集中移除 `SelectionKey` 实例。当你完成对通道的处理，你需要自己做这个。下次通道变成准备状态时，`Selecotr` 将会再次将它添加到 selected key 集中。
+注意每次遍历最后的 `keyIterator.remove()` 方法。`Selector` 不会自己从 selected key 集中移除 `SelectionKey` 实例。当你完成对通道的处理，你需要移除。下次通道变成准备状态时，`Selecotr` 将会再次将它添加到 selected key 集中。
 
 `SelectionKey.channel()` 方法返回的通道需要被转型成你真正要用的通道，比如一个 `ServerSockterChannel` 或 `SocketChannel` 等。
 
 #### <a name="wakeup"></a> 7.6 wakeUp()
 
-一个已经调用了 `select()` 方法而阻塞的线程，可以从 `select()` 方法返回，即使没有通道处于准备状态。这是由一个不同的线程调用 `Selector` 上的 `Selector.wakeup()` 方法，在第一个已经调用 `select()` 的线程上。这个线程在内部等待 `select()`，然后立即返回。
+一个调用了 `select()` 方法而已经阻塞的线程，也可以从 `select()` 方法返回，即使没有任何通道处于准备状态。这是由一个不同的线程调用 `Selector` 上的 `Selector.wakeup()` 方法，这个 `Selector` 要和第一个调用 `select()` 的线程上的 `Selector` 是同一个。这个在内部等待 `select()` 的线程将会立即返回。
 
 如果一个不同线程调用 `wakeup()`，而且没有任何线程当前内部处于 `select()` 阻塞状态，下一个调用 `select()` 的线程将会立即“唤醒”。
 
 #### <a name="close"></a> 7.7 close()
 
-当你完成了 `Selector`，你需要调用它的 `close()` 方法。这将会关闭 `Selector` 并且移除所有注册到 `Selector` 的 `SelectionKey` 的实例。通道并没有关闭。
+当你使用完成了 `Selector`，你需要调用它的 `close()` 方法。这将会关闭 `Selector` 并且移除所有注册到 `Selector` 的 `SelectionKey` 的实例。通道并没有关闭。
 
 #### <a name="full-selector-example"></a> 7.8 完整 Selector 示例
 
 下面是一个完整示例，打开一个 `Selector`，注册通道（通道实例化没有包括在本例中），并且检测 `Selector` 的 4 种状态（accept，connect，read，write）。
 
 	Selector selector = Selector.open();
-	
+
 	channel.configureBlocking(false);
-	
+
 	SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
-	
-	
+
+
 	while(true) {
-	
-	  int readyChannels = selector.select();
-	
-	  if(readyChannels == 0) continue;
-	
-	
-	  Set<SelectionKey> selectedKeys = selector.selectedKeys();
-	
-	  Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-	
-	  while(keyIterator.hasNext()) {
-	
-	    SelectionKey key = keyIterator.next();
-	
-	    if(key.isAcceptable()) {
-	        // a connection was accepted by a ServerSocketChannel.
-	
-	    } else if (key.isConnectable()) {
-	        // a connection was established with a remote server.
-	
-	    } else if (key.isReadable()) {
-	        // a channel is ready for reading
-	
-	    } else if (key.isWritable()) {
-	        // a channel is ready for writing
-	    }
-	
-	    keyIterator.remove();
-	  }
+
+		int readyChannels = selector.select();
+
+		if(readyChannels == 0) continue;
+
+
+		Set<SelectionKey> selectedKeys = selector.selectedKeys();
+
+		Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
+
+		while(keyIterator.hasNext()) {
+
+			SelectionKey key = keyIterator.next();
+
+			if(key.isAcceptable()) {
+				// a connection was accepted by a ServerSocketChannel.
+
+			} else if (key.isConnectable()) {
+				// a connection was established with a remote server.
+
+			} else if (key.isReadable()) {
+				// a channel is ready for reading
+
+			} else if (key.isWritable()) {
+				// a channel is ready for writing
+			}
+
+			keyIterator.remove();
+		}
 	}
 
 ### <a name="Java-NIO-FileChannel"></a> 8. Java NIO FileChannel
@@ -755,7 +776,7 @@ Java NIO FileChannel 是一个通道用于连接到文件。使用文件通道�
 
 下面是两个例子：
 
-	long pos channel.position();
+	long pos = channel.position();
 
 	channel.position(pos +123);
 
@@ -789,7 +810,7 @@ Java NIO FileChannel 是一个通道用于连接到文件。使用文件通道�
 
 ### <a name="Java-NIO-SocketChannel"></a> 9. Java NIO SocketChannel
 
-Java NIO SocketChannel 是一个连接 TCP 网络端口的通道。它是 Java NIO 中的对 [Java 网络编程](http://tutorials.jenkov.com/java-networking/sockets.html)的替代。有两种创建 `SocketChannel` 的方式：
+Java NIO SocketChannel 是一个连接 TCP 网络端口的通道。它是 Java NIO 中的对 [Java 网络编程 Socket](http://tutorials.jenkov.com/java-networking/sockets.html) 的替代。有两种创建 `SocketChannel` 的方式：
 
  1. 你打开一个 `SocketChannel` 并连到一个网络上的服务器。
  2. 一个 `SocketChannel` 将会被创建，当一个连接到达 [ServerSocketChannel](#Java-NIO-ServerSocketChannel) 时。
@@ -815,9 +836,9 @@ Java NIO SocketChannel 是一个连接 TCP 网络端口的通道。它是 Java N
 
 	int bytesRead = socketChannel.read(buf);
 
-首先，一个 `Buffer` 被分配创建。从 `SocketChannel` 读数据到 `Buffer` 中。
+首先，一个 `Buffer` 被分配创建。然后将从 `SocketChannel` 读数据到 `Buffer` 中。
 
-然后，调用 `SocketChannel.read()` 方法。这个方法从 `SocketChannel` 读数据到 `Buffer` 中。`read()` 方法返回一个 `int` 值，告诉多少字节被写到 `Buffer` 中。如果返回的是 -1，表示到达了流的结尾（连接关闭）。
+然后，调用 `SocketChannel.read()` 方法。这个方法从 `SocketChannel` 读数据到 `Buffer` 中。`read()` 方法返回一个 `int` 值，告诉多少字节数据被写到 `Buffer` 中。如果返回的是 -1，表示到达了流的结尾（连接关闭）。
 
 #### <a name="writing-to-a-socketchannel"></a> 9.4 写向 SocketChannel
 
@@ -854,7 +875,7 @@ Java NIO SocketChannel 是一个连接 TCP 网络端口的通道。它是 Java N
 
 ##### <a name="write"></a> 9.5.2 write()
 
-非阻塞模式下，`write()` 方法可能直接返回，并且没有写出任何数据。因而，你需要在循环中调用 `wriet()` 方法。但是，上面的例子已经演示了这个做法，这里没有什么不同。
+非阻塞模式下，`write()` 方法可能直接返回，并且没有写出任何数据。因而，你需要在循环中调用 `wriet()` 方法。上面的例子已经演示了这个做法，这里没有什么不同。
 
 ##### <a name="read"></a> 9.5.3 read()
 
@@ -862,7 +883,7 @@ Java NIO SocketChannel 是一个连接 TCP 网络端口的通道。它是 Java N
 
 ##### <a name="non-blocking-mode-with-selectors"></a> 9.5.4 非阻塞模式和 Selector
 
-`SocketChannel` 的非阻塞方式搭配使用 `Selector` 将会工作的很好。通过注册一或多个 `SocketChannel` 到一个 `Selecotor`，你可以询问 `Selector` 找到处于准备状态（读，写等）的通道。如何使用 `Selector` 和 `SocketChannel` 将会在下文中详细解释。
+`SocketChannel` 的非阻塞方式搭配使用 `Selector` 将会工作的很好（译注：**否则就不要使用非阻塞模式**）。通过注册一或多个 `SocketChannel` 到一个 `Selecotor`，你可以询问 `Selector` 找到处于期望准备状态（读，写等）的通道。如何使用 `Selector` 和 `SocketChannel` 将会在下文中详细解释。
 
 ### <a name="Java-NIO-ServerSocketChannel"></a> 10. Java NIO ServerSocketChannel
 
@@ -909,7 +930,7 @@ Java NIO ServerSocketChannel 是一个通道，可以监听到达的 TCP 连接�
 
 #### <a name="non-blocking-mode"></a> 10.4 非阻塞模式
 
-一个 `ServerSocketChannel` 将可以设置成非阻塞模式。非阻塞模式下，`accept()` 方法立即返回，并可能返回 null 值，如果没有任何连接连入。因而，你需要检查返回的 `SocketChannel` 是否为 null 值。下面是一个例子：
+一个 `ServerSocketChannel` 将可以设置成非阻塞模式。非阻塞模式下，`accept()` 方法立即返回，并可能返回 null 值，当没有任何连接连入时。因而，你需要检查返回的 `SocketChannel` 是否为 null 值。下面是一个例子：
 
 	ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
 
@@ -925,3 +946,235 @@ Java NIO ServerSocketChannel 是一个通道，可以监听到达的 TCP 连接�
 		}
 	}
 
+### <a name="Java-NIO-DatagramChannel"></a> 11. Java NIO DatagramChannel
+
+Java NIO DatagramChannel 是一个可以发送和接收 UDP 包的通道。因为 UDP 是一个无连接的网络协议，你不能像传统通道方式那样读和写到一个 `DatagramChannel`。你需要发送和接收数据包作为替代。
+
+#### <a name="opening-a-datagramchannel"></a> 11.1 接收数据
+
+下面是你如何打开一个 `DatagramChannel`：
+
+	DatagramChannel channel = DatagramChannel.open();
+	channel.socket().bind(new InetSocketAddress(9999));
+
+这个例子打开一个 `DatagramChannel`，可以从 9999 端口接收数据包。
+
+#### <a name="receiving-data"></a> 11.2 接收数据
+
+通过调用 `receivew()` 方法，从 `DatagramChannel` 接收数据，像这样：
+
+	ByteBuffer buf = ByteBuffer.allocate(48);
+	buf.clear();
+
+	channel.receive(buf);
+
+`receive()` 方法将会复制接收到得数据包到给定的 `Buffer` 中。如果，接收到的数据包中的数据多于 `Buffer` 的容量，剩下的数据将会默认丢弃。
+
+#### <a name="sending-data"></a> 11.3 发送数据
+
+你可以通过 `DatagramChannel` 的 `send()` 方法发送数据。像这样：
+
+	String newData = "New String to write to file..."
+		+ System.currentTimeMillis();
+
+	ByteBuffer buf = ByteBuffer.allocate(48);
+	buf.clear();
+	buf.put(newData.getBytes());
+	buf.flip();
+
+	int bytesSent = channel.send(buf, new InetSocketAddress("jenkov.com", 80));
+
+这个例子发送字符串到“jenkov.com”服务器，通过 UDP 协议，在 80 端口。由于没有监听那个端口，所以什么也不会发生。你不会被通知数据包是否被接收到，因为 UDP 不保证任何数据的分发。
+
+#### <a name="connecting-to-a-specific-address"></a> 11.4 连接特定地址
+
+可以连接 `DatagramChannel` 到一个特定的网络地址。因为 UDP 是无连接的，连接到某个网络地址不会实际创建一个真正的链接，像 TCP 通道那样。而且，它将会锁住你的 `DatagramChannel`，所以你仅能从一个特定地址发送和接收数据包。
+
+下面是一个例子：
+
+	channel.connect(new InetSocketAddress("jenkov.com", 80));
+
+当连接建立，你可以使用 `read()` 和 `write()` 方法，就像使用一个传统通道。你只是没有数据发送的保证机制。下面是一个例子：
+
+	int bytesRead = channel.read(buf);
+
+	int bytesWritten = channel.write(buf);
+
+
+### <a name="Java-NIO-Pipe"></a> 12. Java NIO 管道
+
+Java NIO 管道是两个线程间单向的数据连接。`Pipe` 有一个源通道和一个槽通道。你写数据到槽通道。数据然后可以从源通道读取。
+
+下面是 `Pipe` 原理的示意图：
+
+<center>![pipe-internals](pipe-internals.png)</center>
+<center>**Java NIO：管道内部实现。**</center>
+
+#### <a name="creating-a-pipe"></a> 12.1 创建管道
+
+你通过调用 `Pipe.open()` 方法打开 `Pipe`。下面是这个例子：
+
+	Pipe pipe = Pipe.open();
+
+#### <a name="writing-to-a-pipe"></a> 12.2 写向通道
+
+写数据到 `Pipe` 中，你需要访问槽通道。下面是这个例子：
+
+	Pipe.SinkChannel sinkChannel = pipe.sink();
+
+你通过调用它的 `write()` 方法写向一个 `SinkChannel`，像这样：
+
+	String newData = "New String to write to file..." + System.currentTimeMillis();
+
+	ByteBuffer buf = ByteBuffer.allocate(48);
+	buf.clear();
+	buf.put(newData.getBytes());
+
+	buf.flip();
+
+	while(buf.hasRemaining()) {
+		sinkChannel.write(buf);
+	}
+
+#### <a name="reading-from-a-pipe"></a> 12.3 从通道读
+
+从 `Pipe` 读数据，你需要访问源通道。下面是这个例子：
+
+	Pipe.SourceChannel sourceChannel = pipe.source();
+
+为了从源通道中读数据你需要调用 `read()` 方法，像这样：
+
+	ByteBuffer buf = ByteBuffer.allocate(48);
+
+	int bytesRead = inChannel.read(buf);
+
+`read()` 方法的返回值告诉你读了多少字节到缓冲区中。
+
+### <a name="Java-NIO-vs-IO"></a> 13. Java NIO 对比 IO
+
+我们同时学习了 Java NIO 和 IO API，那么就有一个问题：
+
+什么时候使用 IO，什么时候使用 NIO 呢？
+
+这一节中，我试图指出一些 Java NIO 和 IO 中的不同之处，包括，它们的使用场景，和它们如何影响你代码的设计。
+
+#### <a name="main-differences-between-java-nio-and-io"></a> 13.1 Java NIO 和 IO 的主要区别
+
+下表总结了 Java NIO 和 IO 间的主要区别。我将会在后面小节讨论更多关于表中不同之处的细节。
+
+<table>
+  <tr><th>IO</th><th>NIO</th></tr>
+  <tr><td>面向流</td><td>面向缓冲区</td></tr>
+  <tr><td>阻塞 IO</td><td>非阻塞 IO</td></tr>
+  <tr><td></td><td>Selector</td></tr>
+</table>
+
+#### <a name="stream-oriented-vs-buffer-oriented"></a> 13.2 面向流对比面向 Buffer
+
+Java NIO 和 IO 之间的第一个不同之处是，IO 是面向流的，而 NIO 是面向缓冲区的。所以，这是什么意思呢？
+
+Java IO 是面向流的，意味着你从流中在某一时刻读入多个字节。你利用读入的字节做什么完全取决与你。它们不会再任何地方缓存。而且，你无法在流数据中向前或向后移动。如果你需要在读入的数据中向前或向后移动，你需要先在缓冲区中进行缓存。
+
+Java NIO 是面向缓冲区的，有一点不同。数据被读到缓冲区中，然后再后续处理。你可以在缓冲区中前后移动，如果你需要的话。这将带给你更大的灵活性，在处理数据的时候。然而，你也需要检查缓冲中是否包含了所有你需要的数据，为了能完全的处理它。并且，你需要确保当读数据到缓冲区时，你不会覆盖你还没有处理的数据。
+
+#### <a name="blocking-vs-non-blocking"></a> 13.3 阻塞对比非阻塞 IO
+
+Java IO 的多种流都是阻塞的。这意味着，当一个线程调用 `read()` 和 `write()` 方法，线程将会阻塞直到有可以被读的数据，或数据被全部写出。这个线程此时将什么也做不了。
+
+Java NIO 的非阻塞模式使一个线程从通道请求读数据，并且只获得当前可获得的数据，或什么也无法得到，如果没有数据可被获取。相比于阻塞直到数据可以被读取，线程将会继续处理其他事情。
+
+非阻塞的写也是同样的。一个线程请求一些数据写入到通道中，但是不会等待知道数据全部被写出。线程可以继续执行，并同时执行其他操作。
+
+当非阻塞的 IO 调用时，线程将它们的空闲时间通常是花在处理其它通道的 IO 操作。即，一个单线程现在可以管理多个通道的输入和输出。
+
+#### <a name="selectors"></a> 13.4 Selector
+
+Java NIO 的 Selector 允许一个单线程检测多个通道的输入。你可以注册多个通道到一个 selector，然后使用单个线程来“选择”有可读数据被处理的通道，或选择准备好写的通道。这个 selector 机制使得单个线程可以很简单的管理多个通道。
+
+#### <a name="how-nio-and-io-influences-application-design"></a> 13.5 NIO 和 IO 如何影响应用设计
+
+无论你选择 NIO 还是 IO 作为你的 IO 工具箱，你的应用设计的下面几个方面可能会收到影响：
+
+ 1. NIO 和 IO 类的 API 调用。
+ 2. 数据处理过程。
+ 3. 用于处理数据的线程数量。
+
+##### <a name="the-api-calls"></a> 13.5.1 API 调用
+
+当然，你使用 NIO 的 API 肯定有别于传统 IO。这没什么可奇怪的。相比于传统 IO 只从字节流中读数据字节，如，一个 `InputStream`，NIO 中，数据必须首先被读到缓冲区中，然后从缓冲区中被处理。
+
+##### <a name="the-processing-of-data"></a> 13.5.2 数据处理
+
+数据的处理过程同样受到影响，取决于你利用纯 NIO 设计，还是传统 IO 设计。
+
+传统 IO 设计中，你从 `InputStream` 或 `Reader` 中读数据字节。假设，你正处理一个基于行的文本数据流。比如：
+
+	Name: Anna
+	Age: 25
+	Email: anna@mailserver.com
+	Phone: 1234567890
+
+文本行流的处理过程会像这样：
+
+	InputStream input = ... ; // get the InputStream from the client socket
+
+	BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+
+	String nameLine   = reader.readLine();
+	String ageLine    = reader.readLine();
+	String emailLine  = reader.readLine();
+	String phoneLine  = reader.readLine();
+
+注意，处理状态的决定取决于程序执行了多远。换句话说，一旦第一个 `reader.readLine()` 方法返回，你知道你已经读入了完整的一行文本。`readLine()` 将会阻塞直到读完了一整行，这就是它一定会返回一整行文本的原因。你同样知道这一行包含了姓名。类似地，第二个 `readLine()` 调用返回，你知道这一行包含年龄等。
+
+如你所见，程序持续处理仅当有新数据可以被读的时候，而且对于每一步你知道那个数据是什么。一旦，执行线程需要处理本文中已经读过的一段数据，线程是无法倒退去处理的（通常也没有这种需要）。这个原理参见下面的示意图：
+
+<center>![nio-vs-io-1](nio-vs-io-1.png)</center>
+<center>**Java NIO：从阻塞流中读数据。**</center>
+
+NIO 实现则看起来很不同。下面是一个简单示例：
+
+	ByteBuffer buffer = ByteBuffer.allocate(48);
+
+	int bytesRead = inChannel.read(buffer);
+
+注意第二行，它从通道中读字节到 `ByteBuffer` 中。当那个方法调用返回时，你并不知道是否所有你需要的数据都已经在缓冲区中了。所有你知道的就是缓冲区中包含一些字节。这会使得处理过程变得难一点儿。
+
+想象一下，第一次 `read(buffer)` 调用之后，所有读入到缓冲区中的内容只是行的一半。比如，“Name: An”。你能处理那个数据吗？并不能。你需要等待直到至少一行数据被读入到缓冲区中，在使处理任何数据变得有意义之前。
+
+所以，你如何知道是否缓冲区中包含足够的内容来被处理？其实，你不知道。知道的唯一方式，就是查看缓冲区的数据。结果就是，你可能需要多次检查缓冲区的数据，在你知道所有数据都在里面之前。这既是低效的，并且也可以使程序设计变得混乱。比如：
+
+	ByteBuffer buffer = ByteBuffer.allocate(48);
+
+	int bytesRead = inChannel.read(buffer);
+
+	while(! bufferFull(bytesRead) ) {
+		bytesRead = inChannel.read(buffer);
+	}
+
+`bufferFull()` 方法需要追踪已经读了多少数据到缓冲区中，并返回 `true` 或 `false`，取决于缓冲区是否已满。换句话说，如果缓冲区准备好被处理，它被认为已满。
+
+`bufferFull()` 方法扫描整个缓冲区，但是必须保证离开缓冲区的时候状态跟调用 `bufferFull()` 方法之前是一致的。如果不是，下一个读到缓冲区中的数据可能会在不正确的位置。这虽然是不可能的，但它是另一个需要注意的问题。
+
+如果缓冲区满了，它就能被处理。如果还没满，你可以处理其中的部分数据，如果那适用于你的特定情。许多情况下，它都不会满。
+
+缓冲区数据是否完备的循环示意图如下：
+
+<center>![nio-vs-io-2](nio-vs-io-2.png)</center>
+<center>**Java NIO：持续从通道中读数据直到需要的数据在缓冲区中。**</center>
+
+##### <a name="summary"></a> 13.6 总结
+
+NIO 允许你管理多个通道（网络连接或文件），只使用一个（或几个）线程，但是代价是数据的处理过程可能更加复杂相比于从阻塞流中读数据。
+
+如果你需要同时管理上千个连接，每个连接只发送很少的数据，比如，一个聊天服务器，以 NIO 来实现这个服务器可能更加有利。类似地，如果你需要保持许多已打开到对其它电脑的连接，如，P2P 网络，使用一个单线程来管理所有连出的连接可能是一个优势。
+
+单个线程，多个连接的设计示意图如下：
+
+<center>![nio-vs-io-3](nio-vs-io-3.png)</center>
+<center>**Java NIO：单个线程管理多个连接。**</center>
+
+如果你有一些占用很高带宽的连接，某一时刻发送大量的数据，那么可能传统的 IO 服务器实现更加适合。下面的示意图展示了传统 IO 服务器设计：
+
+<center>![nio-vs-io-4](nio-vs-io-4.png)</center>
+<center>**Java IO：一个传统 IO 服务器 - 一个线程处理一个连接。**</center>

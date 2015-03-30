@@ -337,6 +337,86 @@ img {
 </li>
 </ul>
 </li>
+<li>
+<a href="#Java-NIO-Scatter-Gather">Java NIO Scatter / Gather</a>
+<ul>
+<li><a href="#scattering-reads">Scattering Reads</a></li>
+<li><a href="#gathering-writes">Gathering Writes</a></li>
+</ul>
+</li>
+<li>
+<a href="#Java-NIO-Channel-to-Channel-Transfers">Java NIO 通道之间数据传送</a>
+<ul>
+<li><a href="#transferfrom">transferFrom()</a></li>
+<li><a href="#transferto">transferTo()</a></li>
+</ul>
+</li>
+<li>
+<a href="#Java-NIO-Selector">Java NIO Selector</a>
+<ul>
+<li><a href="#why-use-a-selector">为什么使用 Selector</a></li>
+<li><a href="#creating-a-selector">创建 Selector</a></li>
+<li><a href="#registering-channels-with-the-selector">向 Selector 注册 Channel</a></li>
+<li>
+<a href="#selectionkey">SelectionKey 的</a>
+<ul>
+<li><a href="#selector-interest-sets">兴趣位（Interest Set）</a></li>
+<li><a href="#selector-ready-set">状态位（Ready Set）</a></li>
+<li><a href="#channel-selector">Channel + Selector</a></li>
+<li><a href="#attaching-objects">关联对象</a></li>
+</ul>
+</li>
+<li>
+<a href="#selecting-channels-via-a-selector">通过 Selector 选择 Channel</a>
+<ul>
+<li><a href="#selectedkeys">selectedKeys()</a></li>
+</ul>
+</li>
+<li><a href="#wakeup">wakeUp()</a></li>
+<li><a href="#close">close()</a></li>
+<li><a href="#full-selector-example">完整 Selector 示例</a></li>
+</ul>
+</li>
+<li>
+<a href="#Java-NIO-FileChannel">Java NIO FileChannel</a>
+<ul>
+<li><a href="#opening-a-filechannel">打开 FileChannel</a></li>
+<li><a href="#reading-data-from-a-filechannel">从 FileChannel 读数据</a></li>
+<li><a href="#writing-data-to-a-filechannel">写数据到 FileChannel</a></li>
+<li><a href="#closing-a-filechannel">关闭 FileChannel</a></li>
+<li><a href="#filechannel-position">FileChannel 位置</a></li>
+<li><a href="#filechannel-size">FileChannel 大小</a></li>
+<li><a href="#filechannel-truncate">FileChannel 截断</a></li>
+<li><a href="#filechannel-force">FileChannel 强制刷新</a></li>
+</ul>
+</li>
+<li>
+<a href="#Java-NIO-SocketChannel">Java NIO SocketChannel</a>
+<ul>
+<li><a href="#opening-a-socketchannel">打开 SocketChannel</a></li>
+<li><a href="#closing-a-socketchannel">关闭 SocketChannel</a></li>
+<li><a href="#reading-from-a-socketchannel">从 SocketChannel 读</a></li>
+<li><a href="#writing-to-a-socketchannel">写向 SocketChannel</a></li>
+<li>
+<a href="#non-blocking-mode">非阻塞模式</a>
+<ul>
+<li><a href="#connect">connect()</a></li>
+<li><a href="#write">write()</a></li>
+<li><a href="#read">read()</a></li>
+<li><a href="#non-blocking-mode-with-selectors">非阻塞模式和 Selector</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#Java-NIO-ServerSocketChannel">Java NIO ServerSocketChannel</a>
+<ul>
+<li><a href="#opening-a-serversocketchannel">打开 ServerSocketChannel</a></li>
+<li><a href="#closing-a-serversocketchannel">关闭 ServerSocketChannel</a></li>
+<li><a href="#listening-for-incoming-connections">监听连入连接</a></li>
+<li><a href="#non-blocking-mode">非阻塞模式</a></li>
+</ul>
+</li>
 </ol>
 <h3><a name="Java-NIO-Tutorial"></a> 1. Java NIO 教程</h3>
 <p>Java NIO（New IO）是 Java IO API 的替代方案（Java 1.4 之后），是指传统 <a href="">Java IO</a> 和 <a href="">Java Networking</a> API 的一种替代。Java NIO 提供了一种使用 IO 的不同方式，相比于传统的 IO API。</p>
@@ -386,7 +466,7 @@ img {
 <p><center><img src="overview-selectors.png" alt="overview-selectors" /></center>
 <center><strong>一个线程使用一个 Selector 处理 3 个 Channel。</strong></center></p>
 <p>为了使用一个 <code>Selector</code>，你需要注册 <code>Channel</code> 到它。然后你调用它的 <code>select()</code> 方法。这个方法将会一直阻塞直到一个已注册的 channel 的事件到来。一旦这个方法返回，线程就可以处理这些事件了。事件类型比如连接到达，接收到数据等。</p>
-<h3><a name="Java-NIO-Channel"></a> 3 Java NIO Channel</h3>
+<h3><a name="Java-NIO-Channel"></a> 3. Java NIO Channel</h3>
 <p>Java NIO Channel 跟流很相似，但也有一些不同：</p>
 <ul>
 <li>你可以同时读和写一个 Channel。流一般是单一的（只读或只写）。</li>
@@ -432,7 +512,7 @@ aFile.close();
 </code></pre>
 
 <p>注意 <code>buf.flip()</code> 调用。首先你读到一个 Buffer 中。然后，你切换读写模式。然后，读出它。我将会在下一小节讲解更多关于 <code>Buffer</code> 的细节。</p>
-<h3><a name="Java-NIO-Buffer"></a> 4 Java NIO Buffer</h3>
+<h3><a name="Java-NIO-Buffer"></a> 4. Java NIO Buffer</h3>
 <p>Java NIO Buffer 用于跟 NIO Channel 交互。如你所知，数据从 Channel 读入 Buffer，从 Buffer 写向 Channel。</p>
 <p>一个 Buffer，本质是一块内存区域，你可以写入数据到其中，并之后进行重读。这块内存区域被包装成 NIO Buffer 对象，这些对象提供了一系列方法使的更易于跟内存块一起工作。</p>
 <h4><a name="basicusage"></a> 4.1 基本 Buffer 使用</h4>
@@ -575,6 +655,441 @@ buffer.reset();  //set position back to mark.
 <li>Buffer 中第一个元素小于另一个 Buffer 中的相应元素。</li>
 <li>所有的元素是相等的，但是第一个 Buffer 先于第二个 Buffer 读（耗）尽了所有元素（即，第一个 Buffer 有较少的元素）。</li>
 </ol>
+<h3><a name="Java-NIO-Scatter-Gather"></a> 5. Java NIO 散和收（Sactter/Gather）</h3>
+<p>Java NIO 有内建的 scatter / gather 支持。scatter / gather 的概念用于读 / 写 channel。</p>
+<p>一个 scattering 用于从 channel 执行读操作，读数据到一个或多个 buffer 中。因而，channel 用于从多个通道“分散”数据到多个缓冲区中。</p>
+<p>一个 gathering 写向 channel 是一个写操作来写数据到 channel 中，可以从一或多个缓冲区中写数据到一个单一的 channel。</p>
+<p>scatter / gather 会是很有用的解决方案，当你需要用分开使用多种类的数据时。比如，如果一个消息由一个头（header）和正文（body）组成，你可能想将头和正文放在分开的缓冲区中。这样做，可以使你更易于以分离的方式使用头和正文。</p>
+<h4><a name="scattering-reads"></a> 5.1 分散读（Scattering Reads）</h4>
+<p>一个“散开读”从一个单一通道中读数据到多个缓冲区中。下面是这个原理的实例图：</p>
+<p><center><img src="scatter.png" alt="scatter" /></center>
+<center><strong>Java NIO：分散读</strong></center></p>
+<p>这面这个例子展示如何实现一个分散读：</p>
+<pre><code>ByteBuffer header = ByteBuffer.allocate(128);
+ByteBuffer body   = ByteBuffer.allocate(1024);
+
+ByteBuffer[] bufferArray = { header, body };
+
+channel.read(buffers);
+</code></pre>
+
+<p>注意，实例化后的缓冲区先被插入到数组中的，然后数组作为参数传递到 <code>channel.read()</code> 方法。然后，<code>read()</code> 方法按照数组中缓冲区的顺序，从通道中写数据到数组中的缓冲区实例。一旦一个缓冲区写满了，通道转向下一个，并填满它。</p>
+<p>分散读填满一个缓冲区之后才会转向下一个，这意味着动态大小的消息部分并不适合使用分散读。换句话说，如果你有一个头和正文，而且头有固定尺寸（如，128 字节），那么分散度将会相当有效。</p>
+<h4><a name="gathering-reads"></a> 5.2 收集写（Gathering Writes）</h4>
+<p>一个“收集写”从多个缓冲区中写数据到一个单一通道中。下面是这个原理的示意图：</p>
+<p><center><img src="gather.png" alt="gather" /></center>
+<center><strong>Java NIO：收集写</strong></center></p>
+<p>下面的代码示例展示如何实现一个收集写：</p>
+<pre><code>ByteBuffer header = ByteBuffer.allocate(128);
+ByteBuffer body   = ByteBuffer.allocate(1024);
+
+//write data into buffers
+
+ByteBuffer[] bufferArray = { header, body };
+
+channel.write(buffers);
+</code></pre>
+
+<p>缓冲区数组传递到 <code>write()</code> 方法，该方法按照数组中缓冲区的顺序将内容写到通道中。仅仅在 position 和 limit 之间的缓冲区内容才会被写出。因而，如果一个缓冲区的容量为 128 字节，但仅包含 58 字节的实际数据，那么只会有这 58 字节从缓冲区写向通道中。因此，一个收集写在消息大小是动态变化时将会工作的很好，跟分散读相反。</p>
+<h3><a name="Java-NIO-Channel-to-Channel-Transfers"></a> 6. Java NIO 通道之间数据传送</h3>
+<p>Java NIO 中，你可以直接将数据从一个通道转到另一个通道中，如果通道中的一个是 <code>FileChannel</code> 的话。<code>FileChannel</code> 类有一个 <code>transferTo()</code> 和一个 <code>transferFrom()</code> 方法，来完成数据转送操作。</p>
+<h4><a name="transferfrom"></a> 6.1 transferFrom()</h4>
+<p><code>FileChannel.transferFrom()</code> 方法从一个源通道转送数据到另一个 <code>FileChannel</code>。</p>
+<pre><code>RandomAccessFile fromFile = new RandomAccessFile(&quot;fromFile.txt&quot;, &quot;rw&quot;);
+FileChannel      fromChannel = fromFile.getChannel();
+
+RandomAccessFile toFile = new RandomAccessFile(&quot;toFile.txt&quot;, &quot;rw&quot;);
+FileChannel      toChannel = toFile.getChannel();
+
+long position = 0;
+long count    = fromChannel.size();
+
+toChannel.transferFrom(fromChannel, position, count);
+</code></pre>
+
+<p>position 和 count 参数，告诉目标（被写入）文件从哪里开始写数据（<code>position</code>），及应该转送最大多大（<code>count</code>）字节的数据。如果源通道数据量少于 <code>count</code> 字节，那么将只转送能够转送的数据量。</p>
+<p>另外，一些 <code>SocketChannel</code> 实现可能也可以转送数据，这些数据只是 <code>SocketChannel</code> 中当前已经在内部缓冲区中的了，即使 <code>SocketChannel</code> 中可能后续有很多的数据进来。因而，它可能无法从 <code>SocketChannel</code> 转送全部的所要求的（<code>count</code>）数据到 <code>FileChannel</code> 中。</p>
+<h4><a name="transferfrom"></a> 6.2 transferto()</h4>
+<p><code>transferTo()</code> 方法用于从 <code>FileChannel</code> 转数据到其它通道。下面是一个简单示例：</p>
+<pre><code>RandomAccessFile fromFile = new RandomAccessFile(&quot;fromFile.txt&quot;, &quot;rw&quot;);
+FileChannel      fromChannel = fromFile.getChannel();
+
+RandomAccessFile toFile = new RandomAccessFile(&quot;toFile.txt&quot;, &quot;rw&quot;);
+FileChannel      toChannel = toFile.getChannel();
+
+long position = 0;
+long count    = fromChannel.size();
+
+fromChannel.transferTo(position, count, toChannel);
+</code></pre>
+
+<p>注意，这个例子跟前例非常相似。唯一真正的不同是，这个方法是在哪个 <code>FileChannel</code> 对象调用的。其它都是相同的。</p>
+<p>问题是，<code>SocketChannel</code> 也提供了一个 <code>transferTo()</code> 方法。<code>SocketChannel</code> 实现可能只会从 <code>FileChannel</code> 中转送字节直到发送缓冲区满了（send buffer），然后停止（译注：挂起？）。</p>
+<h3><a name="Java-NIO-Selector"></a> 7. Java NIO Selector</h3>
+<p>一个 <code>Selector</code> 是 Java NIO 的一个组件，用于检查一或多个 NIO Channel，并决定 Channel 状态，如读或写。这样，一个单线程就可以管理多个通道，及多个网络连接。</p>
+<h4><a name="why-use-a-selector"></a> 7.1 为什么使用 Selector</h4>
+<p>只使用一个线程来处理多个通道的优点是你只需较少的线程来处理通道。其实，你可以只用一个线程来处理你所有的通道。操作系统中，线程间的切换是很重的操作，而且每个线程都需要一些资源（内存）。因而，越少的线程使用，越好。</p>
+<p>但是记住，现在操作系统和 CPU 在多任务的处理上变的越来越好，所以多线程的切换代价变的越来越小。其实，如果一个 CPU 由多核，你可能在浪费 CPU 的能力，如果不使用多任务的话。不过，那种设计讨论是另外的主题。这里，只讨论通过单个线程利用 <code>Selector</code> 处理多个通道。</p>
+<p>下面是一个线程利用 <code>Selector</code> 处理 3 个 <code>Channel</code> 的例子：</p>
+<p><center><img src="overview-selectors.png" alt="overview-selectors" /></center>
+<center><strong>一个线程使用一个 Selector 处理 3 个 Channel。</strong></center></p>
+<h4><a name="creating-a-selector"></a> 7.2 创建 Selector</h4>
+<p>你通过调用 <code>Selector.open()</code> 方法创建一个 <code>Selector</code>，像这样：</p>
+<pre><code>Selector selector = Selector.open();
+</code></pre>
+
+<h4><a name="registering-channels-with-the-selector"></a> 7.3 向 Selector 注册 Channel</h4>
+<p>为了搭配 <code>Selector</code> 使用 <code>Channel</code>，你必须注册 <code>Channel</code> 到 <code>Selector</code>。这通过 <code>SelectableChannel.register()</code> 方法实现，如下：</p>
+<pre><code>channel.configureBlocking(false);
+
+SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
+</code></pre>
+
+<p><code>Channel</code> 必须处于非阻塞模式，才能搭配使用 <code>Selector</code>。这意味着，你不能为 <code>FileChannel</code> 使用 <code>Selector</code>，因为 <code>FileChannel</code> 无法切换到非阻塞模式。Socket channel 将会工作的很好。</p>
+<p>注意 <code>register()</code> 方法的第二个参数。这是一个“兴趣位（interest set）”，表示你为 <code>Channel</code> 设置对哪种事件感兴趣，通过 <code>Selector</code>。你可以监听 4 种事件：</p>
+<ol>
+<li>连入（Connect）</li>
+<li>允许（Accept）</li>
+<li>读（Read）</li>
+<li>写（Write）</li>
+</ol>
+<p>一个 <code>Channel</code> “激活一个事件（fire an event）”，也叫做“准备好（ready）”处理这个事件。所以，一个已经成功连接上另一个服务器的通道处于“可接受连接状态（connect ready）”状态。一个 server socket 通道，允许接受连接，处于“允许（accept）”状态。一个通道有数据可以被读取处于“读”状态。一个通道准备好向其写数据处于“写”状态。</p>
+<p>这 4 个状态被定义成 <code>SelectionKey</code> 的 4 个常量：</p>
+<ol>
+<li>SelectionKey.OP_CONNECT</li>
+<li>SelecitonKey.OP_ACCEPT</li>
+<li>SelectionKey.OP_READ</li>
+<li>SelectionKey.OP_WRITE</li>
+</ol>
+<p>如果，你对不止一个事件感兴趣，用“或”操作符连起它们，如：</p>
+<pre><code>int interestSet = SelectionKey.OP_READ | SelectionKey.OP_WRITE;
+</code></pre>
+
+<p>我将会在本文下面更多的讲解“兴趣位”。</p>
+<h4><a name="selectionkey"></a> 7.4 SelectionKey 的</h4>
+<p>如你在前面小节中所见，当你通过 <code>register()</code> 方法注册 <code>Channel</code> 到 <code>Selector</code> 时，返回一个 <code>SelectionKey</code> 对象。这个 <code>SelectionKey</code> 对象包括一组兴趣属性：</p>
+<ul>
+<li>兴趣位（interest set）</li>
+<li>准备状态位（ready set）</li>
+<li>通道</li>
+<li>Selection</li>
+<li>关联对象（可选）</li>
+</ul>
+<p>我将在下面描述这些属性。</p>
+<h5><a name="selector-interest-sets"></a> 7.4.1 兴趣位（Interest Set）</h5>
+<p>兴趣位是一组你感兴趣的事件，如在“向 Selection 注册 Channel”所描述。你可以通过 <code>SelectionKey</code> 读和写兴趣位，像这样：</p>
+<pre><code>int interestSet = selectionKey.interestOps();
+
+boolean isInterestedInAccept  = interestSet &amp; SelectionKey.OP_ACCEPT;
+boolean isInterestedInConnect = interestSet &amp; SelectionKey.OP_CONNECT;
+boolean isInterestedInRead    = interestSet &amp; SelectionKey.OP_READ;
+boolean isInterestedInWrite   = interestSet &amp; SelectionKey.OP_WRITE;   
+</code></pre>
+
+<p>如你所见，你可以通过“&amp;”操作符连接 <code>SelectionKey</code> 常量变量来设置设置兴趣位，以此确定一个事件是否在兴趣位中。</p>
+<h5><a name="selector-ready-set"></a> 7.4.2 状态位（Ready Set）</h5>
+<p>准备状态位描述一组通道预备好的可以执行的操作。你将在得到 selection 后获取状态位。Selection 在下面小节中解释。你通过如下操作获取状态位：</p>
+<pre><code>int readySet = selectionKey.readyOps();
+</code></pre>
+
+<p>你可以按这种方式来获取其他兴趣位，什么事件 / 操作这个通道处于准备完成状态。但是，你也可以使用下面 4 个方法，都是返回 boolean 值：</p>
+<pre><code>selectionKey.isAcceptable();
+selectionKey.isConnectable();
+selectionKey.isReadable();
+selectionKey.isWritable();
+</code></pre>
+
+<h5><a name="channel-selector"></a> 7.4.3 Channel + Selector</h5>
+<p>从 <code>SelectionKey</code> 获取 channel 和 selector 很简单。按照下面操作：</p>
+<pre><code>Channel  channel  = selectionKey.channel();
+
+Selector selector = selectionKey.selector(); 
+</code></pre>
+
+<h5><a name="attaching-objects"></a> 7.4.4 关联对象</h5>
+<p>你可以关联对象到一个 <code>SelectionKey</code>，这可以通过手动方式由通道得到关联对象，或关联更多信息到通道。比如，你可以关联你的通道正使用的 <code>Buffer</code>，或一个包括聚合数据的对象。下面是如何关联到对象的操作：</p>
+<pre><code>selectionKey.attach(theObject);
+
+Object attachedObj = selectionKey.attachment();
+</code></pre>
+
+<p>你也可以关联对象，在向 <code>Selector</code> 注册 <code>Channel</code> 的时候，在 <code>register()</code> 方法中。下面是示例：</p>
+<pre><code>SelectionKey key = channel.register(selector, SelectionKey.OP_READ, theObject);
+</code></pre>
+
+<h4><a name="selecting-channels-via-a-selector"></a> 7.5 通过 Selector 选择 Channel</h4>
+<p>一旦你已经注册一或多个通道到 <code>Selector</code>，你可以通过 <code>select()</code> 方法选择其中一个。这些方法返回准备好某种状态（你所感兴趣的，connect，accept，read 或 write）的通道。换句话说，如果你对准备好读的通道“感兴趣”，通过 <code>select()</code> 方法你将获得这个准备好读的通道。</p>
+<p>下面是一些 <code>select()</code> 方法：</p>
+<ul>
+<li>int select()</li>
+<li>int select(long timeout)</li>
+<li>int selectNow()</li>
+</ul>
+<p><code>select()</code> 方法阻塞，直到至少一个通道准备好了注册的事件。</p>
+<p><code>select(long timeout)</code> 跟 <code>select()</code> 一样除了它最多阻塞 <code>timeout</code> 毫秒（参数）。</p>
+<p><code>selectNow()</code> 完全不阻塞。它返回现在处于准备完成状态的任何通道。</p>
+<p><code>select()</code> 方法的返回值是 <code>int</code> 类型，告诉你多少通道处于准备状态。即，多少通道处于准备状态，自从你上次调用过 <code>select()</code>。如果你调用 <code>select()</code> 并返回 1，因为一个通道处于准备状态，多次调用 <code>select()</code>， 并且多个通道处于准备状态，它将会再次返回 1。如果你没有用第一个准备状态的通道，你现在将会有 2 个处于准备状态的通道，但是在每次调用 <code>select()</code> 之间，只有 1 个通道已经变成准备状态。</p>
+<h5><a name="selectedkeys"></a> 7.5.1 selectedKeys()</h5>
+<p>一旦你调用了某一个 <code>select()</code> 方法，它的返回值表示一或多个通道处于准备状态，你可以通过调用 selector 的 <code>selectedKeys()</code> 方法来获得所有处于准备状态的通道。</p>
+<p>Set<SelectionKey> selectedKeys = selector.selectedKeys();</p>
+<p>当你注册一个通道到 <code>Selector</code>，<code>Channel.register()</code> 方法返回一个 <code>SelectionKey</code> 对象。这个 key 表示通道注册到的 selector。你可以通过 <code>selectedKeySet()</code> 方法得到这些 key。从 <code>SelectionKey</code>。</p>
+<p>你可以遍历这些 selected key set 来获得这些处于准备状态的通道。下面是这个的示例：</p>
+<pre><code>Set&lt;SelectionKey&gt; selectedKeys = selector.selectedKeys();
+
+Iterator&lt;SelectionKey&gt; keyIterator = selectedKeys.iterator();
+
+while(keyIterator.hasNext()) {
+
+    SelectionKey key = keyIterator.next();
+
+    if(key.isAcceptable()) {
+        // a connection was accepted by a ServerSocketChannel.
+
+    } else if (key.isConnectable()) {
+        // a connection was established with a remote server.
+
+    } else if (key.isReadable()) {
+        // a channel is ready for reading
+
+    } else if (key.isWritable()) {
+        // a channel is ready for writing
+    }
+
+    keyIterator.remove();
+}
+</code></pre>
+
+<p>这个循环遍历 selected key 集中的 key。对每一个 key，它测试这个 key 来决定这个 key 指向的通道所处的状态。</p>
+<p>注意每次遍历最后的 <code>keyIterator.remove()</code> 方法。<code>Selector</code> 不会自己从 selected key 集中移除 <code>SelectionKey</code> 实例。当你完成对通道的处理，你需要自己做这个。下次通道变成准备状态时，<code>Selecotr</code> 将会再次将它添加到 selected key 集中。</p>
+<p><code>SelectionKey.channel()</code> 方法返回的通道需要被转型成你真正要用的通道，比如一个 <code>ServerSockterChannel</code> 或 <code>SocketChannel</code> 等。</p>
+<h4><a name="wakeup"></a> 7.6 wakeUp()</h4>
+<p>一个已经调用了 <code>select()</code> 方法而阻塞的线程，可以从 <code>select()</code> 方法返回，即使没有通道处于准备状态。这是由一个不同的线程调用 <code>Selector</code> 上的 <code>Selector.wakeup()</code> 方法，在第一个已经调用 <code>select()</code> 的线程上。这个线程在内部等待 <code>select()</code>，然后立即返回。</p>
+<p>如果一个不同线程调用 <code>wakeup()</code>，而且没有任何线程当前内部处于 <code>select()</code> 阻塞状态，下一个调用 <code>select()</code> 的线程将会立即“唤醒”。</p>
+<h4><a name="close"></a> 7.7 close()</h4>
+<p>当你完成了 <code>Selector</code>，你需要调用它的 <code>close()</code> 方法。这将会关闭 <code>Selector</code> 并且移除所有注册到 <code>Selector</code> 的 <code>SelectionKey</code> 的实例。通道并没有关闭。</p>
+<h4><a name="full-selector-example"></a> 7.8 完整 Selector 示例</h4>
+<p>下面是一个完整示例，打开一个 <code>Selector</code>，注册通道（通道实例化没有包括在本例中），并且检测 <code>Selector</code> 的 4 种状态（accept，connect，read，write）。</p>
+<pre><code>Selector selector = Selector.open();
+
+channel.configureBlocking(false);
+
+SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
+
+
+while(true) {
+
+  int readyChannels = selector.select();
+
+  if(readyChannels == 0) continue;
+
+
+  Set&lt;SelectionKey&gt; selectedKeys = selector.selectedKeys();
+
+  Iterator&lt;SelectionKey&gt; keyIterator = selectedKeys.iterator();
+
+  while(keyIterator.hasNext()) {
+
+    SelectionKey key = keyIterator.next();
+
+    if(key.isAcceptable()) {
+        // a connection was accepted by a ServerSocketChannel.
+
+    } else if (key.isConnectable()) {
+        // a connection was established with a remote server.
+
+    } else if (key.isReadable()) {
+        // a channel is ready for reading
+
+    } else if (key.isWritable()) {
+        // a channel is ready for writing
+    }
+
+    keyIterator.remove();
+  }
+}
+</code></pre>
+
+<h3><a name="Java-NIO-FileChannel"></a> 8. Java NIO FileChannel</h3>
+<p>Java NIO FileChannel 是一个通道用于连接到文件。使用文件通道，你可以从文件读取数据，并向文件写数据。Java NIO FileChannel 类是 NIO 的对 <a href="#http://tutorials.jenkov.com/java-io/file.html">利用标准 Java IO API 读文件</a>的一个替代。</p>
+<p><code>FileChannel</code> 无法设置成非阻塞模式。它总是运行在阻塞模式中。</p>
+<h4><a name="opening-a-filechannel"></a> 8.1 打开 FileChannel</h4>
+<p>在你使用 <code>FileChannel</code> 之前，你必须打开它。你不能直接打开一个 <code>FileChannel</code>。你需要从输入流（InputStream），输出流（OutputStream），或 RandomAccessFile 中获取 FileChannel。下面是如何通过 RndomAccessFile 打开 FileChannel。</p>
+<pre><code>RandomAccessFile aFile     = new RandomAccessFile(&quot;data/nio-data.txt&quot;, &quot;rw&quot;);
+FileChannel      inChannel = aFile.getChannel();
+</code></pre>
+
+<h4><a name="reading-data-from-a-filechannel"></a> 8.2 从 FileChannel 读数据</h4>
+<p>你可以调用 <code>read()</code> 从 <code>FileChannel</code> 读数据。下面是一个示例：</p>
+<pre><code>ByteBuffer buf = ByteBuffer.allocate(48);
+
+int bytesRead = inChannel.read(buf);
+</code></pre>
+
+<p>首先，分配一个 <code>Buffer</code>。从 <code>FileChannel</code> 读数据到 <code>Buffer</code> 中。</p>
+<p>然后，<code>FileChannel.read()</code> 方法被调用。这个方法从 <code>FileChannel</code> 读数据到 <code>Buffer</code> 中。<code>read()</code> 方法返回 <code>int</code> 值，告诉你写到 <code>Buffer</code> 中了多少字节。如果返回的是 -1，那么表示到达了文件结尾。</p>
+<h4><a name="writing-data-to-a-filechannel"></a> 8.3 写数据到 FileChannel</h4>
+<p>通过 <code>FileChannel.write()</code> 方法，可以写数据到 <code>FileChannel</code> 中，它需要 <code>Buffer</code> 作为参数。下面是一个示例：</p>
+<pre><code>String newData = &quot;New String to write to file...&quot; + System.currentTimeMillis();
+
+ByteBuffer buf = ByteBuffer.allocate(48);
+buf.clear();
+buf.put(newData.getBytes());
+
+buf.flip();
+
+while(buf.hasRemaining()) {
+        channel.write(buf);
+}
+</code></pre>
+
+<p>注意如何在 while 循环中调用 <code>FileChannel.write()</code> 方法。并不保证 <code>write()</code> 方法写多少字节到 <code>FileChannel</code> 中。因而，我们重复调用 <code>write()</code> 方法直到 <code>Buffer</code> 中没有能写出的字符。</p>
+<h4><a name="closing-a-filechannel"></a> 8.4 关闭 FileChannel</h4>
+<p>当你用过 <code>FileChannel</code> 之后，你必须关闭它。如下操作：</p>
+<pre><code>channel.close(); 
+</code></pre>
+
+<h4><a name="filechannel-position"></a> 8.5 FileChannel 位置</h4>
+<p>当读或写一个 <code>FileChannel</code> 时，你是在一个指定位置操作的。通过调用 <code>position()</code> 方法，你可以获得 <code>FileChannel</code> 对象的当前位置。</p>
+<p>你也可以通过调用 <code>position(long pos)</code> 方法设置 <code>FileChannel</code> 的位置信息。</p>
+<p>下面是两个例子：</p>
+<pre><code>long pos channel.position();
+
+channel.position(pos +123);
+</code></pre>
+
+<p>如果你设置位置在文件末尾，并尝试从通道中读取数据，你将会得到 -1，标记文件结尾。</p>
+<p>如果你设置位置在文件末尾，并向通道中写数据，文件将会先扩容到这个位置然后写入数据。这可能导致“文件空洞（file hole）”，即写入数据到磁盘上的物理文件有空隙。</p>
+<h4><a name="filechannel-size"></a> 8.6 FileChannel 大小</h4>
+<p><code>FileChannel</code> 对象的 <code>size()</code> 方法返回文件通道连接的文件的大小。</p>
+<pre><code>long fileSize = channel.size();
+</code></pre>
+
+<h4><a name="filechannel-truncate"></a> 8.7 FileChannel 截断</h4>
+<p>你可以截断一个文件通过 <code>FileChannel.truncate()</code> 方法。当你截断一个文件时，你切断文件成给定的长度。下面是一个示例：</p>
+<pre><code>channel.truncate(1024);
+</code></pre>
+
+<p>这个例子截断文件成 1024 字节。</p>
+<h4><a name="filechannel-force"></a> 8.8 FileChannel 强制刷新</h4>
+<p><code>FileChannel.force()</code> 方法刷新所有通道中的未写数据到磁盘上。操作系统出于性能原因可能会在内存中缓存数据，所以无法保证数据写到通道中就是实际就写到磁盘中了，直到你调用 <code>force()</code> 方法。</p>
+<p><code>force()</code> 方法需要一个 boolean 参数，表示是否将文件元数据（权限等）也同样刷新到文件中。</p>
+<p>下面是一个例子，同时刷新文件数据和文件元数据。</p>
+<pre><code>channel.force(true);
+</code></pre>
+
+<h3><a name="Java-NIO-SocketChannel"></a> 9. Java NIO SocketChannel</h3>
+<p>Java NIO SocketChannel 是一个连接 TCP 网络端口的通道。它是 Java NIO 中的对 <a href="http://tutorials.jenkov.com/java-networking/sockets.html">Java 网络编程</a>的替代。有两种创建 <code>SocketChannel</code> 的方式：</p>
+<ol>
+<li>你打开一个 <code>SocketChannel</code> 并连到一个网络上的服务器。</li>
+<li>一个 <code>SocketChannel</code> 将会被创建，当一个连接到达 <a href="#Java-NIO-ServerSocketChannel">ServerSocketChannel</a> 时。</li>
+</ol>
+<h4><a name="opening-a-socketchannel"></a> 9.1 打开 SocketChannel</h4>
+<p>下面是如何打开一个 <code>SocketChannel</code>：</p>
+<pre><code>SocketChannel socketChannel = SocketChannel.open();
+socketChannel.connect(new InetSocketAddress(&quot;http://jenkov.com&quot;, 80));
+</code></pre>
+
+<h4><a name="closing-a-socketchannel"></a> 9.2 关闭 SocketChannel</h4>
+<p>你通过调用 <code>SocketChannel.close()</code> 方法来关闭一个 <code>SocketChannel</code>。下面是一个示例：</p>
+<pre><code>socketChannel.close();
+</code></pre>
+
+<h4><a name="reading-from-a-socketchannel"></a> 9.3 从 SocketChannel 读</h4>
+<p>通过 <code>read()</code> 方法从 <code>SocketChannel</code> 读数据。下面是一个例子：</p>
+<pre><code>ByteBuffer buf = ByteBuffer.allocate(48);
+
+int bytesRead = socketChannel.read(buf);
+</code></pre>
+
+<p>首先，一个 <code>Buffer</code> 被分配创建。从 <code>SocketChannel</code> 读数据到 <code>Buffer</code> 中。</p>
+<p>然后，调用 <code>SocketChannel.read()</code> 方法。这个方法从 <code>SocketChannel</code> 读数据到 <code>Buffer</code> 中。<code>read()</code> 方法返回一个 <code>int</code> 值，告诉多少字节被写到 <code>Buffer</code> 中。如果返回的是 -1，表示到达了流的结尾（连接关闭）。</p>
+<h4><a name="writing-to-a-socketchannel"></a> 9.4 写向 SocketChannel</h4>
+<p>使用 <code>SocketChannel.write()</code> 方法写数据到 <code>SocketChannel</code>，需要一个 <code>Buffer</code> 作为参数。下面是一个示例：</p>
+<pre><code>String newData = &quot;New String to write to file...&quot; + System.currentTimeMillis();
+
+ByteBuffer buf = ByteBuffer.allocate(48);
+buf.clear();
+buf.put(newData.getBytes());
+
+buf.flip();
+
+while(buf.hasRemaining()) {
+        channel.write(buf);
+}
+</code></pre>
+
+<p>注意，<code>SocketChannel.write()</code> 方法是如何在 while 循环中调用的。并不保证 <code>write()</code> 方法写多少字节到 <code>SocketChannel</code> 中。因而，我们重复调用 <code>write()</code> 方法，直到 <code>Buffer</code> 中没有任何字符需要写出。</p>
+<h4><a name="non-blocking-mode"></a> 9.5 非阻塞模式</h4>
+<p>你可以设置 <code>SocketChannel</code> 成非阻塞模式。当你这样做时，你可以以异步模式调用 <code>connect()</code>，<code>read()</code> 和 <code>write()</code> 方法。</p>
+<h5><a name="connect"></a> 9.5.1 connect()</h5>
+<p>如果 <code>SocketChannel</code> 是非阻塞模式，而且你调用了 <code>connect()</code> 方法，这个方法可以在连接建立前就返回。决定连接是否建立了，你可以调用 <code>finishConnect()</code> 方法，像这样：</p>
+<pre><code>socketChannel.configureBlocking(false);
+socketChannel.connect(new InetSocketAddress(&quot;http://jenkov.com&quot;, 80));
+
+while(! socketChannel.finishConnect() ){
+    //wait, or do something else...
+}
+</code></pre>
+
+<h5><a name="write"></a> 9.5.2 write()</h5>
+<p>非阻塞模式下，<code>write()</code> 方法可能直接返回，并且没有写出任何数据。因而，你需要在循环中调用 <code>wriet()</code> 方法。但是，上面的例子已经演示了这个做法，这里没有什么不同。</p>
+<h5><a name="read"></a> 9.5.3 read()</h5>
+<p>非阻塞模式下，<code>read()</code> 方法可能直接返回，而且没有读到任何数据。因而，你需要注意返回的 <code>int</code> 值，告诉你读入了多少字节。</p>
+<h5><a name="non-blocking-mode-with-selectors"></a> 9.5.4 非阻塞模式和 Selector</h5>
+<p><code>SocketChannel</code> 的非阻塞方式搭配使用 <code>Selector</code> 将会工作的很好。通过注册一或多个 <code>SocketChannel</code> 到一个 <code>Selecotor</code>，你可以询问 <code>Selector</code> 找到处于准备状态（读，写等）的通道。如何使用 <code>Selector</code> 和 <code>SocketChannel</code> 将会在下文中详细解释。</p>
+<h3><a name="Java-NIO-ServerSocketChannel"></a> 10. Java NIO ServerSocketChannel</h3>
+<p>Java NIO ServerSocketChannel 是一个通道，可以监听到达的 TCP 连接，就像标准 Java 网络编程中 <a href="http://tutorials.jenkov.com/java-networking/server-sockets.html">ServerSocket</a>。<code>ServerSocketChannel</code> 类在 <code>java.nio.channels</code> 包下。</p>
+<p>下面是一个例子：</p>
+<pre><code>ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+
+serverSocketChannel.socket().bind(new InetSocketAddress(9999));
+
+while(true){
+    SocketChannel socketChannel = serverSocketChannel.accept();
+
+    //do something with socketChannel...
+}
+</code></pre>
+
+<h4><a name="opening-a-serversocketchannel"></a> 10.1 打开 ServerSocketChannel</h4>
+<p>你打开一个 <code>ServerSocketChannel</code> 通过调用 <code>ServerSocketChannel.open()</code> 方法。按照下面这样做：</p>
+<pre><code>ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+</code></pre>
+
+<h4><a name="closing-a-serversocketchannel"></a> 10.2 关闭 ServerSocketChannel</h4>
+<p>关闭一个 <code>ServerSocketChannel</code> 通过 <code>ServerSocketChannel.close()</code> 方法。按照下面这样做：</p>
+<pre><code>serverSocketChannel.close();
+</code></pre>
+
+<h4><a name="listening-for-incoming-connections"></a> 10.3 监听连入连接</h4>
+<p>监听连入连接通过 <code>ServerSocketChannel.accept()</code> 方法。当 <code>accept()</code> 方法返回时，它返回一个 <code>SocketChannel</code> 代表一个连入连接。因而，<code>accept()</code> 方法阻塞直到有连接到达。</p>
+<p>因为你一般不会只对一个单一连接感兴趣，因而你将需要在一个 while 循环中调用 <code>accept()</code> 方法。向下面这样：</p>
+<pre><code>while(true){
+    SocketChannel socketChannel =
+        serverSocketChannel.accept();
+
+    //do something with socketChannel...
+}
+</code></pre>
+
+<p>当然你可以在循环中使用一些停止条件而不是 <code>true</code>。</p>
+<h4><a name="non-blocking-mode"></a> 10.4 非阻塞模式</h4>
+<p>一个 <code>ServerSocketChannel</code> 将可以设置成非阻塞模式。非阻塞模式下，<code>accept()</code> 方法立即返回，并可能返回 null 值，如果没有任何连接连入。因而，你需要检查返回的 <code>SocketChannel</code> 是否为 null 值。下面是一个例子：</p>
+<pre><code>ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+
+serverSocketChannel.socket().bind(new InetSocketAddress(9999));
+serverSocketChannel.configureBlocking(false);
+
+while(true){
+    SocketChannel socketChannel =
+        serverSocketChannel.accept();
+
+    if(socketChannel != null){
+    //do something with socketChannel...
+    }
+}
+</code></pre>
+
 
 </body>
 </html>
