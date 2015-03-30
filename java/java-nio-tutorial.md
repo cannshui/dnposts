@@ -86,6 +86,12 @@
 		- [API 调用](#the-api-calls)
 		- [数据处理](#the-processing-of-data)
 	- [总结](#summary)
+ 1. [Java NIO Path](#Java-NIO-Path)
+	- [创建 Path 实例](#creating-a-path-instance)
+		- [创建绝对路径](#creating-an-absolute-path)
+		- [创建相对路径](#creating-a-relative-path)
+	- [Path.normalize()](#path-normalize)
+
 
 ### <a name="Java-NIO-Tutorial"></a> 1. Java NIO 教程
 
@@ -1178,3 +1184,25 @@ NIO 允许你管理多个通道（网络连接或文件），只使用一个（�
 
 <center>![nio-vs-io-4](nio-vs-io-4.png)</center>
 <center>**Java IO：一个传统 IO 服务器 - 一个线程处理一个连接。**</center>
+
+### <a name="Java-NIO-Path"></a> 13. Java NIO Path
+
+Java `Path` 接口是 Java NIO 2 的一部分，，，。Java `Path` 接口在 Java 7 中被添加到 Java NIO 中。`Path` 接口的位置在 `java.nio.file` 包下，所以 Java `Path` 接口的全名是 `java.nio.file.Path`。
+
+Java `Path` 实例表示文件系统上的一个*路径*。路径可以指向文件或目录。路径可以是绝对或相对的。绝对路径包含从文件系统根路径到文件或目录的全路径。相对路径包含从某个路径开始指向文件或目录的路径。相对路径听起来有点迷惑人。不用担心。我会在本节中详细的解释它。
+
+不要将“文件系统路径”弄混成一些操作系统的 `path` 环境变量。`java.nio.file.Path` 接口跟 `path` 环境变量毫无关系。
+
+许多情况下，`java.nio.file.Path` 接口类似于 [`java.io.File`](#http://tutorials.jenkov.com/java-io/file.html) 类，但有一些小差别。许多场景下，你可以使用 `Path` 替换 `File` 类。
+
+#### <a name="creating-a-path-instance"></a> 13.1 创建 Path 实例
+
+
+
+##### <a name="creating-an-absolute-path"></a> 13.1.1 创建绝对路径
+
+##### <a name="creating-a-relative-path"></a> 13.1.2 创建相对路径
+
+#### <a name="path-normalize"></a> 13.2 Path.normalize()
+
+
