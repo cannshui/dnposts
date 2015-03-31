@@ -1197,9 +1197,67 @@ Java `Path` 实例表示文件系统上的一个*路径*。路径可以指向文
 
 #### <a name="creating-a-path-instance"></a> 13.1 创建 Path 实例
 
+为了使用 `java.nio.file.Path` 实例，你必须创建 `Path` 实例。你通过 `Paths` 类（`java.nio.file.Paths`）的静态方法（`Paths.get()`）创建 `Path` 实例。下面是 `Paths.get()` 示例：
 
+	import java.nio.file.Path;
+	import java.nio.file.Paths;
+
+	public class PathExample {
+
+		public static void main(String[] args) {
+
+			Path path = Paths.get("c:\\data\\myfile.txt");
+
+		}
+	}
+
+注意例子上面有两个 `import` 语句。为了使用 `Path` 接口和 `Paths` 类，我们必须首先导入它们。
+
+然后，注意 `Paths.get("c:\\data\\myfile.txt")` 方法调用。换句话说，`Paths.get()` 方法是一个工厂方法来创建 `Path` 实例。
 
 ##### <a name="creating-an-absolute-path"></a> 13.1.1 创建绝对路径
+
+通过 `Paths.get()` 工厂方法，并将文件绝对路径作为参数来创建绝对路径。
+
+下面是一个创建 `Path` 实例的例子，表示一个绝对路径：
+
+	Path path = Paths.get("c:\\data\\myfile.txt");
+
+绝对路径是 `c:\data\myfile.txt`。两个 `\`  符号在 Java 字符串中时必须的，因为 `\` 是一个转义符，意味着下一个字符才是真正要用的字符。通过写 `\\`，你告诉 Java 编译器写单个 `\` 到字符串中。
+
+上面的路径是一个 Windows 文件系统路径。类 Unix 系统上（Linux，MacOS，FreeBSD 等），上面的路径看起来或是这样：
+
+	Path path = Paths.get("/home/jakobjenkov/myfile.txt");
+
+绝对路径现在是 `/home/jakobjenkov/myfile.txt`。
+
+如果你在 Windows 机器上使用这种路径（以 `/` 作为起始），路径将会被解释成相对与当前磁盘的路径。比如，路径：
+
+	/home/jakobjenkov/myfile.txt
+
+将会被解释成位于 C 盘下。然后这个路径对应的全路径就是：
+
+	C:/home/jakobjenkov/myfile.txt
+
+相对路径是从某个路径（基本路径）开始的，指向某一个目录或文件。相对路径的全路径（绝对路径）由基本路径和相对路径派生而成。
+
+Java NIO `Path` 类也可以搭配相对路径。你通过 `Paths.get(basePath, relativePath)` 方法创建相对路径。下面是 Java 中两个相对路径的例子：
+
+	Path projects = Paths.get("d:\\data", "projects");
+
+	Path file     = Paths.get("d:\\data", "projects\\a-project\\myfile.txt");
+
+第一个例子创建 Java `Path` 实例，指向路径（目录）`d:\data\projects`。第二个例子创建 `Path` 实例，指向路径（文件）`d:\data\projects\a-project\myfile.txt`。
+
+当使用相对路径时，有两个特殊的代码你可以在路径字符串中使用。它们是：
+
+ - .
+ - ..
+
+`.` 表示“当前目录”。比如，你如果你像这样创建相对路径：
+
+	Path currentDir = Paths.get(".");
+	System.out.println(currentDir.toAbsolutePath());
 
 ##### <a name="creating-a-relative-path"></a> 13.1.2 创建相对路径
 
