@@ -91,7 +91,14 @@
 		- [创建绝对路径](#creating-an-absolute-path)
 		- [创建相对路径](#creating-a-relative-path)
 	- [Path.normalize()](#path-normalize)
-
+ 1. [Java NIO Files](#Java-NIO-Files)
+	- [Files.exists()](#files-exists)
+	- [Files.createDirectory()](#files-create-directory)
+	- [Files.copy()](#files-copy)
+			- [覆盖已存在文件](#overwriting-existing-files)
+	- [Files.move()](#files-move)
+	- [Files.delete()](#files-delete)
+	- [Files 类中其他方法](#files-additional-methods)
 
 ### <a name="Java-NIO-Tutorial"></a> 1. Java NIO 教程
 
@@ -1185,7 +1192,7 @@ NIO 允许你管理多个通道（网络连接或文件），只使用一个（�
 <center>![nio-vs-io-4](nio-vs-io-4.png)</center>
 <center>**Java IO：一个传统 IO 服务器 - 一个线程处理一个连接。**</center>
 
-### <a name="Java-NIO-Path"></a> 13. Java NIO Path
+### <a name="Java-NIO-Path"></a> 14. Java NIO Path
 
 Java `Path` 接口是 Java NIO 2 的一部分，，，。Java `Path` 接口在 Java 7 中被添加到 Java NIO 中。`Path` 接口的位置在 `java.nio.file` 包下，所以 Java `Path` 接口的全名是 `java.nio.file.Path`。
 
@@ -1195,7 +1202,7 @@ Java `Path` 实例表示文件系统上的一个*路径*。路径可以指向文
 
 许多情况下，`java.nio.file.Path` 接口类似于 [`java.io.File`](#http://tutorials.jenkov.com/java-io/file.html) 类，但有一些小差别。许多场景下，你可以使用 `Path` 替换 `File` 类。
 
-#### <a name="creating-a-path-instance"></a> 13.1 创建 Path 实例
+#### <a name="creating-a-path-instance"></a> 14.1 创建 Path 实例
 
 为了使用 `java.nio.file.Path` 实例，你必须创建 `Path` 实例。你通过 `Paths` 类（`java.nio.file.Paths`）的静态方法（`Paths.get()`）创建 `Path` 实例。下面是 `Paths.get()` 示例：
 
@@ -1215,7 +1222,7 @@ Java `Path` 实例表示文件系统上的一个*路径*。路径可以指向文
 
 然后，注意 `Paths.get("c:\\data\\myfile.txt")` 方法调用。换句话说，`Paths.get()` 方法是一个工厂方法来创建 `Path` 实例。
 
-##### <a name="creating-an-absolute-path"></a> 13.1.1 创建绝对路径
+##### <a name="creating-an-absolute-path"></a> 14.1.1 创建绝对路径
 
 通过 `Paths.get()` 工厂方法，并将文件绝对路径作为参数来创建绝对路径。
 
@@ -1239,6 +1246,8 @@ Java `Path` 实例表示文件系统上的一个*路径*。路径可以指向文
 
 	C:/home/jakobjenkov/myfile.txt
 
+##### <a name="creating-a-relative-path"></a> 14.1.2 创建相对路径
+
 相对路径是从某个路径（基本路径）开始的，指向某一个目录或文件。相对路径的全路径（绝对路径）由基本路径和相对路径派生而成。
 
 Java NIO `Path` 类也可以搭配相对路径。你通过 `Paths.get(basePath, relativePath)` 方法创建相对路径。下面是 Java 中两个相对路径的例子：
@@ -1259,8 +1268,78 @@ Java NIO `Path` 类也可以搭配相对路径。你通过 `Paths.get(basePath, 
 	Path currentDir = Paths.get(".");
 	System.out.println(currentDir.toAbsolutePath());
 
-##### <a name="creating-a-relative-path"></a> 13.1.2 创建相对路径
+Java `Path` 实例实际关联到的绝对路径将会是上面代码执行的位置。
 
-#### <a name="path-normalize"></a> 13.2 Path.normalize()
+如果 `.` 在路径字符串的中间使用，就意味着它指向的是同样的目录。下面是演示这种情况的 `Path` 例子：
 
+	Path currentDir = Paths.get("d:\\data\\projects\.\a-project");
+
+这个路径会关联到：
+	d:\data\projects\a-project
+
+`..` 表示“父目录”或“上一层目录”。下面的 `Path` 例子示例它的含义：
+
+	Path parentDir = Paths.get("..");
+
+这个例子创建的 `Path` 实例将会关联到这个目录（应用程序运行所在的目录）的父级目录。
+
+如果你在路径字符串之间使用 `..`，它将会在那个位置关联到上级目录。比如：
+
+	String path = "d:\\data\\projects\\a-project\\..\\another-project";
+	Path parentDir2 = Paths.get(path);
+
+这个例子中创建的 `Path` 实例将会指向这个绝对路径：
+
+	d:\data\projects\another-project
+
+`a-project` 之后的 `..` 改变目录成父目录 `projects`，并从那里指向到 `another-project` 目录。
+
+`.` 和 `..` 同样可以在 `Paths.get()` 方法的第二个字符串参数中使用。下面是两个 `Paths.get()` 简单示例：
+
+	Path path1 = Paths.get("d:\\data\\projects", ".\\a-project");
+
+	Path path2 = Paths.get("d:\\data\\projects\\a-project",
+			"..\\another-project");
+
+Java NIO `Path` 类有多种方式搭配使用相对路径的方式。你将会在稍后看到更多细节。
+
+#### <a name="path-normalize"></a> 14.2 Path.normalize()
+
+`Path` 接口的 `normalize()` 方法可以 normalize 一个路径。normalize 的意思是，它移除路径字符串中所有的 `.` 和 `..`，并解析路径字符串实际指向的路径。下面是一个 `Path.normalize()` 示例：
+
+	String originalPath =
+		"d:\\data\\projects\\a-project\\..\\another-project";
+
+	Path path1 = Paths.get(originalPath);
+	System.out.println("path1 = " + path1);
+
+	Path path2 = path1.normalize();
+	System.out.println("path2 = " + path2);
+
+这个 `Path` 示例首先创建一个中间包含 `..` 的路径字符串。然后，例子从路径字符串创建一个 `Path` 实例，并打印这个 `Path` 实例（实际上它打印 `Path.toString()`）。
+
+这个例子调用 `Path` 实例的 `normalize()` 方法，将会返回一个新 `Path` 实例。这个新 normalized 的 `Path` 实例同样被打印出来。
+
+下面是前面例子的打印输出：
+
+	path1 = d:\data\projects\a-project\..\another-project
+	path2 = d:\data\projects\another-project
+
+如你所见，normalized 的路径不包含 `a-project\..` 部分，因为这被忽略了 redundant。被移除的部分对最终绝对路径没什么影响。
+
+### <a name="Java-NIO-Files"></a> 15. Java NIO Files
+
+#### <a name="files-exists"></a> 15.1 Files.exists()
+
+#### <a name="files-create-directory"></a> 15.2 Java NIO Files
+
+#### <a name="files-copy"></a> 15.3 Files.copy()
+
+##### <a name="overwriting-existing-files"></a> 15.3.1 覆盖已存在文件
+
+#### <a name="files-move"></a> 15.4 Files.move()
+
+#### <a name="files-delete"></a> 15.5 Files.delete()
+
+#### <a name="files-additional-methods"></a> 15.6 Files 类中其他方法
 
