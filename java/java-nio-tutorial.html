@@ -292,7 +292,6 @@ img {
 </head>
 <body>
 <h2>Java NIO</h2>
-<p><div class="article-catalog"></p>
 <ol>
 <li><a href="#Java-NIO-Tutorial">Java NIO 教程</a></li>
 <li>
@@ -465,25 +464,41 @@ img {
 <li><a href="#path-normalize">Path.normalize()</a></li>
 </ul>
 </li>
+<li>
+<a href="#Java-NIO-Files">Java NIO Files</a>
+<ul>
+<li><a href="#files-exists">Files.exists()</a></li>
+<li><a href="#files-create-directory">Files.createDirectory()</a></li>
+<li>
+<a href="#files-copy">Files.copy()</a>
+<ul>
+<li><a href="#overwriting-existing-files">覆盖已存在文件</a></li>
+</ul>
+</li>
+<li><a href="#files-move">Files.move()</a></li>
+<li><a href="#files-delete">Files.delete()</a></li>
+<li><a href="#files-additional-methods">Files 类中其他方法</a></li>
+</ul>
+</li>
 </ol>
 <h3><a name="Java-NIO-Tutorial"></a> 1. Java NIO 教程</h3>
-<p>Java NIO（New IO）是 Java IO API 的替代方案（Java 1.4 之后），是指传统 <a href="">Java IO</a> 和 <a href="">Java Networking</a> API 的一种替代。Java NIO 提供了一种使用 IO 的不同方式，相比于传统的 IO API。</p>
+<p>Java NIO（New IO）是 Java IO API 的替代方案（Java 1.4 之后），是指传统 <a href="http://tutorials.jenkov.com/java-io/index.html">Java IO</a> 和 <a href="http://tutorials.jenkov.com/java-networking/index.html">Java Networking</a> API 的一种替代。Java NIO 相比于传统的 IO API，提供了一种使用 IO 的不同方式。</p>
 <h4>1.1 Java NIO：Channels 和 Buffers</h4>
-<p>使用传统 IO API，你实际是使用的是字节流和字符流。而 NIO 中，你需要使用 channels 和 buffers。数据总是从一个 channel 读入到一个 buffer，或从一个 buffer 写向一个 channel。</p>
+<p>使用传统 IO API，你实际使用的是字节流和字符流。而 NIO 中，你需要使用通道和缓冲区。数据总是从通道读入到缓冲区，或从缓冲区写向通道。</p>
 <h4>1.2 Java NIO：非阻塞（Non-blocking）IO</h4>
-<p>Java NIO 可以使你实现非阻塞的 IO。比如，一个线程可以像一个 channel 请求读入数据到一个 buffer。当 channel 在读数据到 buffer 的时候，那个县城可以执行其他操作。一旦当数据读入到 buffer 中时，线程就可以接着处理它。这同样适用于写数据到 channel 中。</p>
+<p>Java NIO 可以使你实现非阻塞的 IO。比如，线程可以向通道请求读入数据到缓冲区。当通道在读数据到缓冲区的时候，那个线程可以执行其他操作。一旦当数据读入到缓冲区中时，线程就可以接着处理它。这同样适用于写数据到通道中。</p>
 <h4>1.3 Java NIO：Selectors</h4>
-<p>Java NIO 包含“selector”的概念。一个 selector 是一个对象，它可以为多个 channel 监测特定事件（像：连接开启，数据到达等） 。因而，一个简单线程就可以为数据监测多个 channel。</p>
+<p>Java NIO 包含“Selector”的概念。Selector 是一个对象，它可以为多个通道监测特定事件（像：连接开启，数据到达等）。因而，一个简单线程就可以为数据监测多个通道。</p>
 <h3><a name="Java-NIO-Overview"></a> 2. Java NIO 概述</h3>
 <p>Java NIO 包含如下核心组件：</p>
 <ul>
-<li>Channels</li>
-<li>Buffers</li>
-<li>Selectors</li>
+<li>Channel</li>
+<li>Buffer</li>
+<li>Selector</li>
 </ul>
-<p>Java NIO 当然有很多类和组件，而不止上面的 3 个，但是在我看来， <code>Channel</code>，<code>Buffer</code> 和 <code>Selector</code> 是最核心的 API。剩下的组件，像 <code>Pipe</code> 和 <code>FileLock</code> 仅仅是为了与这 3 个核心组件协作的工具类。因而，本小节，我将会重点关注于这三个组件。其他的组件会在本教程的其他小节解释到。参见本页顶的索引列表。</p>
+<p>Java NIO 当然有很多类和组件，而不止上面的 3 个，但是在我看来， <code>Channel</code>，<code>Buffer</code> 和 <code>Selector</code> 是最核心的 API。剩下的组件，像 <code>Pipe</code> 和 <code>FileLock</code> 仅仅是为了与这 3 个核心组件协作的工具类。因而，本小节，我将会重点关注于这三个组件。其他的组件会在本教程的其他小节解释到。参见本页顶的索引目录。</p>
 <h4><a name="channels-and-buffers"></a> 2.1 Channels 和 Buffers</h4>
-<p>一般，所有 NIO 中的 IO 都由一个 <code>Channel</code> 作为开始。一个 <code>Channel</code> 有点类似于一个流。从 <code>Channel</code> 中数据可以被读入到一个 <code>Buffer</code>。数据也可以从 <code>Buffer</code> 被写入到一个 <code>Channel</code> 中。这里是关于上述的一个图例：</p>
+<p>一般，所有 NIO 中的 IO 都由一个 <code>Channel</code> 作为开始。<code>Channel</code> 有点类似于流。数据可以从 <code>Channel</code> 被读入到 <code>Buffer</code>。数据也可以从 <code>Buffer</code> 被写入到 <code>Channel</code>。这里是关于上述的一个图例：</p>
 <p><center><img src="overview-channels-buffers.png" alt="overview-channels-buffers" /></center>
 <center><strong>Java NIO：Channel 读数据到 Buffer，Buffer 写数据到 Channel。</strong></center></p>
 <p>有多种 <code>Channel</code> 和 <code>Buffer</code> 类型。下面是 Java NO 中一组主要的 <code>Channel</code> 实现类：</p>
@@ -493,8 +508,8 @@ img {
 <li>SocketChannel</li>
 <li>ServerSocketChannel</li>
 </ul>
-<p>如你所见，这些 channel 覆盖了 UDP + TCP 网络 IO 和文件 IO。</p>
-<p>有一些有趣的接口跟这些类一起工作，但是为简单起见，我不会在本节中讲述。它们将会本教程其他章节涉及到的地方解释。</p>
+<p>如你所见，这些通道覆盖了 UDP 和 TCP 网络 IO 和文件 IO。</p>
+<p>有一些有趣的接口跟这些类一起工作，但是为简单起见，我不会在本节中讲述。它们将会在本教程其他章节涉及到的地方被解释。</p>
 <p>下面是 Java NIO 中一组核心 <code>Buffer</code> 实现类：</p>
 <ul>
 <li>ByteBuffer</li>
@@ -508,20 +523,20 @@ img {
 <p>这些 <code>Buffer</code> 涵盖了你可以通过 IO 发送的基本数据类型：byte，short，int，long，float，double，和 characters。</p>
 <p>Java NIO 同样有一个 <code>MappedByteBuffer</code>，用于跟内存映射文件相协作。我也不会在本章节讨论这个 <code>Buffer</code>。</p>
 <h4><a name="selectors"></a> 2.2 Selectors</h4>
-<p>一个 <code>Selector</code> 允许一个简单线程处理多个 <code>Channel</code>。这将会很方便，如果你的应用有多个连接（Channel）处于打开状态，但每个连接只有较低的流量。</p>
+<p>一个 <code>Selector</code> 允许一个简单线程处理多个 <code>Channel</code>。如果你的应用有多个连接（Channel）处于打开状态，但每个连接只有较低的流量，这将会很有利。</p>
 <p>比如，一个聊天服务器。</p>
 <p>下面是一个线程使用 <code>Selector</code> 处理 3 个 <code>Channel</code> 的示意图：</p>
 <p><center><img src="overview-selectors.png" alt="overview-selectors" /></center>
 <center><strong>一个线程使用一个 Selector 处理 3 个 Channel。</strong></center></p>
-<p>为了使用一个 <code>Selector</code>，你需要注册 <code>Channel</code> 到它。然后你调用它的 <code>select()</code> 方法。这个方法将会一直阻塞直到一个已注册的 channel 的事件到来。一旦这个方法返回，线程就可以处理这些事件了。事件类型比如连接到达，接收到数据等。</p>
+<p>为了使用 <code>Selector</code>，你需要注册 <code>Channel</code> 到它。然后你调用它的 <code>select()</code> 方法。这个方法将会一直阻塞直到某一个已注册的通道的监听事件到来。一旦这个方法返回，线程就可以处理这些事件了。事件类型比如连接到达，接收到数据等。</p>
 <h3><a name="Java-NIO-Channel"></a> 3. Java NIO Channel</h3>
-<p>Java NIO Channel 跟流很相似，但也有一些不同：</p>
+<p>Java NIO 通道跟流很相似，但也有一些不同：</p>
 <ul>
-<li>你可以同时读和写一个 Channel。流一般是单一的（只读或只写）。</li>
-<li>Channel 可以被异步读写。</li>
-<li>Channel 总是从 Buffer 读，写向 Buffer。</li>
+<li>你可以同时读和写一个通道。流一般是单一的（只读或只写）。</li>
+<li>通道可以被异步读写。</li>
+<li>通道总是从缓冲区中读，像缓冲区写。</li>
 </ul>
-<p>像上面提到的，你可以从 Channel 读数据到 Buffer，及从 Buffer 写数据到 Channel。这里是一个示意图：</p>
+<p>像上面提到的，你可以从通道读数据到缓冲区，及从缓冲区写数据到通道。这里是一个示意图：</p>
 <p><center><img src="overview-channels-buffers.png" alt="overview-channels-buffers" /></center>
 <center><strong>Java NIO：Channel 读数据到 Buffer，Buffer 写数据到 Channel。</strong></center></p>
 <h4><a name="channel-implementations"></a> 3.1 Channel 实现</h4>
@@ -1317,12 +1332,12 @@ while(! bufferFull(bytesRead) ) {
 <p>如果你有一些占用很高带宽的连接，某一时刻发送大量的数据，那么可能传统的 IO 服务器实现更加适合。下面的示意图展示了传统 IO 服务器设计：</p>
 <p><center><img src="nio-vs-io-4.png" alt="nio-vs-io-4" /></center>
 <center><strong>Java IO：一个传统 IO 服务器 - 一个线程处理一个连接。</strong></center></p>
-<h3><a name="Java-NIO-Path"></a> 13. Java NIO Path</h3>
+<h3><a name="Java-NIO-Path"></a> 14. Java NIO Path</h3>
 <p>Java <code>Path</code> 接口是 Java NIO 2 的一部分，，，。Java <code>Path</code> 接口在 Java 7 中被添加到 Java NIO 中。<code>Path</code> 接口的位置在 <code>java.nio.file</code> 包下，所以 Java <code>Path</code> 接口的全名是 <code>java.nio.file.Path</code>。</p>
 <p>Java <code>Path</code> 实例表示文件系统上的一个<em>路径</em>。路径可以指向文件或目录。路径可以是绝对或相对的。绝对路径包含从文件系统根路径到文件或目录的全路径。相对路径包含从某个路径开始指向文件或目录的路径。相对路径听起来有点迷惑人。不用担心。我会在本节中详细的解释它。</p>
 <p>不要将“文件系统路径”弄混成一些操作系统的 <code>path</code> 环境变量。<code>java.nio.file.Path</code> 接口跟 <code>path</code> 环境变量毫无关系。</p>
 <p>许多情况下，<code>java.nio.file.Path</code> 接口类似于 <a href="#http://tutorials.jenkov.com/java-io/file.html"><code>java.io.File</code></a> 类，但有一些小差别。许多场景下，你可以使用 <code>Path</code> 替换 <code>File</code> 类。</p>
-<h4><a name="creating-a-path-instance"></a> 13.1 创建 Path 实例</h4>
+<h4><a name="creating-a-path-instance"></a> 14.1 创建 Path 实例</h4>
 <p>为了使用 <code>java.nio.file.Path</code> 实例，你必须创建 <code>Path</code> 实例。你通过 <code>Paths</code> 类（<code>java.nio.file.Paths</code>）的静态方法（<code>Paths.get()</code>）创建 <code>Path</code> 实例。下面是 <code>Paths.get()</code> 示例：</p>
 <pre><code>import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -1339,7 +1354,7 @@ public class PathExample {
 
 <p>注意例子上面有两个 <code>import</code> 语句。为了使用 <code>Path</code> 接口和 <code>Paths</code> 类，我们必须首先导入它们。</p>
 <p>然后，注意 <code>Paths.get(&quot;c:\\data\\myfile.txt&quot;)</code> 方法调用。换句话说，<code>Paths.get()</code> 方法是一个工厂方法来创建 <code>Path</code> 实例。</p>
-<h5><a name="creating-an-absolute-path"></a> 13.1.1 创建绝对路径</h5>
+<h5><a name="creating-an-absolute-path"></a> 14.1.1 创建绝对路径</h5>
 <p>通过 <code>Paths.get()</code> 工厂方法，并将文件绝对路径作为参数来创建绝对路径。</p>
 <p>下面是一个创建 <code>Path</code> 实例的例子，表示一个绝对路径：</p>
 <pre><code>Path path = Paths.get(&quot;c:\\data\\myfile.txt&quot;);
@@ -1359,6 +1374,7 @@ public class PathExample {
 <pre><code>C:/home/jakobjenkov/myfile.txt
 </code></pre>
 
+<h5><a name="creating-a-relative-path"></a> 14.1.2 创建相对路径</h5>
 <p>相对路径是从某个路径（基本路径）开始的，指向某一个目录或文件。相对路径的全路径（绝对路径）由基本路径和相对路径派生而成。</p>
 <p>Java NIO <code>Path</code> 类也可以搭配相对路径。你通过 <code>Paths.get(basePath, relativePath)</code> 方法创建相对路径。下面是 Java 中两个相对路径的例子：</p>
 <pre><code>Path projects = Paths.get(&quot;d:\\data&quot;, &quot;projects&quot;);
@@ -1377,8 +1393,157 @@ Path file     = Paths.get(&quot;d:\\data&quot;, &quot;projects\\a-project\\myfil
 System.out.println(currentDir.toAbsolutePath());
 </code></pre>
 
-<h5><a name="creating-a-relative-path"></a> 13.1.2 创建相对路径</h5>
-<h4><a name="path-normalize"></a> 13.2 Path.normalize()</h4>
+<p>Java <code>Path</code> 实例实际关联到的绝对路径将会是上面代码执行的位置。</p>
+<p>如果 <code>.</code> 在路径字符串的中间使用，就意味着它指向的是同样的目录。下面是演示这种情况的 <code>Path</code> 例子：</p>
+<pre><code>Path currentDir = Paths.get(&quot;d:\\data\\projects\.\a-project&quot;);
+</code></pre>
+
+<p>这个路径会关联到：
+	d:\data\projects\a-project</p>
+<p><code>..</code> 表示“父目录”或“上一层目录”。下面的 <code>Path</code> 例子示例它的含义：</p>
+<pre><code>Path parentDir = Paths.get(&quot;..&quot;);
+</code></pre>
+
+<p>这个例子创建的 <code>Path</code> 实例将会关联到这个目录（应用程序运行所在的目录）的父级目录。</p>
+<p>如果你在路径字符串之间使用 <code>..</code>，它将会在那个位置关联到上级目录。比如：</p>
+<pre><code>String path = &quot;d:\\data\\projects\\a-project\\..\\another-project&quot;;
+Path parentDir2 = Paths.get(path);
+</code></pre>
+
+<p>这个例子中创建的 <code>Path</code> 实例将会指向这个绝对路径：</p>
+<pre><code>d:\data\projects\another-project
+</code></pre>
+
+<p><code>a-project</code> 之后的 <code>..</code> 改变目录成父目录 <code>projects</code>，并从那里指向到 <code>another-project</code> 目录。</p>
+<p><code>.</code> 和 <code>..</code> 同样可以在 <code>Paths.get()</code> 方法的第二个字符串参数中使用。下面是两个 <code>Paths.get()</code> 简单示例：</p>
+<pre><code>Path path1 = Paths.get(&quot;d:\\data\\projects&quot;, &quot;.\\a-project&quot;);
+
+Path path2 = Paths.get(&quot;d:\\data\\projects\\a-project&quot;,
+        &quot;..\\another-project&quot;);
+</code></pre>
+
+<p>Java NIO <code>Path</code> 类有多种方式搭配使用相对路径的方式。你将会在稍后看到更多细节。</p>
+<h4><a name="path-normalize"></a> 14.2 Path.normalize()</h4>
+<p><code>Path</code> 接口的 <code>normalize()</code> 方法可以标准化一个路径。标准化的意思是，它移除路径字符串中所有的 <code>.</code> 和 <code>..</code>，并解析路径字符串实际指向的路径。下面是一个 <code>Path.normalize()</code> 示例：</p>
+<pre><code>String originalPath =
+    &quot;d:\\data\\projects\\a-project\\..\\another-project&quot;;
+
+Path path1 = Paths.get(originalPath);
+System.out.println(&quot;path1 = &quot; + path1);
+
+Path path2 = path1.normalize();
+System.out.println(&quot;path2 = &quot; + path2);
+</code></pre>
+
+<p>这个 <code>Path</code> 示例首先创建一个中间包含 <code>..</code> 的路径字符串。然后，例子从路径字符串创建一个 <code>Path</code> 实例，并打印这个 <code>Path</code> 实例（实际上它打印 <code>Path.toString()</code>）。</p>
+<p>这个例子调用 <code>Path</code> 实例的 <code>normalize()</code> 方法，将会返回一个新 <code>Path</code> 实例。这个新标准化的 <code>Path</code> 实例同样被打印出来。</p>
+<p>下面是前面例子的打印输出：</p>
+<pre><code>path1 = d:\data\projects\a-project\..\another-project
+path2 = d:\data\projects\another-project
+</code></pre>
+
+<p>如你所见，标准化后的路径不包含 <code>a-project\..</code> 部分，因为它是冗余的。被移除的部分对最终绝对路径没什么影响。</p>
+<h3><a name="Java-NIO-Files"></a> 15. Java NIO Files</h3>
+<p>Java NIO <code>Files</code> 类（<code>java.nio.file.Files</code>）提供了一些管理文件系统中文件的方法。Java NIO <code>Files</code> 教程将会覆盖最常用的方法。<code>Files</code> 类包括多个方法，如果你需要没有在这里描述到的方法，请查看 JavaDoc。<code>Files</code> 类只是可能有为了你的某种用途的某个方法。</p>
+<p><code>java.nio.file.Files</code> 类搭配 <a href="#Java-NIO-Path"><code>java.nio.file.Path</code></a> 实例使用，所以在你用 <code>Files</code> 类之前，你需要理解 <code>Path</code> 类。</p>
+<h4><a name="files-exists"></a> 15.1 Files.exists()</h4>
+<p><code>Files.exists()</code> 方法检查给定的 <code>Path</code> 是否在文件系统中存在。</p>
+<p>可以创建文件系统中不存在的 <code>Path</code> 实例。比如，如果你计划创建一个新文件夹，你需要首先创建一个关联的 <code>Path</code> 实例，然后创建这个目录。</p>
+<p>由于 <code>Path</code> 实例可能指向文件系统上存在或不存在的实际路径，你可以使用 <code>Files.exists()</code> 方法来确定（如果你需要检查的话）。</p>
+<p>下面是一个 Java <code>Files.exists()</code> 示例：</p>
+<pre><code>Path path = Paths.get(&quot;data/logging.properties&quot;);
+
+boolean pathExists =
+    Files.exists(path,
+        new LinkOption[]{ LinkOption.NOFOLLOW_LINKS});
+</code></pre>
+
+<p>这个例子首先创建一个 <code>Path</code> 实例指向我打算检查是否存在的路径。然后，例子调用 <code>Files.exists()</code> 方法，将 <code>Path</code> 实例作为第一个参数。</p>
+<p>注意，<code>Files.exists()</code> 方法的第二个参数。这个参数是一个选项数组，影响 <code>Files.exists()</code> 如何决定一个路径是否存在。</p>
+<p>这例子中的数组包括 <code>LinkOption.NOFOLLOW_LINKS</code>，意思是 <code>Files.exists()</code> 不要查看文件系统上的符号链接实际所指路径是否存在。</p>
+<h4><a name="files-create-directory"></a> 15.2 Files.createDirectory()</h4>
+<p><code>Files.createDirectory()</code> 方法从 <code>Path</code> 实例创建新目录。下面是一个例子：</p>
+<pre><code>Path path = Paths.get(&quot;data/subdir&quot;);
+
+try {
+    Path newDir = Files.createDirectory(path);
+} catch(FileAlreadyExistsException e){
+    // the directory already exists.
+} catch (IOException e) {
+    //something else went wrong
+    e.printStackTrace();
+}
+</code></pre>
+
+<p>第一行创建 <code>Path</code> 实例，表示要被创建的目录。在 <code>try-catch</code> 块内，<code>Files.createDirectory()</code> 方法被调用，并用路径作为参数。如果目录创建成功，<code>Path</code> 实例将被返回，指向新创建的路径。</p>
+<p>如果目录已经存在，则将会抛出一个 <code>java.nio.file.FileAlreadyExistsException</code>。如果是其他的错误，将会抛出 <code>IOException</code>。比如，如果一个目标目录的父目录不存在，将会抛出 <code>IOException</code>。父目录是你想新建目录时所在的目录。因而，它表示新目录的父目录。</p>
+<h4><a name="files-copy"></a> 15.3 Files.copy()</h4>
+<p><code>Files.copy()</code> 方法复制文件从一个路径到另一个。下面是一个 <code>Files.copy()</code> 示例：</p>
+<pre><code>Path sourcePath      = Paths.get(&quot;data/logging.properties&quot;);
+Path destinationPath = Paths.get(&quot;data/logging-copy.properties&quot;);
+
+try {
+    Files.copy(sourcePath, destinationPath);
+} catch(FileAlreadyExistsException e) {
+    //destination file already exists
+} catch (IOException e) {
+    //something else went wrong
+    e.printStackTrace();
+}
+</code></pre>
+
+<p>首先例子，创建一个源和目的 <code>Path</code> 实例。然后调用 <code>Files.copy()</code>，将两个 <code>Path</code> 实例作为参数。这个操作的结果是，源路径指向的文件被复制到目的路径指向的文件。</p>
+<p>如果目的文件已经存在，则将会抛出一个 <code>java.nio.file.FileAlreadyExistsException</code>。如果是其他的错误，将会抛出 <code>IOException</code>。比如，如果，复制文件所在的目录不存在，将会抛出 <code>IOException</code>。</p>
+<h5><a name="overwriting-existing-files"></a> 15.3.1 覆盖已存在文件</h5>
+<p>可以强制 <code>Files.copy()</code> 覆盖已存在文件。下面这个例子展示如何通过 <code>Files.copy()</code> 覆盖文件：</p>
+<pre><code>Path sourcePath      = Paths.get(&quot;data/logging.properties&quot;);
+Path destinationPath = Paths.get(&quot;data/logging-copy.properties&quot;);
+
+try {
+    Files.copy(sourcePath, destinationPath,
+    StandardCopyOption.REPLACE_EXISTING);
+} catch(FileAlreadyExistsException e) {
+    //destination file already exists
+} catch (IOException e) {
+    //something else went wrong
+    e.printStackTrace();
+}
+</code></pre>
+
+<p>注意 <code>Files.copy()</code> 的第三个参数。这个参数指示 <code>copy()</code> 方法覆盖已存在文件。</p>
+<h4><a name="files-move"></a> 15.4 Files.move()</h4>
+<p>Java NIO <code>Files</code> 类也包含一个函数来从某个路径移动文件到另一个路径。移动文件跟重命名是一样的，除了移动文件可以移动文件到一个不同的目录或是改变它的名字（当前目录下）。是的，通过 <code>java.io.File</code> 类的 <code>renameTo()</code> 方法也可以做到，但是现在你也有一个在 <code>java.nio.file.Files</code> 类下的 <code>move</code> 功能。</p>
+<p>下面是一个 <code>Files.move()</code> 的示例：</p>
+<pre><code>Path sourcePath      = Paths.get(&quot;data/logging-copy.properties&quot;);
+Path destinationPath = Paths.get(&quot;data/subdir/logging-moved.properties&quot;);
+
+try {
+    Files.move(sourcePath, destinationPath,
+        StandardCopyOption.REPLACE_EXISTING);
+} catch (IOException e) {
+    //moving file failed.
+    e.printStackTrace();
+}
+</code></pre>
+
+<p>首先，源路径和目的路径被创建。源路径指向将被移动的文件，目的路径指向文件将被移动到的地方。然后 <code>Files.move()</code> 被调用。使文件被移动。</p>
+<p>注意传递给 <code>Files.move()</code> 的第三个参数。这个参数告诉告诉 <code>Files.move()</code> 方法来覆盖目的路径的已存在文件。这个参数是可选的。</p>
+<p><code>Files.move()</code> 方法可能抛出 <code>IOException</code>，当移动文件失败时。比如，如果文件已经存在，而且你没有使用 <code>StandardCopyOption.REPLACE_EXISTING</code> 选项，或被移动的文件不存在。</p>
+<h4><a name="files-delete"></a> 15.5 Files.delete()</h4>
+<p><code>Files.delete()</code> 方法可以删除问价或目录。下面是一个示例：</p>
+<pre><code>Path path = Paths.get(&quot;data/subdir/logging-moved.properties&quot;);
+
+try {
+    Files.delete(path);
+} catch (IOException e) {
+    //deleting file failed
+    e.printStackTrace();
+}
+</code></pre>
+
+<p>首先，指向被删文件的 <code>Path</code> 被建立。然后，调用 <code>Files.delete()</code> 方法。如果由于某些原因失败（如，文件或目录不存在） <code>Files.delete()</code> 执行失败，将会抛出 <code>IOException</code>。</p>
+<h4><a name="files-additional-methods"></a> 15.6 Files 类中其他方法</h4>
+<p><code>java.nio.file.Files</code> 类包含许多实用函数，如创建符号链接，检查文件大小，设置权限等。关于这些方法的细节查看 <code>java.nio.file.Files</code> 类的 JavaDoc。</p>
 
 </body>
 </html>

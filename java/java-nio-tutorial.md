@@ -17,7 +17,7 @@
 	- [分配 Buffer](#allocating)
 	- [写数据到 Buffer 中](#writing)
 	- [flip()](#flip)
-	- [从 Buffer 读数据](#reading)
+	- [从 Buffer 读出数据](#reading)
 	- [rewind()](#rewind)
 	- [clear() 和 compact()](#clear)
 	- [mark() 和 reset()](#mark)
@@ -95,40 +95,40 @@
 	- [Files.exists()](#files-exists)
 	- [Files.createDirectory()](#files-create-directory)
 	- [Files.copy()](#files-copy)
-			- [覆盖已存在文件](#overwriting-existing-files)
+		- [覆盖已存在文件](#overwriting-existing-files)
 	- [Files.move()](#files-move)
 	- [Files.delete()](#files-delete)
 	- [Files 类中其他方法](#files-additional-methods)
 
 ### <a name="Java-NIO-Tutorial"></a> 1. Java NIO 教程
 
-Java NIO（New IO）是 Java IO API 的替代方案（Java 1.4 之后），是指传统 [Java IO]() 和 [Java Networking]() API 的一种替代。Java NIO 提供了一种使用 IO 的不同方式，相比于传统的 IO API。
+Java NIO（New IO）是 Java IO API 的替代方案（Java 1.4 之后），是指传统 [Java IO](http://tutorials.jenkov.com/java-io/index.html) 和 [Java Networking](http://tutorials.jenkov.com/java-networking/index.html) API 的一种替代。Java NIO 相比于传统的 IO API，提供了一种使用 IO 的不同方式。
 
 #### 1.1 Java NIO：Channels 和 Buffers
 
-使用传统 IO API，你实际是使用的是字节流和字符流。而 NIO 中，你需要使用 channels 和 buffers。数据总是从一个 channel 读入到一个 buffer，或从一个 buffer 写向一个 channel。
+使用传统 IO API，你实际使用的是字节流和字符流。而 NIO 中，你需要使用通道和缓冲区。数据总是从通道读入到缓冲区，或从缓冲区写向通道。
 
 #### 1.2 Java NIO：非阻塞（Non-blocking）IO
 
-Java NIO 可以使你实现非阻塞的 IO。比如，一个线程可以像一个 channel 请求读入数据到一个 buffer。当 channel 在读数据到 buffer 的时候，那个县城可以执行其他操作。一旦当数据读入到 buffer 中时，线程就可以接着处理它。这同样适用于写数据到 channel 中。
+Java NIO 可以使你实现非阻塞的 IO。比如，线程可以向通道请求读入数据到缓冲区。当通道在读数据到缓冲区的时候，那个线程可以执行其他操作。一旦当数据读入到缓冲区中时，线程就可以接着处理它。这同样适用于写数据到通道中。
 
 #### 1.3 Java NIO：Selectors
 
-Java NIO 包含“selector”的概念。一个 selector 是一个对象，它可以为多个 channel 监测特定事件（像：连接开启，数据到达等） 。因而，一个简单线程就可以为数据监测多个 channel。
+Java NIO 包含“Selector”的概念。Selector 是一个对象，它可以为多个通道监测特定事件（像：连接开启，数据到达等）。因而，一个简单线程就可以为数据监测多个通道。
 
 ### <a name="Java-NIO-Overview"></a> 2. Java NIO 概述
 
 Java NIO 包含如下核心组件：
 
- - Channels
- - Buffers
- - Selectors
+ - Channel
+ - Buffer
+ - Selector
 
-Java NIO 当然有很多类和组件，而不止上面的 3 个，但是在我看来， `Channel`，`Buffer` 和 `Selector` 是最核心的 API。剩下的组件，像 `Pipe` 和 `FileLock` 仅仅是为了与这 3 个核心组件协作的工具类。因而，本小节，我将会重点关注于这三个组件。其他的组件会在本教程的其他小节解释到。参见本页顶的索引列表。
+Java NIO 当然有很多类和组件，而不止上面的 3 个，但是在我看来， `Channel`，`Buffer` 和 `Selector` 是最核心的 API。剩下的组件，像 `Pipe` 和 `FileLock` 仅仅是为了与这 3 个核心组件协作的工具类。因而，本小节，我将会重点关注于这三个组件。其他的组件会在本教程的其他小节解释到。参见本页顶的索引目录。
 
 #### <a name="channels-and-buffers"></a> 2.1 Channels 和 Buffers
 
-一般，所有 NIO 中的 IO 都由一个 `Channel` 作为开始。一个 `Channel` 有点类似于一个流。从 `Channel` 中数据可以被读入到一个 `Buffer`。数据也可以从 `Buffer` 被写入到一个 `Channel` 中。这里是关于上述的一个图例：
+一般，所有 NIO 中的 IO 都由一个 `Channel` 作为开始。`Channel` 有点类似于流。数据可以从 `Channel` 被读入到 `Buffer`。数据也可以从 `Buffer` 被写入到 `Channel`。这里是关于上述的一个图例：
 
 <center>![overview-channels-buffers](overview-channels-buffers.png)</center>
 <center>**Java NIO：Channel 读数据到 Buffer，Buffer 写数据到 Channel。**</center>
@@ -140,9 +140,9 @@ Java NIO 当然有很多类和组件，而不止上面的 3 个，但是在我�
  - SocketChannel
  - ServerSocketChannel
 
-如你所见，这些 channel 覆盖了 UDP + TCP 网络 IO 和文件 IO。
+如你所见，这些通道覆盖了 UDP 和 TCP 网络 IO 和文件 IO。
 
-有一些有趣的接口跟这些类一起工作，但是为简单起见，我不会在本节中讲述。它们将会本教程其他章节涉及到的地方解释。
+有一些有趣的接口跟这些类一起工作，但是为简单起见，我不会在本节中讲述。它们将会在本教程其他章节涉及到的地方被解释。
 
 下面是 Java NIO 中一组核心 `Buffer` 实现类：
 
@@ -160,7 +160,7 @@ Java NIO 同样有一个 `MappedByteBuffer`，用于跟内存映射文件相协�
 
 #### <a name="selectors"></a> 2.2 Selectors
 
-一个 `Selector` 允许一个简单线程处理多个 `Channel`。这将会很方便，如果你的应用有多个连接（Channel）处于打开状态，但每个连接只有较低的流量。
+一个 `Selector` 允许一个简单线程处理多个 `Channel`。如果你的应用有多个连接（Channel）处于打开状态，但每个连接只有较低的流量，这将会很有利。
 
 比如，一个聊天服务器。
 
@@ -169,17 +169,17 @@ Java NIO 同样有一个 `MappedByteBuffer`，用于跟内存映射文件相协�
 <center>![overview-selectors](overview-selectors.png)</center>
 <center>**一个线程使用一个 Selector 处理 3 个 Channel。**</center>
 
-为了使用一个 `Selector`，你需要注册 `Channel` 到它。然后你调用它的 `select()` 方法。这个方法将会一直阻塞直到一个已注册的 channel 的事件到来。一旦这个方法返回，线程就可以处理这些事件了。事件类型比如连接到达，接收到数据等。
+为了使用 `Selector`，你需要注册 `Channel` 到它。然后你调用它的 `select()` 方法。这个方法将会一直阻塞直到某一个已注册的通道的监听事件到来。一旦这个方法返回，线程就可以处理这些事件了。事件类型比如连接到达，接收到数据等。
 
 ### <a name="Java-NIO-Channel"></a> 3. Java NIO Channel
 
-Java NIO Channel 跟流很相似，但也有一些不同：
+Java NIO 通道跟流很相似，但也有一些不同：
 
- - 你可以同时读和写一个 Channel。流一般是单一的（只读或只写）。
- - Channel 可以被异步读写。
- - Channel 总是从 Buffer 读，写向 Buffer。
+ - 你可以同时读和写一个通道。流一般是单一的（只读或只写）。
+ - 通道可以被异步读写。
+ - 通道总是从缓冲区中读，像缓冲区写。
 
-像上面提到的，你可以从 Channel 读数据到 Buffer，及从 Buffer 写数据到 Channel。这里是一个示意图：
+像上面提到的，你可以从通道读数据到缓冲区，及从缓冲区写数据到通道。这里是一个示意图：
 
 <center>![overview-channels-buffers](overview-channels-buffers.png)</center>
 <center>**Java NIO：Channel 读数据到 Buffer，Buffer 写数据到 Channel。**</center>
@@ -199,7 +199,7 @@ Java NIO Channel 跟流很相似，但也有一些不同：
 
 `SocketChannel` 可以通过 TCP 协议从网络读或写数据。
 
-`ServerSocketChannel` 允许你监听到达的 TCP 连接，像 web 服务器那样。每一个到达的链接，就会创建一个 `SocketChannel`。
+`ServerSocketChannel` 允许你像 web 服务器那样，监听到达的 TCP 连接。并为每一个到达的链接，创建一个 `SocketChannel`。
 
 #### <a name="basic-channel-example"></a> 3.2 基本 Channel 示例
 
@@ -225,26 +225,28 @@ Java NIO Channel 跟流很相似，但也有一些不同：
 	}
 	aFile.close();
 
-注意 `buf.flip()` 调用。首先你读到一个 Buffer 中。然后，你切换读写模式。然后，读出它。我将会在下一小节讲解更多关于 `Buffer` 的细节。
+注意 `buf.flip()` 调用。首先，你读数据到缓冲区中。然后，你切换读写模式。然后，读出数据。我将会在下一小节讲解更多关于 `Buffer` 的细节。
 
 ### <a name="Java-NIO-Buffer"></a> 4. Java NIO Buffer
 
-Java NIO Buffer 用于跟 NIO Channel 交互。如你所知，数据从 Channel 读入 Buffer，从 Buffer 写向 Channel。
+Java NIO 缓冲区用于跟 NIO 通道交互。如你所知，数据从通道读入缓冲区，从缓冲区写向通道。
 
-一个 Buffer，本质是一块内存区域，你可以写入数据到其中，并之后进行重读。这块内存区域被包装成 NIO Buffer 对象，这些对象提供了一系列方法使的更易于跟内存块一起工作。
+一个缓冲区的本质就是一块内存区域，你可以写入数据到其中，并在之后进行重读。这块内存区域被包装成 NIO `Buffer` 对象，`Buffer` 对象提供了一系列方法使得更易于使用内存块工作。
 
 #### <a name="basicusage"></a> 4.1 基本 Buffer 使用
 
-使用一个 Buffer 来读和写数据，一般有 4 步：
+使用 `Buffer` 来读和写数据，一般有 4 步：
 
- 1. 写数据到 Buffer 中
- 2. 调用 buffer.flip()
- 3. 从 Buffer 读取读数
- 4. 调用 buffer.clear() 或 buffer.compact()
+ 1. 写数据到 `Buffer` 中
+ 2. 调用 `buffer.flip()`
+ 3. 从 `Buffer` 读出数据
+ 4. 调用 `buffer.clear()` 或 `buffer.compact()`
 
-当你写数据到 Buffer 中，这个 Buffer 会记录你已经写了多少数据。一旦，你需要读数据，就需要通过 `flip()` 来切换 Buffer 从写模式到读模式。读模式下，Buffer 可以使你读到所有已写入 Buffer 的数据。
+当你写数据到 `Buffer` 中时，它会记录你已经写了多少数据。一旦你需要读出数据，就需要通过 `flip()` 来将 `Buffer` 从写模式切换到读模式。读模式下，`Buffer` 可以使你读到所有已写入到其中的数据。
 
-一旦你读完了所有数据，你需要清空 Buffer，使它可以做好准备再次写入。你可以通过两种方式实现：调用 `clear()` 或调用 `compant()`。`clear()` 方法清空整个 Buffer。`compact()` 方法仅仅清空你已经读过的数据。所有未读数据将会被移动到 Buffer 的开始位置，然后数据将会被写入到 Buffer 中未读数据的后面。
+一旦你读完了所有数据，你需要清空 `Buffer`，使它做好准备以被再次写入。你可以通过两种方式实现：调用 `clear()` 或 `compant()`。`clear()` 方法清空整个 `Buffer`。`compact()` 方法仅仅清空你已经读过的数据。所有未读数据将会被移动到 `Buffer` 的开始位置，后续数据将会被写入到 `Buffer` 中未读数据的后面。
+
+下面是一个简单使用 `Buffer` 的示例，包括写，切换，读和清空操作：
 
 	RandomAccessFile aFile = new RandomAccessFile("data/nio-data.txt", "rw");
 	FileChannel inChannel = aFile.getChannel();
@@ -268,17 +270,15 @@ Java NIO Buffer 用于跟 NIO Channel 交互。如你所知，数据从 Channel 
 
 #### <a name="capacity-position-limit"></a> 4.2 Buffer 容量，位置和限制
 
-下面是一个简单实用 `Buffer` 的示例，包括写，切换，读和清空操作：
+一个 `Buffer` 本质上是一块内存区域，你可以写入数据到其中，并在之后读出。这块内存区域被包装成 NIO `Buffer` 对象，`Buffer` 对象提供了一系列方法使得更易于使用内存块工作。
 
-一个 Buffer 本质上是一块内存区域，你可以写入数据到其中，并之后再次阅读。这块内存区域被包装成 NIO Buffer 对象，这些对象提供了一系列方法使的更易于跟内存块一起工作。
-
-一个 Buffer 有 3 个你需要熟悉的属性，才能理解一个 `Buffer` 是如何工作的。它们是：
+`Buffer` 有 3 个你需要特别熟悉的属性，这样才能理解 `Buffer` 的工作机制。它们是：
 
  - 容量（capacity）
  - 位置（position）
  - 限制（limit）
 
-`position` 和 `limit` 的实际含义依赖于 `Buffer` 是处于读还是写模式。容量总是同一个含义，跟 Buffer 模式无关。
+`position` 和 `limit` 的实际含义取决于 `Buffer` 是处于读还是写模式。容量就一种含义，表示 `Buffer` 包装的内存块的大小，跟 `Buffer` 所处模式无关。
 
 下面是容量、位置和限制在写和读模式下的示意图。示意图的解释在下一小节。
 
@@ -287,19 +287,19 @@ Java NIO Buffer 用于跟 NIO Channel 交互。如你所知，数据从 Channel 
 
 ##### <a name="capacity"></a> 4.2.1 容量（capacity）
 
-一个内存块，即一个 `Buffer` 有一个确定的尺寸，也叫做它的“capacity”。你只能写 `catacity` 长度的 byte，long 和 char 等到 Buffer 中。一旦 Buffer 满了，你需要先清空它（读数据，或清空它），在你可以再次写入更多数据之前。
+一个内存块，即一个 `Buffer` 有一个确定的大小，也叫做它的“capacity”。你只能写 `capacity` 长度的 byte，long 或 char 等到 `Buffer` 中。一旦 `Buffer` 满了，在你可以再次向它写入更多数据之前，你需要先置空它（通过读数据，或直接清除）。
 
 ##### <a name="position"></a> 4.2.2 位置（position）
 
-当你写入数据到 `Buffer` 中，你会设置一个指定 position。初始化时 position 是 0。当一个 byte，long 等已经被写入到 `Buffer` 中，position 就会前进到下一个 Buffer 中的格子来插入下个数据。position 最大可以变成 `capacity - 1`。
+当你写入数据到 `Buffer` 中，你会设置一个特定定 `position`。初始化时 `position` 是 0。当一个 byte，long 等已经被写入到 `Buffer` 中，`position` 就会前进到下一个 `Buffer` 中的格子来插入下个数据。`position` 最大可以设置成 `capacity - 1`。（译注：本质就是从 0 开始计数的数组下标。）
 
-当你从 `Buffer` 中读入数据时，你也同样需要根据当前 position 来设置新 position。当你切换一个 `Buffer` 从写模式到读模式时，position 将被重设成 0。当你从 `Buffer` 读入数据时，也将会变动 `position` 值，即前进 `position` 到下个被读的位置。
+当你从 `Buffer` 中读入数据时，你也同样需要根据当前 `position` 来设置新 `position`。当你从写模式切换 `Buffer` 到读模式时，`position` 将被重设成 0。当你从 `Buffer` 读入数据时，也将会变动 `position` 值，即使 `position` 前进到下个被读数据的位置。
 
 ##### <a name="limit"></a> 4.2.3 限制（limit）
 
-写模式下，一个 `Buffer` 的 limit 是你可以写入多少数据到 Buffer 中。写模式下，limit 是等于 `Buffer` capacity 的。
+写模式下，一个 `Buffer` 的 `limit` 是你可以写入多少数据到缓冲区中。写模式下，`limit` 是等于 `Buffer` 的 `capacity` 值的。
 
-当切换 `Buffer` 到读模式，limit 表示你可以从 Buffer 中读多少数据（译注：原文是 from the data，应该是错误的，data 应该是 buffer）。因而，当切换一个 `Buffer` 到读模式，limit 值被设置成写模式下写入数据时的最后 position。换句话说，你写了多少数据就可以读入多少数据（limit 被设置成已写字节（译注：应该是指定类型的数据）的数量，即 position 值）。
+当切换 `Buffer` 到读模式时，`limit` 表示你可以从缓冲区中读多少数据（译注：原文是 from the data，应该是错误的，data 应该是 buffer）。因而，当切换 `Buffer` 到读模式时，`limit` 值将被设置成写模式下最后写入的数据的 `position` 值。换句话说，你写入多少数据就可以读出多少数据（`limit` 被设置成已写字节（译注：应该是指定类型的数据）的数量，即 `position` 值）。
 
 #### <a name="buffertypes"></a> 4.3 Buffer 类型
 
@@ -314,13 +314,13 @@ Java NIO 中有以下 **Buffer** 类型：
  - LongBuffer
  - ShortBuffer
 
-如你所见，这些 `Buffer` 类型用于表示不同的数据类型。换句话说，它们使你可以对待 Buffer 中的字节成 char，short，int，long，float 或 double 类型。
+如你所见，这些 `Buffer` 类型用于表示不同的数据类型。换句话说，它们使你可以将缓冲区中的字节作为 char，short，int，long，float 或 double 类型对待。
 
-`MappedByteBuffer` 有点特殊，将会在自己小节中讲解。
+`MappedByteBuffer` 有点特殊，将会在自己小节中讲解。（译注：本教程中好像**没有**。）
 
 #### <a name="allocating"></a> 4.4 分配 Buffer
 
-为了获得一个 `Buffer` 对象，你必须先分配它。每个 `Buffer` 类都有一个 `allocate()` 方法，来实现分配操作。下面是一个例子展示了对 `ByteBuffer` 的分配，容量 48 字节：
+为了获得一个 `Buffer` 对象，你必须先分配它。每个 `Buffer` 类都有一个 `allocate()` 方法，来实现分配操作。下面的例子展示对 `ByteBuffer` 的分配，容量为 48 字节：
 
 	ByteBuffer buf = ByteBuffer.allocate(48);
 
@@ -330,48 +330,48 @@ Java NIO 中有以下 **Buffer** 类型：
 
 #### <a name="writing"></a> 4.5 写数据到 Buffer 中
 
-你可以写数据到 `Buffer` 中，有两种方式：
+你可以通过两种方式写数据到 `Buffer` 中：
 
  1. 从 `Channel` 写数据到 `Buffer` 中。
- 2. 直接通过 `Buffer` 写入数据，通过 Buffer 的 `put()` 方法。
+ 2. 直接通过 `Buffer` 的 `put()` 写数据。
 
-下面的例子展示一个 `Channel` 如何写入数据到 `Buffer` 中：
+下面的例子展示 `Channel` 如何写数据到 `Buffer` 中：
 
 	int bytesRead = inChannel.read(buf); //read into buffer.
 
-下面的例子是写入数据到 `Buffer` 中，通过 `put()` 方法：
+下面的例子是通过 `put()` 方法写数据到 `Buffer` 中：
 
 	buf.put(127);
 
-有很多其他版本的 `put()` 方法，允许你通过多种方式写数据到 `Buffer` 中。比如，在特定的位置写入数据，或写一个字节数组到 Buffer 中。具体 Buffer 实现类的细节，参见 JavaDoc。
+有很多其他版本的 `put()` 方法，允许你通过多种方式写数据到 `Buffer` 中。比如，在特定的位置写入数据，或写一个字节数组到缓冲区中。具体 `Buffer` 实现类的细节，参见 JavaDoc。
 
 #### <a name="flip"></a> 4.6 flip()
 
-`flip()` 方法切换 `Buffer` 从写模式到读模式。调用 `flip()` 会设置 `position` 成 0，并设置 `limit` 为 position 值。
+`flip()` 方法将 `Buffer` 从写模式切换到读模式。调用 `flip()` 会设置 `position` 成 0，并设置 `limit` 为 `position` 值。
 
-换句话说，`position` 现在标记读的位置，`limit` 标记多少字节，字符等被入到 Buffer 中，即多少字节，字符等可以被读出。
+换句话说，`position` 现在标记读的位置，`limit` 标记多少字节、字符等被入到 `Buffer` 中，即多少字节、字符等可以被读出。
 
-#### <a name="reading"></a> 4.7 从 Buffer 读数据
+#### <a name="reading"></a> 4.7 从 Buffer 读出数据
 
-有两种方式，你可以从 `Buffer` 读入数据。
+你可以通过两种方式从 `Buffer` 读出数据：
 
- 1. 从 Buffer 读数据到一个 Channel。
- 2. 从 Buffer 本身读取数据，通过 `get()` 方法。
+ 1. 从 `Buffer` 读出数据到 `Channel`。
+ 2. 通过 `get()` 方法，从 `Buffer` 读出数据。
 
-下面的例子展示你如何从 Buffer 读数据到一个 Channel 中：
+下面的例子展示你如何从 `Buffer` 读出数据到 Channel 中：
 
 	//read from buffer into channel.
 	int bytesWritten = inChannel.write(buf);
 
-下面的例子展示了通过 `get()` 方法从 `Buffer` 读入数据：
+下面的例子展示了通过 `get()` 方法从 `Buffer` 读出数据：
 
 	byte aByte = buf.get();
 
-还有很多其他版本的 `get()` 方法，允许你从 `Buffer` 以多种方式读数据。比如，读取特定位置的数据，从 Buffer 读取一个字节数组。具体 Buffer 实现类的细节，参见 JavaDoc。
+还有很多其他版本的 `get()` 方法，允许你从 `Buffer` 中以多种方式读出数据。比如，读取特定位置的数据，从 `Buffer` 读出字节数组。具体 `Buffer` 实现类的细节，参见 JavaDoc。
 
 #### <a name="rewind"></a> 4.7 rewind()
 
-`Buffer.rewind()` 重新设置 `position` 成 0，这样你可以重新读取 Buffer 中的所有数据。`limit` 值不会变化，即仍标记可以从 `Buffer` 读取多少元素（字节，字符等）。
+`Buffer.rewind()` 重新设置 `position` 成 0，这样你可以重新读取缓冲区中所有数据。`limit` 值不会变化，即仍标记可以从 `Buffer` 读取多少元素（字节，字符等）。
 
 #### <a name="clear"></a> 4.8 clear() 和 compact()
 
@@ -1305,7 +1305,7 @@ Java NIO `Path` 类有多种方式搭配使用相对路径的方式。你将会�
 
 #### <a name="path-normalize"></a> 14.2 Path.normalize()
 
-`Path` 接口的 `normalize()` 方法可以 normalize 一个路径。normalize 的意思是，它移除路径字符串中所有的 `.` 和 `..`，并解析路径字符串实际指向的路径。下面是一个 `Path.normalize()` 示例：
+`Path` 接口的 `normalize()` 方法可以标准化一个路径。标准化的意思是，它移除路径字符串中所有的 `.` 和 `..`，并解析路径字符串实际指向的路径。下面是一个 `Path.normalize()` 示例：
 
 	String originalPath =
 		"d:\\data\\projects\\a-project\\..\\another-project";
@@ -1318,28 +1318,140 @@ Java NIO `Path` 类有多种方式搭配使用相对路径的方式。你将会�
 
 这个 `Path` 示例首先创建一个中间包含 `..` 的路径字符串。然后，例子从路径字符串创建一个 `Path` 实例，并打印这个 `Path` 实例（实际上它打印 `Path.toString()`）。
 
-这个例子调用 `Path` 实例的 `normalize()` 方法，将会返回一个新 `Path` 实例。这个新 normalized 的 `Path` 实例同样被打印出来。
+这个例子调用 `Path` 实例的 `normalize()` 方法，将会返回一个新 `Path` 实例。这个新标准化的 `Path` 实例同样被打印出来。
 
 下面是前面例子的打印输出：
 
 	path1 = d:\data\projects\a-project\..\another-project
 	path2 = d:\data\projects\another-project
 
-如你所见，normalized 的路径不包含 `a-project\..` 部分，因为这被忽略了 redundant。被移除的部分对最终绝对路径没什么影响。
+如你所见，标准化后的路径不包含 `a-project\..` 部分，因为它是冗余的。被移除的部分对最终绝对路径没什么影响。
 
 ### <a name="Java-NIO-Files"></a> 15. Java NIO Files
 
+Java NIO `Files` 类（`java.nio.file.Files`）提供了一些管理文件系统中文件的方法。Java NIO `Files` 教程将会覆盖最常用的方法。`Files` 类包括多个方法，如果你需要没有在这里描述到的方法，请查看 JavaDoc。`Files` 类只是可能有为了你的某种用途的某个方法。
+
+`java.nio.file.Files` 类搭配 [`java.nio.file.Path`](#Java-NIO-Path) 实例使用，所以在你用 `Files` 类之前，你需要理解 `Path` 类。
+
 #### <a name="files-exists"></a> 15.1 Files.exists()
 
-#### <a name="files-create-directory"></a> 15.2 Java NIO Files
+`Files.exists()` 方法检查给定的 `Path` 是否在文件系统中存在。
+
+可以创建文件系统中不存在的 `Path` 实例。比如，如果你计划创建一个新文件夹，你需要首先创建一个关联的 `Path` 实例，然后创建这个目录。
+
+由于 `Path` 实例可能指向文件系统上存在或不存在的实际路径，你可以使用 `Files.exists()` 方法来确定（如果你需要检查的话）。
+
+下面是一个 Java `Files.exists()` 示例：
+
+	Path path = Paths.get("data/logging.properties");
+
+	boolean pathExists =
+		Files.exists(path,
+			new LinkOption[]{ LinkOption.NOFOLLOW_LINKS});
+
+这个例子首先创建一个 `Path` 实例指向我打算检查是否存在的路径。然后，例子调用 `Files.exists()` 方法，将 `Path` 实例作为第一个参数。
+
+注意，`Files.exists()` 方法的第二个参数。这个参数是一个选项数组，影响 `Files.exists()` 如何决定一个路径是否存在。
+
+这例子中的数组包括 `LinkOption.NOFOLLOW_LINKS`，意思是 `Files.exists()` 不要查看文件系统上的符号链接实际所指路径是否存在。
+
+#### <a name="files-create-directory"></a> 15.2 Files.createDirectory()
+
+`Files.createDirectory()` 方法从 `Path` 实例创建新目录。下面是一个例子：
+
+	Path path = Paths.get("data/subdir");
+
+	try {
+		Path newDir = Files.createDirectory(path);
+	} catch(FileAlreadyExistsException e){
+		// the directory already exists.
+	} catch (IOException e) {
+		//something else went wrong
+		e.printStackTrace();
+	}
+
+第一行创建 `Path` 实例，表示要被创建的目录。在 `try-catch` 块内，`Files.createDirectory()` 方法被调用，并用路径作为参数。如果目录创建成功，`Path` 实例将被返回，指向新创建的路径。
+
+如果目录已经存在，则将会抛出一个 `java.nio.file.FileAlreadyExistsException`。如果是其他的错误，将会抛出 `IOException`。比如，如果一个目标目录的父目录不存在，将会抛出 `IOException`。父目录是你想新建目录时所在的目录。因而，它表示新目录的父目录。
 
 #### <a name="files-copy"></a> 15.3 Files.copy()
 
+`Files.copy()` 方法复制文件从一个路径到另一个。下面是一个 `Files.copy()` 示例：
+
+	Path sourcePath      = Paths.get("data/logging.properties");
+	Path destinationPath = Paths.get("data/logging-copy.properties");
+
+	try {
+		Files.copy(sourcePath, destinationPath);
+	} catch(FileAlreadyExistsException e) {
+		//destination file already exists
+	} catch (IOException e) {
+		//something else went wrong
+		e.printStackTrace();
+	}
+
+首先例子，创建一个源和目的 `Path` 实例。然后调用 `Files.copy()`，将两个 `Path` 实例作为参数。这个操作的结果是，源路径指向的文件被复制到目的路径指向的文件。
+
+如果目的文件已经存在，则将会抛出一个 `java.nio.file.FileAlreadyExistsException`。如果是其他的错误，将会抛出 `IOException`。比如，如果，复制文件所在的目录不存在，将会抛出 `IOException`。
+
 ##### <a name="overwriting-existing-files"></a> 15.3.1 覆盖已存在文件
+
+可以强制 `Files.copy()` 覆盖已存在文件。下面这个例子展示如何通过 `Files.copy()` 覆盖文件：
+
+	Path sourcePath      = Paths.get("data/logging.properties");
+	Path destinationPath = Paths.get("data/logging-copy.properties");
+
+	try {
+		Files.copy(sourcePath, destinationPath,
+		StandardCopyOption.REPLACE_EXISTING);
+	} catch(FileAlreadyExistsException e) {
+		//destination file already exists
+	} catch (IOException e) {
+		//something else went wrong
+		e.printStackTrace();
+	}
+
+注意 `Files.copy()` 的第三个参数。这个参数指示 `copy()` 方法覆盖已存在文件。
 
 #### <a name="files-move"></a> 15.4 Files.move()
 
+Java NIO `Files` 类也包含一个函数来从某个路径移动文件到另一个路径。移动文件跟重命名是一样的，除了移动文件可以移动文件到一个不同的目录或是改变它的名字（当前目录下）。是的，通过 `java.io.File` 类的 `renameTo()` 方法也可以做到，但是现在你也有一个在 `java.nio.file.Files` 类下的 `move` 功能。
+
+下面是一个 `Files.move()` 的示例：
+
+	Path sourcePath      = Paths.get("data/logging-copy.properties");
+	Path destinationPath = Paths.get("data/subdir/logging-moved.properties");
+
+	try {
+		Files.move(sourcePath, destinationPath,
+			StandardCopyOption.REPLACE_EXISTING);
+	} catch (IOException e) {
+		//moving file failed.
+		e.printStackTrace();
+	}
+
+首先，源路径和目的路径被创建。源路径指向将被移动的文件，目的路径指向文件将被移动到的地方。然后 `Files.move()` 被调用。使文件被移动。
+
+注意传递给 `Files.move()` 的第三个参数。这个参数告诉告诉 `Files.move()` 方法来覆盖目的路径的已存在文件。这个参数是可选的。
+
+`Files.move()` 方法可能抛出 `IOException`，当移动文件失败时。比如，如果文件已经存在，而且你没有使用 `StandardCopyOption.REPLACE_EXISTING` 选项，或被移动的文件不存在。
+
 #### <a name="files-delete"></a> 15.5 Files.delete()
 
+`Files.delete()` 方法可以删除问价或目录。下面是一个示例：
+
+	Path path = Paths.get("data/subdir/logging-moved.properties");
+
+	try {
+		Files.delete(path);
+	} catch (IOException e) {
+		//deleting file failed
+		e.printStackTrace();
+	}
+
+首先，指向被删文件的 `Path` 被建立。然后，调用 `Files.delete()` 方法。如果由于某些原因失败（如，文件或目录不存在） `Files.delete()` 执行失败，将会抛出 `IOException`。
+
 #### <a name="files-additional-methods"></a> 15.6 Files 类中其他方法
+
+`java.nio.file.Files` 类包含许多实用函数，如创建符号链接，检查文件大小，设置权限等。关于这些方法的细节查看 `java.nio.file.Files` 类的 JavaDoc。
 
