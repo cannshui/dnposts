@@ -650,6 +650,71 @@ ExampleBean 类：（译注：作者添加）
 
 **直接值（基本类型，字符串，等）**
 
-`<property/>` 的 `value` 属性将属性或构造器参数声明为可读的字符串表达。Spring 的[转化服务]()用于将这些值从 `String` 转化成实际的属性或参数类型。
+`<property/>` 的 `value` 属性将属性或构造器参数声明为可读的字符串表达。Spring 的[转化服务]()用于将这些值从 `String` 转化成实际的属性或参数类型对应值。
 
-Current pos: #beans-value-element
+	<bean id="myDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<!-- results in a setDriverClassName(String) call -->
+		<property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+		<property name="url" value="jdbc:mysql://localhost:3306/mydb"/>
+		<property name="username" value="root"/>
+		<property name="password" value="masterkaoli"/>
+	</bean>
+
+下面的例子使用 [p-namescape](#beans-p-namespace) 来构建更简洁的 XML 配置。
+
+	<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:p="http://www.springframework.org/schema/p"
+		xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+		<bean id="myDataSource" class="org.apache.commons.dbcp.BasicDataSource"
+			destroy-method="close"
+			p:driverClassName="com.mysql.jdbc.Driver"
+			p:url="jdbc:mysql://localhost:3306/mydb"
+			p:username="root"
+			p:password="masterkaoli"/>
+	
+	</beans>
+
+上面的 XML 很精简；但是，配置错误只能在运行时而非设计时发现，除非你使用 IDE 比如 [IntelliJ IDEA](http://www.jetbrains.com/idea/) 或 [Spring Tool Suite（STS）](https://spring.io/tools/sts)，在你创建 bean 定义的时候支持自动属性补全。强烈推荐你使用这种 IDE 辅助。
+
+你也可以配置一个 `java.util.Properties` 实例，如：
+
+	<bean id="mappings"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+
+		<!-- typed as a java.util.Properties -->
+		<property name="properties">
+			<value>
+				jdbc.driver.className=com.mysql.jdbc.Driver
+				jdbc.url=jdbc:mysql://localhost:3306/mydb
+			</value>
+		</property>
+	</bean>
+
+Spring 容器通过 JavaBean 的 `PropertyEditor` 机制转化 `<value/>` 内的文本成 `java.util.Properties` 实例。这是一个很好的例子，并是很多方式中的一种，即 Spring  开发组支持嵌套的 `<value/>` 元素而非利用 `value` 属性风格。（译注：ERROR!）
+
+##### idref 元素
+
+`idref` 元素是一种错误提前（error-proof）的方式来传递容器中另外 bean 的 *id* （String 值 - 不是引用）到 `<constructor-arg/>` 或 `<property/>` 元素。
+
+	<bean id="theTargetBean" class="..."/>
+
+	<bean id="theClientBean" class="...">
+		<property name="targetName">
+			<idref bean="theTargetBean" />
+		</property>
+	</bean>
+
+上面的 bean 定义片段跟下面的片段是*完全*等效的（运行时）：
+
+	<bean id="theTargetBean" class="..." />
+
+	<bean id="client" class="...">
+		<property name="targetName" value="theTargetBean" />
+	</bean>
+
+译注：idref 这里演示失败了。而且上面的例子中不应该用 value 而是 ref ？
+
+CURRENT POS: #beans-idref-element
