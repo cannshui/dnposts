@@ -371,23 +371,23 @@ Java NIO 中有以下 **Buffer** 类型：
 
 #### <a name="rewind"></a> 4.7 rewind()
 
-`Buffer.rewind()` 重新设置 `position` 成 0，这样你可以重新读取缓冲区中所有数据。`limit` 值不会变化，即仍标记可以从 `Buffer` 读取多少元素（字节，字符等）。
+`Buffer.rewind()` 重新设置 `position` 成 0，这样你可以重新读取缓冲区中的所有数据。`limit` 值不会变化，即仍标记可以从 `Buffer` 读出多少元素（字节，字符等）。
 
 #### <a name="clear"></a> 4.8 clear() 和 compact()
 
-一旦你完成了从 `Buffer` 读取数据，你必须使 `Buffer` 做好准备再次被写入。你可以通过调用 `clear()` 或 `compact()` 来做到这个。
+一旦你完成了从 `Buffer` 读出数据，你必须使 `Buffer` 做好再次被写入的准备。这通过调用 `clear()` 或 `compact()` 来实现。
 
-如果你调用 `clear()` 方法，将会设置 `position` 成 0，`limit` 成 `capacity` 值。换句话说，`Buffer` 被清空了。`Buffer` 中的实际数据并没有被清空。这些标记变量仅仅告诉你可以从哪里写入数据到 `Buffer` 中。
+如果你调用 `clear()` 方法，将会设置 `position` 成 0，`limit` 成 `capacity` 值。换句话说，`Buffer` 被清空了。`Buffer` 中的实际数据并没有被清空（译注：指内存块中的位）。这些标记变量仅仅告诉你可以从哪个位置写数据到 `Buffer` 中。
 
-如果 `Buffer` 中还有未被读取的数据，当你调用 `clear()` 的时候，这些数据将会被“遗忘”，即你不再有任何标记变量告诉你什么数据已经读过了，什么数据还没有被读过。
+如果 `Buffer` 中还有未被读出的数据，在你调用 `clear()` 之后，这些数据将会被“遗忘”，即你不再知道任何标记变量告诉你什么数据已经读过了，什么数据还没有被读过。
 
-如果 `Buffer` 中仍有未被读取的数据，而且你还想在之后读取，但你需要首先做一些写入操作，则需要调用 `compact()` 方法而非 `clear()`。
+如果 `Buffer` 中仍有未被读出的数据，而且你还想在之后再读，但你需要首先做一些写入操作，则需要调用 `compact()` 方法而非 `clear()`。
 
-`compact()` 复制这些未读数据到 `Buffer` 中起始位置。然后，设置 `position` 为最右边的未读元素的索引。`limit` 值设置成 `capacity` 值，就像 `clear()` 方法所做的那样。现在，`Buffer` 已经是可以再次写入的状态了，但你并没有复写未读数据。
+`compact()` 复制这些未读数据到 `Buffer` 起始位置。然后，设置 `position` 为最右边的未读元素的索引。`limit` 值设置成 `capacity` 值，就像 `clear()` 方法所做的那样。现在，`Buffer` 已经是可以再次写入的状态了，但你并没有覆盖未读数据。
 
 #### <a name="mark"></a> 4.9 mark() 和 reset()
 
-你可以在 `Buffer` 中标记一个给定的 position，通过调用 `Buffer.mark()` 方法。然后，你可以重设 position 到这个已标记的 position，通过调用 `Buffer.reset()` 方法。下面是一个例子：
+你可以通过调用 `Buffer.mark()` 方法，在 `Buffer` 中标记一个给定的 `position`。然后，你可以重设 position 到这个已标记的 position，通过调用 `Buffer.reset()` 方法。下面是一个例子：
 
 	buffer.mark();
 	//call buffer.get() a couple of times, e.g. during parsing.
@@ -395,34 +395,36 @@ Java NIO 中有以下 **Buffer** 类型：
 
 #### <a name="equals-and-compareto"></a> 4.10 equals() 和 compareTo()
 
-可以比较两个 Buffer， 通过 `equals()` 和 `compareTo()`。
+可以通过 `equals()` 和 `compareTo()`，比较两个 `Buffer`。
 
 ##### <a name="equals"></a> 4.10.1 equals()
 
-两个 Buffer 是相等的，如果（译注：同时满足 3 个条件）：
+两个 `Buffer` 是相等的，如果（译注：同时满足 3 个条件）：
 
- 1. 它们具有相同的类型（字节，字符，整形等）。
- 2. 它们的 Buffer 中有同等数量的未读（译注：此处为 remaining，翻译成“未读”？）字节，字符等。
- 3. 所有的字节，字符等是相等的。
+ 1. 它们具有相同的类型（字节，字符，整形等）及容量。
+ 2. 它们的 `Buffer` 中有同等数量的未读出（remaining）字节，字符等。
+ 3. 未读出的所有字节，字符等是相等的。
 
-如你所见，equals 方法仅仅比较 `Buffer` 的一部分，而非其中的每一个元素。其实，它仅比较 `Buffer` 中的未读元素。
+如你所见，`equals()` 方法仅仅比较 `Buffer` 的一部分，而非其中的每一个元素。其实，它仅比较 `Buffer` 中的未读元素。
 
 ##### <a name="compareTo"></a> 4.10.2 compareTo()
 
-`compareTo()` 方法比较两个 Buffer 的剩余元素（字节，字符等），比如，排序例程。一个 Buffer “小于”另一个 Buffer 如果：
+`compareTo()` 方法比较两个 `Buffer` 的剩余元素（字节，字符等），比如，排序例程。一个 `Buffer` “小于”另一个 `Buffer` 如果：
 
- 1.  Buffer 中第一个元素小于另一个 Buffer 中的相应元素。
- 2. 所有的元素是相等的，但是第一个 Buffer 先于第二个 Buffer 读（耗）尽了所有元素（即，第一个 Buffer 有较少的元素）。
+ 1. `Buffer` 中第一个元素小于另一个 `Buffer` 中的相应元素。
+ 2. 所有的元素是相等的，但是第一个 `Buffer` 先于第二个 `Buffer` 读（耗）尽了所有元素（即，第一个 `Buffer` 有较少的元素）。
+
+**（译注：`equals()` 和 `compareTo()` 的表现好像很奇怪。）**
 
 ### <a name="Java-NIO-Scatter-Gather"></a> 5. Java NIO 散和收（Sactter/Gather）
 
 Java NIO 有内建的 scatter / gather 支持。scatter / gather 的概念用于读 / 写 channel。
 
-一个 scattering 用于从 channel 执行读操作，读数据到一个或多个 buffer 中。因而，channel 用于从多个通道“分散”数据到多个缓冲区中。
+一个 scattering 用于从通道执行读操作，读数据到一个或多个缓冲区中。因而，通道 scatter 用于从多个通道“分散”数据到多个缓冲区中。
 
-一个 gathering 写向 channel 是一个写操作来写数据到 channel 中，可以从一或多个缓冲区中写数据到一个单一的 channel。
+一个 gathering 写向通道是一个写操作来写数据到通道中，可以从一或多个缓冲区中写数据到一个单一的通道。
 
-scatter / gather 会是很有用的解决方案，当你需要用分开使用多种类的数据时。比如，如果一个消息由一个头（header）和正文（body）组成，你可能想将头和正文放在分开的缓冲区中。这样做，可以使你更易于以分离的方式使用头和正文。
+当你需要用分开使用多种类的数据时，scatter / gather 会是很有用的解决方案。比如，如果一个消息由一个头（header）和正文（body）组成，你可能想将头和正文放在分开的缓冲区中。这样做，可以使你更易于以分离的方式使用头和正文。
 
 #### <a name="scattering-reads"></a> 5.1 分散读（Scattering Reads）
 
@@ -462,7 +464,7 @@ scatter / gather 会是很有用的解决方案，当你需要用分开使用多
 
 	channel.write(buffers);
 
-缓冲区数组传递到 `write()` 方法，该方法按照数组中缓冲区的顺序将内容写到通道中。仅仅在 position 和 limit 之间的缓冲区内容才会被写出。因而，如果一个缓冲区的容量为 128 字节，但仅包含 58 字节的实际数据，那么只会有这 58 字节从缓冲区写向通道中。因此，一个收集写在消息大小是动态变化时将会工作的很好，跟分散读相反。
+缓冲区数组传递到 `write()` 方法，该方法按照数组中缓冲区的顺序将内容写到通道中。仅仅在 `position` 和 `limit` 之间的缓冲区内容才会被写出。因而，如果一个缓冲区的容量为 128 字节，但仅包含 58 字节的实际数据，那么只会有这 58 字节的数据从缓冲区写向通道中。因此，一个收集写在消息大小是动态变化时将会工作的很好，跟分散读相反。
 
 ### <a name="Java-NIO-Channel-to-Channel-Transfers"></a> 6. Java NIO 通道之间数据传送
 
@@ -475,18 +477,18 @@ Java NIO 中，你可以直接将数据从一个通道转到另一个通道中�
 
 	RandomAccessFile fromFile = new RandomAccessFile("fromFile.txt", "rw");
 	FileChannel      fromChannel = fromFile.getChannel();
-	
+
 	RandomAccessFile toFile = new RandomAccessFile("toFile.txt", "rw");
 	FileChannel      toChannel = toFile.getChannel();
-	
+
 	long position = 0;
 	long count    = fromChannel.size();
-	
+
 	toChannel.transferFrom(fromChannel, position, count);
 
-position 和 count 参数，告诉目标（被写入）文件从哪里开始写数据（`position`），及应该转送最大多大（`count`）字节的数据。如果源通道数据量少于 `count` 字节，那么将只转送能够转送的数据量。
+`position` 和 `count` 参数，告诉目标（被写入）文件从哪里开始写数据（`position`），及应该转送最大多大（`count`）字节的数据。如果源通道数据量少于 `count` 字节，那么将只转送能够转送的数据量。
 
-另外，一些 `SocketChannel` 实现可能也可以转送数据，这些数据只是 `SocketChannel` 中当前已经在内部缓冲区中的了，即使 `SocketChannel` 中可能后续有很多的数据进来。因而，它可能无法从 `SocketChannel` 转送全部的所要求的（`count`）数据到 `FileChannel` 中。
+另外，一些 `SocketChannel` 实现可能也可以转送数据，这些数据只是 `SocketChannel` 中当前已经在内部缓冲区中的了，即使 `SocketChannel` 中可能后续有很多的数据进来。因而，它可能无法从 `SocketChannel` 转送全部所要求的（`count`）数据到 `FileChannel` 中。
 
 #### <a name="transferfrom"></a> 6.2 transferto()
 
@@ -505,15 +507,15 @@ position 和 count 参数，告诉目标（被写入）文件从哪里开始写�
 
 注意，这个例子跟前例非常相似。唯一真正的不同是，这个方法是在哪个 `FileChannel` 对象调用的。其它都是相同的。
 
-问题是，`SocketChannel` 也提供了一个 `transferTo()` 方法。`SocketChannel` 实现可能只会从 `FileChannel` 中转送字节直到发送缓冲区满了（send buffer），然后停止（译注：挂起？）。
+问题是，`SocketChannel` 也提供了一个 `transferTo()` 方法。`SocketChannel` 实现可能会从 `FileChannel` 中转送字节直到发送缓冲区满了（send buffer），然后停止（译注：挂起）。
 
 ### <a name="Java-NIO-Selector"></a> 7. Java NIO Selector
 
-`Selector` 是 Java NIO 的一个组件，用于检查一或多个 NIO Channel，并决定通道所处的状态，如可读或可写。这样，一个单线程就可以管理多个通道，及多个网络连接。
+`Selector` 是 Java NIO 的一个组件，用于检查一或多个 NIO 通道，并决定通道所处的状态，如可读或可写。这样，一个单线程就可以管理多个通道，及多个网络连接。
 
 #### <a name="why-use-a-selector"></a> 7.1 为什么使用 Selector
 
-只使用一个线程来处理多个通道的优点是你只需较少的线程来处理通道。其实，通过 `Selector`，你可以只用一个线程来处理你所有的通道。操作系统中，线程间的切换是很重的操作，而且每个线程都需要一些资源（内存等）。因而，越少的线程使用，越好。
+只使用一个线程来处理多个通道的优点是你只需较少的线程就能处理很多通道。其实，通过 `Selector`，你可以只用一个线程来处理你所有的通道。操作系统中，线程间的切换是很重的操作，而且每个线程都需要一些资源（内存等）。因而，越少的线程使用，越好。
 
 但是记住，现在操作系统和 CPU 在多任务的处理上变的越来越好，所以多线程的切换代价变的越来越小。其实，如果一个 CPU 有多个核，而如果你不使用多任务的话，那你可能在浪费 CPU 的能力。不过，那种设计讨论是另外的主题。这里，只讨论通过单个线程利用 `Selector` 处理多个通道。
 
