@@ -1157,7 +1157,7 @@ NIO 实现则看起来很不同。下面是一个简单示例：
 
 想象一下，第一次 `read(buffer)` 调用之后，所有读入到缓冲区中的内容只是行的一半。比如，“Name: An”。你能处理那个数据吗？并不能。你需要等待直到至少一行数据被读入到缓冲区中，在使任何数据处理变得有意义之前。
 
-所以，你如何知道是否缓冲区中包含足够的内容来被处理？其实，你不知道。知道的唯一方式，就是查看缓冲区的数据。结果就是，你可能需要多次检查缓冲区的数据，在你知道所有数据都在里面之前。这既是低效的，并且也可以使程序设计变得混乱。比如：
+所以，你如何知道是否缓冲区中包含足够的内容来被处理？其实，你不知道。知道的唯一方式，就是查看缓冲区的数据。结果就是，在知道所有数据都在里面之前，你可能需要多次检查缓冲区的数据。这既是低效的，并且也会使程序设计变得混乱。比如：
 
 	ByteBuffer buffer = ByteBuffer.allocate(48);
 
@@ -1171,7 +1171,7 @@ NIO 实现则看起来很不同。下面是一个简单示例：
 
 `bufferFull()` 方法扫描整个缓冲区，但是必须保证离开缓冲区的时候状态跟调用 `bufferFull()` 方法之前是一致的。如果不是，下一个读到缓冲区中的数据可能会在不正确的位置。这虽然是不可能的，但它是另一个需要注意的问题。
 
-如果缓冲区满了，它就能被处理。如果还没满，你可以处理其中的部分数据，如果那适用于你的特定情。许多情况下，它都不会满。
+如果缓冲区满了，它就能被处理。如果还没满，你可以处理其中的部分数据，如果那适用于你的特定情形。许多情况下，它都不会满。
 
 缓冲区数据是否完备的循环示意图如下：
 
@@ -1180,9 +1180,9 @@ NIO 实现则看起来很不同。下面是一个简单示例：
 
 ##### <a name="summary"></a> 13.6 总结
 
-NIO 允许你管理多个通道（网络连接或文件），只使用一个（或几个）线程，但是代价是数据的处理过程可能更加复杂相比于从阻塞流中读数据。
+NIO 允许你只使用一个（或几个）线程来管理多个通道（网络连接或文件），但是代价是数据的处理过程相比于阻塞流可能更加复杂。
 
-如果你需要同时管理上千个连接，每个连接只发送很少的数据，比如，一个聊天服务器，以 NIO 来实现这个服务器可能更加有利。类似地，如果你需要保持许多已打开到对其它电脑的连接，如，P2P 网络，使用一个单线程来管理所有连出的连接可能是一个优势。
+如果你需要同时管理上千个连接，而每个连接只发送很少的数据，比如，一个聊天服务器，以 NIO 来实现这个服务器可能更加有利。类似地，如果你需要保持许多已打开到对其它电脑的连接，如，P2P 网络，使用一个单线程来管理所有连出的连接可能是一个优势。
 
 单个线程，多个连接的设计示意图如下：
 
@@ -1196,17 +1196,17 @@ NIO 允许你管理多个通道（网络连接或文件），只使用一个（�
 
 ### <a name="Java-NIO-Path"></a> 14. Java NIO Path
 
-Java `Path` 接口是 Java NIO 2 的一部分，，，。Java `Path` 接口在 Java 7 中被添加到 Java NIO 中。`Path` 接口的位置在 `java.nio.file` 包下，所以 Java `Path` 接口的全名是 `java.nio.file.Path`。
+Java `Path` 接口是 Java NIO 2 的一部分。Java `Path` 接口在 Java 7 中被添加到 Java NIO 中。`Path` 接口的位置在 `java.nio.file` 包下，所以 Java `Path` 接口的全名是 `java.nio.file.Path`。
 
 Java `Path` 实例表示文件系统上的一个*路径*。路径可以指向文件或目录。路径可以是绝对或相对的。绝对路径包含从文件系统根路径到文件或目录的全路径。相对路径包含从某个路径开始指向文件或目录的路径。相对路径听起来有点迷惑人。不用担心。我会在本节中详细的解释它。
 
 不要将“文件系统路径”弄混成一些操作系统的 `path` 环境变量。`java.nio.file.Path` 接口跟 `path` 环境变量毫无关系。
 
-许多情况下，`java.nio.file.Path` 接口类似于 [`java.io.File`](#http://tutorials.jenkov.com/java-io/file.html) 类，但有一些小差别。许多场景下，你可以使用 `Path` 替换 `File` 类。
+许多情况下，`java.nio.file.Path` 接口类似于 [`java.io.File`](http://tutorials.jenkov.com/java-io/file.html) 类，但有一些小差别。许多场景下，你可以使用 `Path` 替换 `File` 类。
 
 #### <a name="creating-a-path-instance"></a> 14.1 创建 Path 实例
 
-为了使用 `java.nio.file.Path` 实例，你必须创建 `Path` 实例。你通过 `Paths` 类（`java.nio.file.Paths`）的静态方法（`Paths.get()`）创建 `Path` 实例。下面是 `Paths.get()` 示例：
+为了使用 `java.nio.file.Path` 实例，你必须创建它。你通过 `Paths` 类（`java.nio.file.Paths`）的静态方法（`Paths.get()`）创建 `Path` 实例。下面是 `Paths.get()` 示例：
 
 	import java.nio.file.Path;
 	import java.nio.file.Paths;
@@ -1240,7 +1240,7 @@ Java `Path` 实例表示文件系统上的一个*路径*。路径可以指向文
 
 绝对路径现在是 `/home/jakobjenkov/myfile.txt`。
 
-如果你在 Windows 机器上使用这种路径（以 `/` 作为起始），路径将会被解释成相对与当前磁盘的路径。比如，路径：
+如果你在 Windows 机器上使用这种路径（以 `/` 作为起始），路径将会被解释成相对与当前磁盘根的路径。比如，路径：
 
 	/home/jakobjenkov/myfile.txt
 
@@ -1277,6 +1277,7 @@ Java `Path` 实例实际关联到的绝对路径将会是上面代码执行的�
 	Path currentDir = Paths.get("d:\\data\\projects\.\a-project");
 
 这个路径会关联到：
+
 	d:\data\projects\a-project
 
 `..` 表示“父目录”或“上一层目录”。下面的 `Path` 例子示例它的含义：
@@ -1303,7 +1304,7 @@ Java `Path` 实例实际关联到的绝对路径将会是上面代码执行的�
 	Path path2 = Paths.get("d:\\data\\projects\\a-project",
 			"..\\another-project");
 
-Java NIO `Path` 类有多种方式搭配使用相对路径的方式。你将会在稍后看到更多细节。
+Java NIO `Path` 类有多种搭配使用相对路径的方式。你将会在稍后看到更多细节。
 
 #### <a name="path-normalize"></a> 14.2 Path.normalize()
 
@@ -1331,7 +1332,7 @@ Java NIO `Path` 类有多种方式搭配使用相对路径的方式。你将会�
 
 ### <a name="Java-NIO-Files"></a> 15. Java NIO Files
 
-Java NIO `Files` 类（`java.nio.file.Files`）提供了一些管理文件系统中文件的方法。Java NIO `Files` 教程将会覆盖最常用的方法。`Files` 类包括多个方法，如果你需要没有在这里描述到的方法，请查看 JavaDoc。`Files` 类只是可能有为了你的某种用途的某个方法。
+Java NIO `Files` 类（`java.nio.file.Files`）提供了一些管理文件系统中文件的方法。Java NIO `Files` 教程将会覆盖最常用的方法。`Files` 类包括多个方法，如果你需要用没有在这里描述到的方法，请查看 JavaDoc。`Files` 类只是有可能提供适合你某种用途的某个方法。
 
 `java.nio.file.Files` 类搭配 [`java.nio.file.Path`](#Java-NIO-Path) 实例使用，所以在你用 `Files` 类之前，你需要理解 `Path` 类。
 
@@ -1372,13 +1373,13 @@ Java NIO `Files` 类（`java.nio.file.Files`）提供了一些管理文件系统
 		e.printStackTrace();
 	}
 
-第一行创建 `Path` 实例，表示要被创建的目录。在 `try-catch` 块内，`Files.createDirectory()` 方法被调用，并用路径作为参数。如果目录创建成功，`Path` 实例将被返回，指向新创建的路径。
+第一行创建 `Path` 实例，表示要被创建的目录。在 `try-catch` 块内，`Files.createDirectory()` 方法被调用，并用路径作为参数。如果目录创建成功，将返回 `Path` 实例，指向新创建的路径。
 
 如果目录已经存在，则将会抛出一个 `java.nio.file.FileAlreadyExistsException`。如果是其他的错误，将会抛出 `IOException`。比如，如果一个目标目录的父目录不存在，将会抛出 `IOException`。父目录是你想新建目录时所在的目录。因而，它表示新目录的父目录。
 
 #### <a name="files-copy"></a> 15.3 Files.copy()
 
-`Files.copy()` 方法复制文件从一个路径到另一个。下面是一个 `Files.copy()` 示例：
+`Files.copy()` 方法从一个路径复制文件到另一个。下面是一个 `Files.copy()` 示例：
 
 	Path sourcePath      = Paths.get("data/logging.properties");
 	Path destinationPath = Paths.get("data/logging-copy.properties");
@@ -1392,7 +1393,7 @@ Java NIO `Files` 类（`java.nio.file.Files`）提供了一些管理文件系统
 		e.printStackTrace();
 	}
 
-首先例子，创建一个源和目的 `Path` 实例。然后调用 `Files.copy()`，将两个 `Path` 实例作为参数。这个操作的结果是，源路径指向的文件被复制到目的路径指向的文件。
+首先，例子创建一个源和目的 `Path` 实例。然后调用 `Files.copy()`，将两个 `Path` 实例作为参数。这个操作的结果是，源路径指向的文件被复制到目的路径指向的文件。
 
 如果目的文件已经存在，则将会抛出一个 `java.nio.file.FileAlreadyExistsException`。如果是其他的错误，将会抛出 `IOException`。比如，如果，复制文件所在的目录不存在，将会抛出 `IOException`。
 
@@ -1405,7 +1406,7 @@ Java NIO `Files` 类（`java.nio.file.Files`）提供了一些管理文件系统
 
 	try {
 		Files.copy(sourcePath, destinationPath,
-		StandardCopyOption.REPLACE_EXISTING);
+			StandardCopyOption.REPLACE_EXISTING);
 	} catch(FileAlreadyExistsException e) {
 		//destination file already exists
 	} catch (IOException e) {
@@ -1417,7 +1418,7 @@ Java NIO `Files` 类（`java.nio.file.Files`）提供了一些管理文件系统
 
 #### <a name="files-move"></a> 15.4 Files.move()
 
-Java NIO `Files` 类也包含一个函数来从某个路径移动文件到另一个路径。移动文件跟重命名是一样的，除了移动文件可以移动文件到一个不同的目录或是改变它的名字（当前目录下）。是的，通过 `java.io.File` 类的 `renameTo()` 方法也可以做到，但是现在你也有一个在 `java.nio.file.Files` 类下的 `move` 功能。
+Java NIO `Files` 类也包含一个函数来从某个路径移动文件到另一个路径。移动文件跟重命名是一样的，除了移动文件不但可以移动文件到一个不同的目录还可以改变它的名字（当前目录下调用）（译注：类似于 Linux move 命令）。是的，通过 `java.io.File` 类的 `renameTo()` 方法也可以做到，但是现在你多了一个在 `java.nio.file.Files` 类下的 `move` 功能。
 
 下面是一个 `Files.move()` 的示例：
 
@@ -1434,13 +1435,13 @@ Java NIO `Files` 类也包含一个函数来从某个路径移动文件到另一
 
 首先，源路径和目的路径被创建。源路径指向将被移动的文件，目的路径指向文件将被移动到的地方。然后 `Files.move()` 被调用。使文件被移动。
 
-注意传递给 `Files.move()` 的第三个参数。这个参数告诉告诉 `Files.move()` 方法来覆盖目的路径的已存在文件。这个参数是可选的。
+注意传递给 `Files.move()` 的第三个参数。这个参数指示 `Files.move()` 方法来覆盖目的路径的已存在文件。这个参数是可选的。
 
-`Files.move()` 方法可能抛出 `IOException`，当移动文件失败时。比如，如果文件已经存在，而且你没有使用 `StandardCopyOption.REPLACE_EXISTING` 选项，或被移动的文件不存在。
+当移动文件失败时，`Files.move()` 方法可能抛出 `IOException`。比如，如果文件已经存在，而且你没有使用 `StandardCopyOption.REPLACE_EXISTING` 选项，或被移动的文件不存在。
 
 #### <a name="files-delete"></a> 15.5 Files.delete()
 
-`Files.delete()` 方法可以删除问价或目录。下面是一个示例：
+`Files.delete()` 方法可以删除文件或目录。下面是一个示例：
 
 	Path path = Paths.get("data/subdir/logging-moved.properties");
 
@@ -1456,4 +1457,3 @@ Java NIO `Files` 类也包含一个函数来从某个路径移动文件到另一
 #### <a name="files-additional-methods"></a> 15.6 Files 类中其他方法
 
 `java.nio.file.Files` 类包含许多实用函数，如创建符号链接，检查文件大小，设置权限等。关于这些方法的细节查看 `java.nio.file.Files` 类的 JavaDoc。
-
