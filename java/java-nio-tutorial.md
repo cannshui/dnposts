@@ -736,7 +736,7 @@ Java NIO 中，你可以直接将数据从一个通道转到另一个通道中�
 
 ### <a name="Java-NIO-FileChannel"></a> 8. Java NIO FileChannel
 
-Java NIO `FileChannel` 是用于连接文件的通道。使用文件通道，你可以从文件读取数据，并向文件写数据。Java NIO `FileChannel` 类是 NIO 对 [利用标准 Java IO API 读文件](#http://tutorials.jenkov.com/java-io/file.html)的一个替代。
+Java NIO `FileChannel` 是用于连接文件的通道。使用文件通道，你可以从文件读取数据，并向文件写数据。Java NIO `FileChannel` 类是 NIO 对 [利用标准 Java IO API 读文件](http://tutorials.jenkov.com/java-io/file.html)的一个替代。
 
 `FileChannel` 无法设置成非阻塞模式。它总是运行在阻塞模式中。
 
