@@ -10,7 +10,10 @@
 
 如果 `<remote-repo>` 后只声明了一个 `<target-branch>`，那么这表示 `<local-target-branch>` 和 `<remote-target-branch>` 是一样的，同为 `<target-branch>`。
 
-**注意**：如果省略掉 `<local-target-branch>` 而直接是 `git push <remote-repo> :<remote-target-branch>`，这将会**删除**远端分支 `<remote-target-branch>`。
+ > **注意**
+ > 
+ > 1. 加上 `-f` 或 `--force` 选项将会强制推送本地分支到远程分支，**覆盖**冲突。
+ > 2. 如果省略掉 `<local-target-branch>` 而直接是 `git push <remote-repo> :<remote-target-branch>`，这将会**删除**远端分支 `<remote-target-branch>`。
 
 ##### 检出远程分支（checkout a remote branch）
 

@@ -75,7 +75,7 @@
  - 0 或 1 个 **errorHandler** 元素 - 稍后介绍。
  - 0 或多个 **param** 元素 - 每个 `appender` 可以设置成不同的功能。这是通过 `appender` 类中的 `getter` 和 `setter` 方法实现的。 `param` 元素用于 `setter` 方法。`param` 元素的格式很简单，它是原子元素，只有一个 *name* 属性和一个 *value* 属性。*name* 属性值是 `setter` 方法去掉 *set* 后的部分（如，方法名 `setTarget` 配置时是 *Target*）。*value* 属性是调用 `setter` 方法进行设置的值。
  - 0 或 1 个 **layout** 元素 - 并非所有 `appender` 都需要配置一个 `layout`。对于需要配置的，`layout` 元素定义了用到的 `layout` 类。`layout` 元素只有一个属性 *class*，声明用到的 `layout` 类的全类名。与 `appender` 元素类似，`layout` 元素也可以拥有 0 或多个 `param` 子元素。同样，`param` 元素用于设置 `layout` 类的属性值，根据不同 `layout` 类会有所不同。
- - 0 或多个 **filter** 元素 - 见 **[Filter Configuration](#Filter-Conf)** 小节。 
+ - 0 或多个 **filter** 元素 - 见**[过滤器配置](#Filter-Conf)**小节。 
  - 0 或多个 **appender-ref** 元素 - 稍后介绍。
 
 通过上述，简单示例中的 *console* `appender` 应该较易理解了：
@@ -306,9 +306,9 @@
 
 	</log4j:configuration>
 
-### 过滤器配置
+### <a name="Filter-Conf"></a>过滤器配置
 
-`filter` 可以定义在 `appender` 中。比如只过滤特定等级的日志信息，可以按照如下方式使用 [LevelRangeFilter](/logging-log4j/LevelRangeFilter)：
+`filter` 可以定义在 `appender` 中。比如只过滤特定等级的日志信息，可以按照如下方式使用 [LevelRangeFilter](http://wiki.apache.org/logging-log4j/LevelRangeFilter)：
 
 	<appender name="TRACE" class="org.apache.log4j.ConsoleAppender">
 		<layout class="org.apache.log4j.PatternLayout">
@@ -383,5 +383,4 @@
 
 Log4jXmlFormat (最后编辑时间 2013-04-15 10:15:25，[WikiCleaner](/logging-log4j/WikiCleaner)。
 
-#### 原文 & 参考
-原文 [Log4jXmlFormat](http://wiki.apache.org/logging-log4j/Log4jXmlFormat)。
+ > **原文：** [Log4jXmlFormat](http://wiki.apache.org/logging-log4j/Log4jXmlFormat)。

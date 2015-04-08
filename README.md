@@ -11,7 +11,8 @@ Nen Den's articles.
 ### Translations:
 
  - css/Hover.css-Tutorial-and-Introduction.md **undone**
- - - log4j/Log4jXmlFormat.md
+ - java/java-nio-tutorial.md
+ - log4j/Log4jXmlFormat.md
  - nginx/beginners_guide.md
  - spring/transaction.md **undone**
  - svn/eclipse-subversive-installation.md
@@ -22,3 +23,5 @@ Nen Den's articles.
 
  - git/git-FAQ.md **undone**
  - javascript/encode-string.md
+
+### MIT License
