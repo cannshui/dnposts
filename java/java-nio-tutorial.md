@@ -102,7 +102,7 @@
 
 ### <a name="Java-NIO-Tutorial"></a> 1. Java NIO 教程
 
-Java NIO（New IO）是 Java IO API 的替代方案（Java 1.4 之后），是指传统 [Java IO](http://tutorials.jenkov.com/java-io/index.html) 和 [Java Networking](http://tutorials.jenkov.com/java-networking/index.html) API 的一种替代。Java NIO 相比于传统的 IO API，提供了一种使用 IO 的不同方式。
+Java NIO（New IO）是 Java IO API 的替代方案（Java 1.4 之后），指对传统 [Java IO](http://tutorials.jenkov.com/java-io/index.html) 和 [Java Networking](http://tutorials.jenkov.com/java-networking/index.html) API 的一种替代。Java NIO 相比于传统的 IO API，提供了一种使用 IO 的不同方式。
 
 #### 1.1 Java NIO：Channels 和 Buffers
 
@@ -1457,3 +1457,5 @@ Java NIO `Files` 类也包含一个函数来从某个路径移动文件到另一
 #### <a name="files-additional-methods"></a> 15.6 Files 类中其他方法
 
 `java.nio.file.Files` 类包含许多实用函数，如创建符号链接，检查文件大小，设置权限等。关于这些方法的细节查看 `java.nio.file.Files` 类的 JavaDoc。
+
+ > **原文：**[tutorials.jenkov.com - Java NIO Tutorial - By Jakob Jenkov](http://tutorials.jenkov.com/java-nio/index.html)
