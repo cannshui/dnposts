@@ -576,7 +576,196 @@ Spring 的声明式事务管理类似于 EJB CMT，你可以在方法级别上�
 
 #### 12.5.6 使用 @Transactional
 
-**<p class="dn-not-trans">暂未翻译</p>**
+除了基于 XML 的声明式配置方式进行事务管理，你可以使用基于注解的方式。声明式事务管理语义直接加在 Java 源代码中，这样声明更加贴近相关的代码。不用过度担心耦合，因为要在事务中使用的代码总是以那种方式部署。
+
+最简单的方式是使用 `@Transactional` 注解，它在下面的例子中进行演示，并在接下来的文章中进行解释。考虑下面的类定义：
+
+	// the service class that we want to make transactional
+	@Transactional
+	public class DefaultFooService implements FooService {
+	
+		Foo getFoo(String fooName);
+	
+		Foo getFoo(String fooName, String barName);
+	
+		void insertFoo(Foo foo);
+	
+		void updateFoo(Foo foo);
+	}
+
+当上面的 POJO 定义作为 Spring IoC 容器中一个 bean，这个 bean 实例可以被事务支持，只需通过添加*一行* XML 配置代码：
+
+	<!-- from the file context.xml -->
+	<?xml version="1.0" encoding="UTF-8"?>
+	<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:aop="http://www.springframework.org/schema/aop"
+		xmlns:tx="http://www.springframework.org/schema/tx"
+		xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop.xsd">
+	
+		<!-- this is the service object that we want to make transactional -->
+		<!-- 这是我们需要进行事务支持的 service 对象 -->
+		<bean id="fooService" class="x.y.service.DefaultFooService"/>
+	
+		<!-- enable the configuration of transactional behavior based on annotations -->
+		<!-- 开启基于注解配置事务行为 -->
+		<tx:annotation-driven transaction-manager="txManager"/><!-- a PlatformTransactionManager is still required -->
+		<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+			<!-- (this dependency is defined somewhere else) -->
+			<property name="dataSource" ref="dataSource"/>
+		</bean>
+	
+		<!-- other <bean/> definitions here -->
+	
+	</beans>
+
+ > **Tip**
+ >
+ > 你可以忽略 `<tx:annotation-driven/>` 标记的 `transaction-manager` 属性，如果你想织入的 `PlatformTransactionManager` bean 名称是 `transactionManager`。如果你想依赖注入的 `PlatformTransactionManager` bean 是其他名称，那么你必须显式使用 `transaction-manager` 属性，如前面例子中所示。
+
+ > **Note**
+ >
+ > `@EnableTransactionManagement` 注解提供了等效的支持，如果你使用基于 Java 的配置。简单添加这个注解到 `@Configuration` 类。更多细节参见 JavaDoc。
+
+ > **方法可视性和 @Transactional**
+ >
+ > 当使用代理时，你应该只应用 @Transactional 注解到*公共可视的*方法上。如果你注解 `@Transactional` 到 protected，private，或包一级可视（package-visible）方法上，不会引起任何错误，但是注解的方法不会继承配置的事务设置。考虑使用 AspectJ（下面），如果你需要注解非公共的方法。
+
+你可以将 `@Transactional` 注解加在接口定义，接口的方法，类定义，或类上的*公共*方法。然而，`@Transactional` 注解 mere presence 还不足于激活事务行为。`@Transactional` 注解只是简单元数据，它可以被运行时框架了解，激活 `@Transactional` 及可以为相应的 bean 用作元数据配置事务行为。前面的例子中，`<tx:annotation-driven/>` 元素*开启*事务行为。
+
+ > **Tip**
+ >
+ > Spring 推荐你应用 `@Transactional` 到具体类（和具体类的方法），而非注解到接口上。你当然可以放置 `@Transactional` 注解到接口（或接口方法上），但这只在你使用基于接口的代理时才有用。Java 注解*不继承接口*意味着，你正使用基于类的代理（`proxy-target-class="true"`）或基于织入的方面（`mode="aspectj"`），然后事务设置将会了解到代理和织入框架，对象将被包装仅事务代理中，这可能*很糟*。
+
+ > **Note**
+ >
+ > 代理模式（默认）下，只有外部方法通过代理调用被解释。这意味着自调用，效果上，一个目标对象上的方法调用另外的方法，将不会导致运行时实际的事务行为，即使这个被调用方法被标记为 `@Transactional`。
+
+考虑使用 AspectJ 模式（参见下表中的模式属性），如果你希望自调用也由事务进行包装。这种场景下，首先不会是一个代理；相反，代理类将被织入（即，字节码将被修改）为了开启 `@Transactional` 到运行时行为到任何方法上。（译注：ERROR!）
+
+**表 12.2. 注解驱动的事务设置**
+
+<table>
+  <tr><th>XML 属性</th><th>注解属性</th><th>默认</th><th>描述</th></tr>
+  <tr><td><code>transaction-manager</code></td><td>N/A（参见 <code>TransactionManagementConfigurer</code> JavaDoc）</td><td>transactionManager</td><td>事务管理器的名称。只当事务管理器的名称不是 <code>transactionManager</code> 时才需要，如上例中所示。</td></tr>
+  <tr><td><code>mode</code></td><td><code>mode</code></td><td>proxy</td><td>默认模式“代理”处理注解的 bean 成 Spring AOP 框架的代理（如下代理语义，如前面描述，应用到方法调用只通过代理）。可选模式是“aspectj”，织入相关的类成 Spring 的 AspectJ 事务方面，修改目标类的字节码应用任何种类的方法调用。AspectJ 织入需要 Spring-aspects.jar 在类路径中，无论是装载时织入（或编译时织入）。（细节参见<a href="#">Spring 配置小节</a>，如何设置装载时织入）</td></tr>
+  <tr><td><code>proxy-target-class</code></td><td><code>proxyTargetClass</code></td><td>false</td><td>只应用与代理模式。控制为 <code>@Transactional</code> 注解的类创建哪种类型的事务代理。如果 <code>proxy-target-class</code> 设置成 <code>true</code>，将创建基于类的代理。如果 <code>proxy-target-class</code> 设置成 <code>false</code>，或忽略这个属性设置，将创建基于标准 JDK 接口的代理。（不同代理类型的细节区别，参见 [9.6 小节，“代理机制”]。）</td></tr>
+  <tr><td><code>order</code></td><td><code>order</code></td><td>Ordered.LOWEST_PRECEDENCE</td><td>定义应用到 <code>@Transactional</code> 注解的 bean 的事务 advice 的优先级。（更多关于 AOP advice 的优先级信息，参见<a href="#">“Advice 优先级”小节</a>。）如果不声明，则由 AOP 子系统决定 advice 优先级。
+</td></tr>
+</table>
+
+ > **Note**
+ >
+ > `proxy-target-class` 属性控制为 `@Transactional` 注解的类创建那种类型的事务代理。如果 `proxy-target-class` 设置成 `true`，将创建基于类的代理。如果 `proxy-target-class` 设置成 `false`，或忽略这个属性设置，将创建基于标准 JDK 接口的代理。（不同代理类型的细节区别，参见 [9.6 小节，“代理机制”]。）
+
+ > **Note**
+ >
+ > `@EnableTransactionManagement` 和 `<tx:annotation-driven/>` 只在定义它们的 context 中查找 `@Transactional` 注解的 bean。这意味着，如果你将注解驱动加在用于 `DispatcherServlet` 的 `WebApplicationContext` 中，它将只检查 controller 中的 `@Transactional` bean，而不包括 service 层中。更多信息参见 [17.2 小节，“DispatcherServlet”]()。
+
+最确切的位置优先级最高，当为方法解析事务设置时。在下面的例子中，默认的 `DefaultFooService` 类在类级别设置成 read-only 事务，但是 `updateFoo(Foo)` 方法上的 `@Transactional` 注解的优先级将高于它。
+
+	@Transactional(readOnly = true)
+	public class DefaultFooService implements FooService {
+	
+		public Foo getFoo(String fooName) {
+			// do something
+		}
+	
+		// these settings have precedence for this method
+		@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
+		public void updateFoo(Foo foo) {
+			// do something
+		}
+	}
+
+##### <a name="transaction-declarative-attransactional-settings"></a> @Transactional 设置
+
+`@Transactional` 注解是一个元数据声明接口，类，或方法必须具有事务语义；比如，“*调用此方法时启动一个全新的 read-only 事务，挂起现在所有的存在事务*”。默认的 `@Transactional` 设置如下：
+
+ - 传播设置：`PROPAGATION_REQUIRED`
+ - 隔离级别：`ISOLATION_DEFAULT`
+ - 读写事务
+ - 事务过期时间默认采用底层事务系统所设，或没有过期时间，如果不支持的话
+ - 所有的 `RuntimeException` 触发回滚，任何受检 `Exception` 也不会。
+
+**表 12.3. @**
+
+<table>
+  <tr><th>属性</th><th>类型</th><th>描述</th><tr>
+  <tr><td><code><a href="#tx-multiple-tx-mgrs-with-attransactional">value</a></code></td><td>String</td><td>可选标识符声明所用事务管理器。</td><tr>
+  <tr><td><code><a href="#tx-propagation">propagation</a></code></td><td>enum：<code>Propagation</code></td><td>可选传播设置。</td><tr>
+  <tr><td><code>isolation</code></td><td>enum：<code>Isolation</code></td><td>可选隔离级别。</td><tr>
+  <tr><td><code>readOnly</code></td><td>boolean</td><td>读/写事务 vs 只读事务</td><tr>
+  <tr><td><code>timeout</code></td><td>int（秒为单位）</td><td>事务超时时间</td><tr>
+  <tr><td><code>rollbackFor</code></td><td><code>Class</code> 对象数组，必须继承自 <code>Throwable</code>。</td><td>*必须*导致回滚的异常类设置，以数组形式。</td><tr>
+  <tr><td><code>rollbackForClassName</code></td><td>类名（字符串值）数组。类必须继承自 <code>Throwable</code>。</td><td>*必须*导致回滚的异常类名设置，以数组形式。</td><tr>
+  <tr><td><code>noRrollbackFor</code></td><td><code>Class</code> 对象数组，必须继承自 <code>Throwable</code>。</td><td>*必须不会*导致回滚的异常类设置，以数组形式。</td><tr>
+  <tr><td><code>noRollbackForClassName</code></td><td>类名（字符串值）数组。类必须继承自 <code>Throwable</code>。</td><td>*必须不会*导致回滚的异常类名设置，以数组形式。</td><tr>
+</table>
+
+目前，你还不能显式地控制事务名称，*名称*指事务名称，可以在事务监视器中进行显式看到，如果有的话（如，WebLogic 的事务监视器），及日志中输出。对于声明式事务而言，事务名称是全限定类名 + “.” + 应用事务 advice 的方法名。比如，如果 `BusinessService` 类的 `handlePayment(..)` 方法启动一个事务，事务名称将会是：`com.foo.BusinessService.handlePayment`。
+
+##### <a name="tx-multiple-tx-mgrs-with-attransactional"></a> 多事务管理器与 @Transactional
+
+大多数 Spring 应用只需要单一事务管理器，但是有时你可能需要在一个应用中有多个相互独立的事务管理器。`@Transactional` 注解的 `value` 属性可以用于声明可选的 `PlatformTransactionManager` 标识。标识可以是事务管理器的 bean name 或 qualifier 值。比如使用下面的标识记号，下面的 Java 代码
+
+	public class TransactionalService {
+	
+		@Transactional("order")
+		public void setSomething(String name) { ... }
+	
+		@Transactional("account")
+		public void doSomething() { ... }
+	}
+
+可以跟下面的事务管理器 bean 声明进行整合：
+
+	<tx:annotation-driven />
+
+	<bean id="transactionManager1" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		...
+		<qualifier value="order" />
+	</bean>
+
+	<bean id="transactionManager2" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		...
+		<qualifier value="account" />
+	</bean>
+
+此时，`TransactionalService` 的两个方法将会运行在独立的事务管理器下，由“order”和“account”标识进行区分。默认 `<tx:annotation-driven>` 目标 bean `transactionManager` 将仍被使用，如果没有找到特定声明的 `PlatformTransactionManager`。
+
+#### <a name="tx-custom-attributes"></a> 定制快捷
+
+如果你在意重复应用同样的 `@Transactional` 注解到许多不同方法上，那么 [Spring 的元注解支持]() 允许你定义自己的快捷注解。比如，定义如下注解
+
+	@Target({ElementType.METHOD, ElementType.TYPE})
+	@Retention(RetentionPolicy.RUNTIME)
+	@Transactional("order")
+	public @interface OrderTx {
+	}
+	
+	@Target({ElementType.METHOD, ElementType.TYPE})
+	@Retention(RetentionPolicy.RUNTIME)
+	@Transactional("account")
+	public @interface AccountTx {
+	}注解
+
+允许你按照如下方式编写前面的例子
+
+	public class TransactionalService {
+	
+		@OrderTx
+		public void setSomething(String name) { ... }
+	
+		@AccountTx
+		public void doSomething() { ... }
+	}
 
 #### <a name="tx-propagation"></a>12.5.7 事务传播
 
@@ -760,7 +949,27 @@ PROPAGATION\_REQUIRES\_NEW
 
 #### 12.5.9 搭配 AspectJ 使用 @Transactional
 
-**<p class="dn-not-trans">暂未翻译</p>**
+也可以在 Spring 容器之外通过 AspectJ 方面使用 Spring 框架的 `@Transactional` 支持。这么做的话，你必须用 `@Transactional` 注解你的类，然后你通过 `org.springframework.transaction.aspectj.AnnotationTransactionAspect` 连接（织入）你的应用，定义在 `spring-aspects.jar` 文件中。方面必须连同事务管理器一起配置。你当然可以使用 Spring 框架的 IoC 容器来维护依赖注入方面。最简单的方式配置事务管理方面是使用 `<tx:annotation-driven/>` 元素，并将 `mode` 属性设置为 `aspectj`，在 [12.5.6 小节，“使用 @Transactional”]()。因为我们的焦点是在 Spring 容器之外运行应用，我们将为你展示如果以编程方式实现上述效果。
+
+ > **Note**
+ >
+ > 继续之前，你可能想先阅读 [12.5.6 小节，“使用 @Transactional”]()和[第 9 章，Spring 面向切面编程]()。
+
+	// construct an appropriate transaction manager
+	DataSourceTransactionManager txManager = new DataSourceTransactionManager(getDataSource());
+
+	// configure the AnnotationTransactionAspect to use it; this must be done before executing any transactional methods
+	AnnotationTransactionAspect.aspectOf().setTransactionManager(txManager);
+
+ > **Note**
+ >
+ > 当使用这个切面时，你必须注解*实现*类（及/或那个类中的方法），*而非*那个类实现的接口（如果有的话）。AspectJ 遵循 Java 规则，接口上的注解*不会被继承*。
+
+类上的 `@Transactional` 注解为其所有方法声明默认的事务语义。
+
+类方法上的 `@Transactional` 注解覆盖默认类上的事务语义。任何方法可以被注解，无论方法具有何种可见性。
+
+通过 `AnnotationTransactionAspect` 织入你的应用，你必须通过 AspectJ 构建你的应用（参见 [AspectJ 开发指南](http://www.eclipse.org/aspectj/doc/released/devguide/index.html)）或使装载时织入。参见 [9.8.4 小节，“Spring 框架中通过 AspectJ 实现织入”]()关于通过 AspectJ 实现装载时织入的讨论。
 
 ### <a name="transaction-programmatic"></a>12.6 编程式事务管理
 
