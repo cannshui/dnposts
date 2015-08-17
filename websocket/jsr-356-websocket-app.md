@@ -308,7 +308,7 @@ WebSocket 连接使用过程中，如果异常发生，将会调用 `@OnError` �
 
 #### 连接配置信息
 
-如上节所述，为了获取路径参数，需要使用 `EndpointConfig` 实例。这个实例表示对一个 `Endpoint` 的各项配置。它包含在握手过程中所需要的全部信息。对于服务端而言，一般使用具体子接口 `ServerEndpointConfig`，它只包含特定于服务器端的配置信息。特定的配置可以通过 `ServerEndpointConfig.Configurator` 定制，如架设我们需要获取 `HttpSession` 实例：
+如上节所述，为了获取路径参数，需要使用 `EndpointConfig` 实例。这个实例表示对一个 `Endpoint` 的各项配置。它包含在握手过程中所需要的全部信息。对于服务端而言，一般使用具体子接口 `ServerEndpointConfig`，它只包含特定于服务器端的配置信息。特定的配置可以通过 `ServerEndpointConfig.Configurator` 定制，如假设我们需要获取 `HttpSession` 实例：
 
 	public class GetHttpSessionConfigurator extends ServerEndpointConfig.Configurator {
 
