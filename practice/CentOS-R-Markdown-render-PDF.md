@@ -33,7 +33,7 @@ CentOS 6 中自带的或是 yum repo 中已有的 texlive 为 2007 版本，太�
 	# export TEXLIVE_INSTALL_PREFIX=/disk2/zkgd/texlive
 	# ./install-tl
 
-看到如下的输入表示设置默认安装目录成功。如发现非预期结果，可能是因为未带 export 或目录不存在或权限不足等，请对照解决。
+看到如下的输入表示设置默认安装目录成功。如发现非预期结果，可能是因为未带 `export` 或目录不存在或权限不足等，请对照解决。
 
 	<D> set directories:
 	   TEXDIR (the main TeX directory):
@@ -94,7 +94,7 @@ pandoc 是 R Markdown 包渲染 PDF 时必须的支持软件。yum repo 中虽�
 
 #### 2.1 正常安装
 
-**不采用 yum 安装，直接下载官方编译好的 pandoc，经测试可正常使用。**见 [Pandoc - Installing pandoc](http://www.pandoc.org/installing.html)。如，当前前最新版本为 pandoc-2.1.1-linux.tar.gz，将其解压到 `/disk2/zkgd`，此时可见 `/disk2/zkgd/pandoc-2.1.1/bin` 下存在 `pandoc` 和 `pandoc-citeproc` 两个可执行文件。为了使得 pandoc 对于 R 可见，有两种方式：
+**不采用 yum 安装，直接下载官方编译好的 pandoc，经测试可正常使用。**见 [Pandoc - Installing pandoc](http://www.pandoc.org/installing.html)。如，当前最新版本为 pandoc-2.1.1-linux.tar.gz，将其解压到 `/disk2/zkgd`，此时可见 `/disk2/zkgd/pandoc-2.1.1/bin` 下存在 `pandoc` 和 `pandoc-citeproc` 两个可执行文件。为了使得 pandoc 对于 R 可见，有两种方式：
 
  1. 将 `pandoc` 命令加入全局 PATH 变量。
  2. 设置全局 `RSTUDIO_PANDOC` 变量指向 pandoc bin 目录。
