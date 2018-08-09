@@ -18,7 +18,7 @@ CentOS 下，如果已经安装了 Git，并且版本比较低，可以首先进
 	./configure --prefix=/usr/local/git
 	make all
 	make install
-	echo "export PATH=$PATH:/usr/local/git/bin" >> /etc/bashrc
+	echo 'export PATH=$PATH:/usr/local/git/bin' >> /etc/bashrc
 	source /etc/bashrc
 
 安装后进行自更新（Hadn't tried.）：
