@@ -28,5 +28,8 @@ Nen Den's articles.
  - javascript/short-circuit-principle.md
  - websocket/jsr-356-websocket-app.md
  - practice/CentOS-R-Markdown-render-PDF.md
+ - practice/R-Rserve-practice.md
+
+---------------------------------------------------------
 
 ### MIT License
