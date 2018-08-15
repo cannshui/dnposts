@@ -53,8 +53,8 @@ Rserve 警告：
  - Rserve 不是 R 的 telnet 客户端。Rserve 的输出不会回传给客户端（除非通过 capture.output（not tried））。Rserve 为了性能采用二进制协议传输。
  - **不同的 Rserve 连接之间是线程安全的，但是同一个连接的 `eval` 方法是非线程安全的，这意味着如果多个线程同时使用一个连接的 `eval` 方法，应该由用户保证线程安全。**
  - 不推荐在 Windows 下使用，简而言之：Windows 下无法充分发挥 Rserve 的功能，且可能有潜在问题。
- - 出于完全考虑，最好不要以 root 用户启动 Rserve 服务。
- - 出于完全考虑，开启 `remote enable` 时最好同时配置 `auth required` 和 `plaintext disable`。（not tried）
+ - 出于安全考虑，最好不要以 root 用户启动 Rserve 服务。
+ - 出于安全考虑，开启 `remote enable` 时最好同时配置 `auth required` 和 `plaintext disable`。（not tried）
 
 #### 3.2 Rserve 安装
 
@@ -129,15 +129,15 @@ Rserve 默认的配置文件为 `/etc/Rserv.conf`，如想修改默认文件，�
 
 启动后还涉及到一些简单的进程管理，Rserve 以进程方式提供服务，主进程一般为 500M，而后每个新的连接都会对应生成一个新的进程，每个连接进程约为 250M。注意，当客户端意外关闭时，可能导致 Rserve 连接进程无法正常关闭，因此需要手动重启 Rserve 以释放内存空间。 
 
-	# 察看当前所有 Rserve 进程
+	# 查看当前所有 Rserve 进程
 	ps aux | grep Rserve	
 
 	# 正常关闭 Rserve 进程
 	killall -15 Rserve
 
-至此，Rserve 的基本使用介绍完毕。为了便于操作，将配置、启动、察看、关闭和重启总结为如下 bash 文件 `Rserve.sh`，并放入 `/etc/profile.d` 下：
+至此，Rserve 的基本使用介绍完毕。为了便于操作，将配置、启动、查看、关闭和重启总结为如下 bash 文件 `Rserve.sh`，并放入 `/etc/profile.d` 下：
 
-	#!bin/bash
+	#!/bin/bash
 	# setting for R Rserve package
 	# mainly used for managing Rserve process more conveniently
 	#
