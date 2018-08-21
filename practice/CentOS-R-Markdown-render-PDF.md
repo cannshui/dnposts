@@ -27,23 +27,23 @@ CentOS 6 中自带的或是 yum repo 中已有的 texlive 为 2007 版本，太�
 	注：ls 后将会看到 install-tl 脚本
 	# ls -l
 
-值得一提之处，texlive 默认将安装于 `/usr/local/texlive`。不同版本可并存，如 2017 版本，默认会安装于 `/usr/local/texlive/2017`。一般主要基于磁盘空间的考虑，需要更改安装路径，**否则建议采用默认安装路径**。更换默认安装路径见 [The TeX Live Guide - 2017 #3.2.3 Directories](http://www.tug.org/texlive/doc/texlive-en/texlive-en.html#x1-260003.2.3)，此处采用预设 `TEXLIVE_INSTALL_PREFIX` 环境变量的方式。
+值得一提之处，texlive 默认将安装于 `/usr/local/texlive`。不同版本可并存，如 2017 版本，默认会安装于 `/usr/local/texlive/2017`。一般主要基于磁盘空间的考虑，需要更改安装路径，**否则建议采用默认安装路径**。更换默认安装路径见 [The TeX Live Guide - 2017 #3.2.3 Directories](http://www.tug.org/texlive/doc/texlive-en/texlive-en.html#x1-260003.2.3)，此处示例采用预设 `TEXLIVE_INSTALL_PREFIX` 环境变量的方式，假设希望安装在 `/path/to/install/texlive` 下。
 
-	注：别忘记 export，且 /disk2/zkgd/texlive 需已存在
-	# export TEXLIVE_INSTALL_PREFIX=/disk2/zkgd/texlive
+	注：别忘记 export，且 /path/to/install/texlive 需已存在
+	# export TEXLIVE_INSTALL_PREFIX=/path/to/install/texlive
 	# ./install-tl
 
 看到如下的输入表示设置默认安装目录成功。如发现非预期结果，可能是因为未带 `export` 或目录不存在或权限不足等，请对照解决。
 
 	<D> set directories:
 	   TEXDIR (the main TeX directory):
-	     /disk2/zkgd/texlive/2017
+	     /path/to/install/texlive/2017
 	   TEXMFLOCAL (directory for site-wide local files):
-	     /disk2/zkgd/texlive/texmf-local
+	     /path/to/install/texlive/texmf-local
 	   TEXMFSYSVAR (directory for variable and automatically generated data):
-	     /disk2/zkgd/texlive/2017/texmf-var
+	     /path/to/install/texlive/2017/texmf-var
 	   TEXMFSYSCONFIG (directory for local config):
-	     /disk2/zkgd/texlive/2017/texmf-config
+	     /path/to/install/texlive/2017/texmf-config
 	   TEXMFVAR (personal directory for variable and automatically generated data):
 	     ~/.texlive2017/texmf-var
 	   TEXMFCONFIG (personal directory for local config):
@@ -55,28 +55,28 @@ CentOS 6 中自带的或是 yum repo 中已有的 texlive 为 2007 版本，太�
 
 	 ----------------------------------------------------------------------
 		...
-	    TEXLIVE_INSTALL_PREFIX=/disk2/zkgd/texlive
+	    TEXLIVE_INSTALL_PREFIX=/path/to/install/texlive
 	 ----------------------------------------------------------------------
 	
 	Welcome to TeX Live!
 	
-	Documentation links: /disk2/zkgd/texlive/2017/index.html
+	Documentation links: /path/to/install/texlive/2017/index.html
 	...
 	
-	Add /disk2/zkgd/texlive/2017/texmf-dist/doc/man to MANPATH.
-	Add /disk2/zkgd/texlive/2017/texmf-dist/doc/info to INFOPATH.
-	Most importantly, add /disk2/zkgd/texlive/2017/bin/x86_64-linux
+	Add /path/to/install/texlive/2017/texmf-dist/doc/man to MANPATH.
+	Add /path/to/install/texlive/2017/texmf-dist/doc/info to INFOPATH.
+	Most importantly, add /path/to/install/texlive/2017/bin/x86_64-linux
 	to your PATH for current and future sessions.
 	
-	Logfile: /disk2/zkgd/texlive/2017/install-tl.log
+	Logfile: /path/to/install/texlive/2017/install-tl.log
 
 安装完成后，需要设置环境变量见 [The TeX Live Guide - 2017 #3.4.1 Environment variables for Unix](http://www.tug.org/texlive/doc/texlive-en/texlive-en.html#x1-310003.4.1)，包括 PATH，man 和 info 相关。环境变量的设置方式很多，为了便于管理，建议在 `/etc/profile.d` 下新建 `texlive.sh`，文件内容如下：
 
 	#!/bin/bash
 	# setting env vars, see: http://www.tug.org/texlive/doc/texlive-en/texlive-en.html#x1-310003.4.1
-	export PATH=/disk2/zkgd/texlive/2017/bin/x86_64-linux:$PATH
-	export MANPATH=/disk2/zkgd/texlive/2017/texmf-dist/doc/man:$MANPATH
-	export INFOPATH=/disk2/zkgd/texlive/2017/texmf-dist/doc/info:$INFOPATH
+	export PATH=/path/to/install/texlive/2017/bin/x86_64-linux:$PATH
+	export MANPATH=/path/to/install/texlive/2017/texmf-dist/doc/man:$MANPATH
+	export INFOPATH=/path/to/install/texlive/2017/texmf-dist/doc/info:$INFOPATH
 
 使 `texlive.sh` 中设置立即生效，执行：
 
@@ -94,7 +94,7 @@ pandoc 是 R Markdown 包渲染 PDF 时必须的支持软件。yum repo 中虽�
 
 #### 2.1 正常安装
 
-**不采用 yum 安装，直接下载官方编译好的 pandoc，经测试可正常使用。**见 [Pandoc - Installing pandoc](http://www.pandoc.org/installing.html)。如，当前最新版本为 pandoc-2.1.1-linux.tar.gz，将其解压到 `/disk2/zkgd`，此时可见 `/disk2/zkgd/pandoc-2.1.1/bin` 下存在 `pandoc` 和 `pandoc-citeproc` 两个可执行文件。为了使得 pandoc 对于 R 可见，有两种方式：
+**不采用 yum 安装，直接下载官方编译好的 pandoc，经测试可正常使用。**见 [Pandoc - Installing pandoc](http://www.pandoc.org/installing.html)。如，当前最新版本为 pandoc-2.1.1-linux.tar.gz，将其解压到 `/path/to/install`，此时可见 `/path/to/install/pandoc-2.1.1/bin` 下存在 `pandoc` 和 `pandoc-citeproc` 两个可执行文件。为了使得 pandoc 对于 R 可见，有两种方式：
 
  1. 将 `pandoc` 命令加入全局 PATH 变量。
  2. 设置全局 `RSTUDIO_PANDOC` 变量指向 pandoc bin 目录。
@@ -105,11 +105,11 @@ pandoc 是 R Markdown 包渲染 PDF 时必须的支持软件。yum repo 中虽�
 	# setting env var for pandoc
 	#
 	# if you just want pandoc used by R. **here, I prefer this**
-	export RSTUDIO_PANDOC=/disk2/zkgd/pandoc-2.1.1/bin
+	export RSTUDIO_PANDOC=/path/to/install/pandoc-2.1.1/bin
 	# if you or other users or other softs also need `pandoc`, **uncomment follow**
-	# export PATH=$PATH:/disk2/zkgd/pandoc-2.1.1/bin
+	# export PATH=$PATH:/path/to/install/pandoc-2.1.1/bin
 
-输入 `/disk2/zkgd/pandoc-2.1.1/bin/pandoc -v`，将会输出 pandoc 版本信息，而非 `bash: pandoc: command not found`。
+输入 `/path/to/install/pandoc-2.1.1/bin/pandoc -v`，将会输出 pandoc 版本信息，而非 `bash: pandoc: command not found`。
 
 #### 2.2 意外
 
