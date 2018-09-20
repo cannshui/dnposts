@@ -10,7 +10,6 @@ Nen Den's articles.
 
 ### Translations:
 
- - css/Hover.css-Tutorial-and-Introduction.md **undone**
  - java/java-nio-tutorial.md
  - java/Top-10-Easy-Performance-Optimisations-in-Java.md
  - log4j/Log4jXmlFormat.md
@@ -29,7 +28,8 @@ Nen Den's articles.
  - websocket/jsr-356-websocket-app.md
  - practice/CentOS-R-Markdown-render-PDF.md
  - practice/R-Rserve-practice.md
-
+ - practice/Deploy-tomcat-7-ROOT-application.md
+ 
 ---------------------------------------------------------
 
 ### MIT License
