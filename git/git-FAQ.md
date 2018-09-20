@@ -97,6 +97,14 @@ Windows 下可到 [https://git-scm.com/](https://git-scm.com/) 下载。
 
 	git commit --amend
 
-如果已 push 到远程，则需再次强制 push
+如果已 push 到远程，则需再次强制 push：
 
 	git push -f <remote-repo> <target-branch>
+
+### 删除最新一次提交
+
+删除最新一次的提交，且删除本次 commit 所做的修改：
+
+	git reset --hard HEAD~1
+
+如果需要保留则，则将 `--hard` 替换为 `--soft` 选项。如果已 push 到远端库，则需再次强制 push 删除远端库中的提交。
