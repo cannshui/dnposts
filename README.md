@@ -17,6 +17,7 @@ Nen Den's articles.
  - spring/transaction.md
  - ssh/Simple-tips-for-making-the-most-out-of-SSH.md
  - svn/eclipse-subversive-installation.md
+ - spring/69-Spring-Interview-Questions-and-Answers.md
 
 ---------------------------------------------------------
 
