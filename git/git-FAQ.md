@@ -1,4 +1,4 @@
-## <center>My Git FAQ.</center>
+## <center>My Git FAQ</center>
 
 ### 安装 Git（On CentOS）
 
@@ -6,7 +6,7 @@ CentOS 下，如果已经安装了 Git，并且版本比较低，可以首先进
 
 	yum remove git
 
-获取最新 Git 源码并解压：
+获取 Git 源码（如 git-2.4.3）并解压：
 
 	wget https://www.kernel.org/pub/software/scm/git/git-2.4.3.tar.gz
 	tar -xvf git-2.4.3.tar.gz
@@ -108,3 +108,13 @@ Windows 下可到 [https://git-scm.com/](https://git-scm.com/) 下载。
 	git reset --hard HEAD~1
 
 如果需要保留则，则将 `--hard` 替换为 `--soft` 选项。如果已 push 到远端库，则需再次强制 push 删除远端库中的提交。
+
+### 删除本地分支
+
+通过 `git branch` 查看本地所有分支，可通过 `-d` 删除一个分支：
+
+	git branch -d <branch-name>
+
+如果 `-d` 提示无法删除的信息，而你确定要删除时，可通过 `-D` 强制删除：
+
+	git branch -D <branch-name>
