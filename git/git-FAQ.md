@@ -6,14 +6,14 @@ CentOS 下，如果已经安装了 Git，并且版本比较低，可以首先进
 
 	yum remove git
 
-获取 Git 源码（如 git-2.4.3）并解压：
+获取 Git 源码（如 git-2.21.0.tar.gz）并解压：
 
-	wget https://www.kernel.org/pub/software/scm/git/git-2.4.3.tar.gz
-	tar -xvf git-2.4.3.tar.gz
+	wget https://www.kernel.org/pub/software/scm/git/git-2.21.0.tar.gz
+	tar -xvf git-2.21.0.tar.gz
 
 安装 Git：
 
-	cd git-2.4.3
+	cd git-2.21.0
 	make configure
 	./configure --prefix=/usr/local/git
 	make all
@@ -26,6 +26,8 @@ CentOS 下，如果已经安装了 Git，并且版本比较低，可以首先进
 	git clone git://git.kernel.org/pub/scm/git/git.git
 
 Windows 下可到 [https://git-scm.com/](https://git-scm.com/) 下载。
+
+ > 可能缺少 autoconf，zlib-devel，curl-devel（支持http[s]协议） 等倚赖，yum 安装即可。
 
 ### 源代码换行设定
 
@@ -118,3 +120,20 @@ Windows 下可到 [https://git-scm.com/](https://git-scm.com/) 下载。
 如果 `-d` 提示无法删除的信息，而你确定要删除时，可通过 `-D` 强制删除：
 
 	git branch -D <branch-name>
+
+### 从某次提交历史打出新分支
+
+通过 `git log` 查看提交历史，确定某个 commit id：
+
+创建后并检出：
+
+	git checkout -b <new-branch-name> <commit-id>
+
+仅创建：
+
+	git branch <new-branch-name> <commit-id>
+
+应用场景：
+
+ - **当由于主特性分支合并新代码后无法正常工作时，此功能比较有用。可从确定没问题的最近历史打出新临时开发分支，在其上进行正常的开发工作。等问题解决后，更新主特性分支，并合并此临时分支。** 
+ - 从某个特定地方修改 bug。
