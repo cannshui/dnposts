@@ -20,6 +20,7 @@ Nen Den's posts.
  - spring/69-Spring-Interview-Questions-and-Answers.md
  - practice/Solution-for-TCPIP-client-socket-message-boundary-problem.md
  - practice/The-New-RBAC--Resource-Based-Access-Control.md
+ - practice/Best-Practices-for-Writing-Bash-Scripts.md
 
 ---------------------------------------------------------
 
