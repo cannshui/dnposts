@@ -14,6 +14,7 @@ Nen Den's posts.
  - java/Top-10-Easy-Performance-Optimisations-in-Java.md
  - log4j/Log4jXmlFormat.md
  - nginx/beginners_guide.md
+ - nginx/nginx_directive_translation.md
  - spring/transaction.md
  - ssh/Simple-tips-for-making-the-most-out-of-SSH.md
  - svn/eclipse-subversive-installation.md
