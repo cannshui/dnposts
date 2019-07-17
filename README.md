@@ -10,6 +10,7 @@ Nen Den's posts.
 
 ### Translations:
 
+ - bash/Best-Practices-for-Writing-Bash-Scripts.md
  - java/java-nio-tutorial.md
  - java/Top-10-Easy-Performance-Optimisations-in-Java.md
  - log4j/Log4jXmlFormat.md
@@ -21,12 +22,12 @@ Nen Den's posts.
  - spring/69-Spring-Interview-Questions-and-Answers.md
  - practice/Solution-for-TCPIP-client-socket-message-boundary-problem.md
  - practice/The-New-RBAC--Resource-Based-Access-Control.md
- - practice/Best-Practices-for-Writing-Bash-Scripts.md
 
 ---------------------------------------------------------
 
 ### Myself ones:
 
+ - bash/Bash-Arithmetic-Support.md
  - git/git-FAQ.md **undone**
  - javascript/encode-string.md
  - javascript/short-circuit-principle.md

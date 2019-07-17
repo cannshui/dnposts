@@ -3,8 +3,8 @@
 - [location](#control)
 - [rewrite](#rewrite)
 - [upstream](#upstream)
-- [server](#http://nginx.org/en/docs/http/ngx_http_upstream_module.html#server)
-- [proxy_pass](#http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_pass)
+- [server](#server)
+- [proxy_pass](#proxy_pass)
 
 ### <a name="control"></a> [location](http://nginx.org/en/docs/http/ngx_http_core_module.html#location)
 
