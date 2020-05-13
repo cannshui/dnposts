@@ -1,4 +1,4 @@
-## [YApi](https://yapi.ymfe.org) docker 容器部署
+## [YApi](https://github.com/YMFE/yapi) docker 容器部署
 
 以 1.7.0 为例。
 
@@ -30,7 +30,7 @@
 
     CMD [ "node", "server/app.js" ]
 
-构建镜像时强制要求 yapi 的配置文件，即 config.json，参见 [内往部署](https://yapi.ymfe.org/devops/index.html)，简单示例如：
+构建镜像时强制要求 yapi 的配置文件，即 config.json，参见 [内往部署](https://hellosean1025.github.io/yapi/devops/index.html)，简单示例如：
 
     {
       "port": "3000",
@@ -81,7 +81,6 @@
 
 **参见：**
 
- - [YApi](https://yapi.ymfe.org)
+ - [YApi](https://github.com/YMFE/yapi)
  - [node](https://hub.docker.com/_/node)
  - [mongo](https://hub.docker.com/_/mongo)
-
