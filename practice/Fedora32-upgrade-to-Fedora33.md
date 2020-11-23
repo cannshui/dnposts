@@ -1,3 +1,5 @@
+## Fedora 32 升级到 Fedora 33
+
 2020-11-16 把 Fedora 32 升级到了 Fedora 33（2020-10-27 发布）。升级后，遇到了两个主要问题，记录如下。
 
 ### 1. Fedora 32 上安装的 VirtualBox 不见了
