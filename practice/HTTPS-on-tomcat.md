@@ -64,7 +64,7 @@ CentOS 7 可以通过：
 
 ### 3. 生成泛域名证书
 
-生成泛域名证书，这样证书可以应用于所有子域名，我的主域名为 dunnen.top，则命令可以是：
+生成泛域名证书，这样证书可以应用于所有子域名，以主域名 dunnen.top 为例，则命令可以是：
 
     # certbot certonly --preferred-challenges dns --manual -d dunnen.top -d *.dunnen.top --email zhegema@126.com
 
@@ -129,7 +129,7 @@ CentOS 7 可以通过：
 
 表示启动成功，然后便可浏览器中通过 [https://dunnen.top](https://dunnen.top) 访问网站。
 
-但是还有个问题：仍然可以通过 80 端口 [http://dunnen.top](http://dunnen.top) 访问网站。需要在 `conf/web.xml` 中配置所有的 HTTP 请求重定向到 HTTPS，配置方式如下：
+但是还有个问题：在未做任何配置的情况下，默认仍然可以通过不安全的 http 方式访问网站，即同时支持 http://dunnen.top 和 https://dunnen.top 两种访问方式。在 `conf/web.xml` 中配置所有的 HTTP 请求重定向到 HTTPS，才可改变这个默认行为，配置方式如下：
 
     <web-app>
 
@@ -182,7 +182,7 @@ CentOS 7 可以通过：
  1. yum 安装的 certbot 1.9.0 版本需要通过两步修正，才可以正常使用 `certbot` 命令。也许随着 epel 中 certbot 的版本更新，会带来更好的兼容性，期待中。
  2. OpenSSL 风格的证书配置相比于 JSSE 更加通用，因为其他一些 web 服务器软件，比如 nginx，也是直接基于证书进行配置的。而且更加简单，无需额外的步骤生成 keystore 文件。这也是选用 tomcat 8.5 以上版本的主要原因。
  3. 总体来说，这个操作过程没有什么难度。但是要理解各项操作对应的规范、原理就比较困难了。
- 4. 做 cron 脚本来 `renew` 证书没有太大意义，毕竟证书有效时间一般较长。待补充 `certbot renew` 的实际效果...
+ 4. 做 cron 脚本来 `renew` 证书没有太大意义，毕竟证书有效时间一般较长。
 
 --------
 
