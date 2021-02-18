@@ -133,7 +133,7 @@ CentOS 7 可以通过：
 
     <web-app>
 
-        ...
+        ... pre omitted ...
 
         <!-- new added for redirecting http to https -->
         <security-constraint>
@@ -146,7 +146,7 @@ CentOS 7 可以通过：
             </user-data-constraint>
         </security-constraint>
 
-        ...
+        ... post omitted ...
 
     </web-app>
 
@@ -177,12 +177,15 @@ CentOS 7 可以通过：
 
 删除后，`/etc/letsencrypt/live/` 下的 `--cert-name` 目录和其下证书文件将会被删除，表示撤销成功。
 
-### 6. 总结
+### 6. 更新证书
+
+通过 `--manul` 申请的证书无法通过 `certbot renew` 来直接更新，需要参照第 3 节中的过程重新生成一遍，讨论见：[--manual should display a warning about the inability to use certbot renew](https://github.com/certbot/certbot/issues/6280)。
+
+### 7. 总结
 
  1. yum 安装的 certbot 1.9.0 版本需要通过两步修正，才可以正常使用 `certbot` 命令。也许随着 epel 中 certbot 的版本更新，会带来更好的兼容性，期待中。
  2. OpenSSL 风格的证书配置相比于 JSSE 更加通用，因为其他一些 web 服务器软件，比如 nginx，也是直接基于证书进行配置的。而且更加简单，无需额外的步骤生成 keystore 文件。这也是选用 tomcat 8.5 以上版本的主要原因。
  3. 总体来说，这个操作过程没有什么难度。但是要理解各项操作对应的规范、原理就比较困难了。
- 4. 做 cron 脚本来 `renew` 证书没有太大意义，毕竟证书有效时间一般较长。
 
 --------
 
@@ -191,4 +194,5 @@ CentOS 7 可以通过：
  - [Get Certbot](https://certbot.eff.org/docs/install.html)
  - [Apache Tomcat 8 - SSL/TLS Configuration How-To](https://tomcat.apache.org/tomcat-8.5-doc/ssl-howto.html)
  - [How to use the certificate for Tomcat - Server](https://community.letsencrypt.org/t/how-to-use-the-certificate-for-tomcat/3677)
+ - [--manual should display a warning about the inability to use certbot renew](https://github.com/certbot/certbot/issues/6280)
 
