@@ -84,7 +84,7 @@ rm -rf git-${GIT_VERSION}
 echo $(git --version) installed
 ```
 
-这个脚本也可从 [misaka git-install.sh](https://github.com/cannshui/misaka/blob/master/git/git-install.sh) 获取到。使用时，可以不提供参数直接执行，会安装默认的 `2.31.1` 版本：
+这个脚本也可从 [dnposts git-install.sh](https://github.com/cannshui/dnposts/blob/master/git/git-install.sh) 获取到。使用时，可以不提供参数直接执行，会安装默认的 `2.31.1` 版本：
 
     ./git-install.sh
 

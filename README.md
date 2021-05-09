@@ -1,10 +1,12 @@
-Nen Den's posts.
-==================
+dnposts - Nen Den's posts
+=========================
 
 ### Include:
 
- - Translations.
- - Myself ones.
+ - Myself written posts.
+ - Translated posts.
+
+Some of the posts were published at [https://dunnen.top](https://dunnen.top).
 
 ---------------------------------------------------------
 
