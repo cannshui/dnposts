@@ -28,7 +28,8 @@ Nen Den's posts.
 ### Myself ones:
 
  - bash/Bash-Arithmetic-Support.md
- - git/git-FAQ.md **undone**
+ - git/git-FAQ.md
+ - git/Install-git-on-CentOS-7-Minimal.md
  - javascript/encode-string.md
  - javascript/short-circuit-principle.md
  - websocket/jsr-356-websocket-app.md

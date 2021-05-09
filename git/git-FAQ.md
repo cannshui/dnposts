@@ -1,34 +1,5 @@
 ## <center>My Git FAQ</center>
 
-### 安装 Git（On CentOS）
-
-CentOS 下，如果已经安装了 Git，并且版本比较低，可以首先进行移除：
-
-	yum remove git
-
-获取 Git 源码（如 git-2.21.0.tar.gz）并解压：
-
-	wget https://www.kernel.org/pub/software/scm/git/git-2.21.0.tar.gz
-	tar -xvf git-2.21.0.tar.gz
-
-安装 Git：
-
-	cd git-2.21.0
-	make configure
-	./configure --prefix=/usr/local/git
-	make all
-	make install
-	echo 'export PATH=$PATH:/usr/local/git/bin' >> /etc/bashrc
-	source /etc/bashrc
-
-安装后进行自更新（Hadn't tried.）：
-
-	git clone git://git.kernel.org/pub/scm/git/git.git
-
-Windows 下可到 [https://git-scm.com/](https://git-scm.com/) 下载。
-
- > 可能缺少 autoconf，zlib-devel，curl-devel（支持http[s]协议） 等倚赖，yum 安装即可。
-
 ### 源代码换行设定
 
 安装完毕 git 之后，最好统一设置源码的**换行**规则。
