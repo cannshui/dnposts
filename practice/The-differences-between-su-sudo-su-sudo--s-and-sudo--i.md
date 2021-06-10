@@ -47,3 +47,5 @@ The Differences between Su, Sudo Su, Sudo -s and Sudo -i
 没有一个 100% 好的命令。随着用户对命令行越来越熟悉，他们需要考虑获取 root 的每一种方式（并且有很多），综合考虑使用合适的命令。希望这篇文章可以帮到你。
 
 你更倾向于使用哪种获取 root 访问的方式？告诉我们吧！
+
+**原文：**[The Differences between Su, Sudo Su, Sudo -s and Sudo -i](https://www.maketecheasier.com/differences-between-su-sudo-su-sudo-s-sudo-i/)
