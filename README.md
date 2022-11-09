@@ -6,7 +6,7 @@ dnposts - Nen Den's posts
  - Myself written posts.
  - Translated posts.
 
-Some of the posts were published at [https://dunnen.top](https://dunnen.top).
+Some of the posts were published at [https://blog.dunnen.top](https://blog.dunnen.top).
 
 ---------------------------------------------------------
 
@@ -20,6 +20,7 @@ Some of the posts were published at [https://dunnen.top](https://dunnen.top).
  - nginx/nginx_directive_translation.md
  - spring/transaction.md
  - ssh/Simple-tips-for-making-the-most-out-of-SSH.md
+ - ssh/A-Visual-Guide-to-SSH-Tunnels-with-labs.md
  - svn/eclipse-subversive-installation.md
  - spring/69-Spring-Interview-Questions-and-Answers.md
  - practice/Solution-for-TCPIP-client-socket-message-boundary-problem.md
